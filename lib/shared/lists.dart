@@ -59,6 +59,8 @@ Map<String, String> constans = {
   'total': 'Total',
   'totalIn': 'Total Entrie',
   'totalOut': 'Total Sortie',
+  'totalLoan': 'Total Laon',
+  'totalDeposit': 'Total Deposit',
   'moneyProfit': 'Money Profit',
   'thresholdProfit': 'Threshold Profit',
   'foundingProfit': 'Founding Profit',
@@ -71,8 +73,14 @@ Map<String, String> constans = {
   'totalCapital': 'Total Capital',
   'count': 'Count',
   'deposit': 'Deposit',
+  'deposits': 'Deposits',
   'loan': 'Loan',
+  'rest': 'Rest',
+  'loans': 'Loans',
+  'source': 'Source',
 };
+
+Map<String, String> messages = {};
 
 List<String> monthsOfYear = [
   'January',
@@ -104,6 +112,17 @@ Map<String, String> usersTypesSearch = {
   'both': getText('both'),
 };
 
+Map<String, String> otherUsersTypes = {
+  'deposit': getText('deposit'),
+  'loan': getText('loan'),
+};
+
+Map<String, String> otherUsersTypesSearch = {
+  'tout': getText('tout'),
+  'loan': getText('loan'),
+  'deposit': getText('deposit'),
+};
+
 Map<String, String> transactionsTypes = {
   'in': getText('in'),
   'out': getText('out'),
@@ -115,16 +134,7 @@ Map<String, String> transactionsTypesSearch = {
   'out': getText('out'),
 };
 
-Map<String, String> otherUsersTypes = {
-  'deposit': getText('deposit'),
-  'loan': getText('loan'),
-};
-
-Map<String, String> otherUsersTypesSearch = {
-  'tout': getText('tout'),
-  'deposit': getText('deposit'),
-  'loan': getText('loan'),
-};
+List<String> selectTransactionType = [getText('special'), getText('user'), getText('loan'), getText('deposit')];
 
 Map<String, String> compts = {
   'caisse': getText('caisse'),
@@ -144,6 +154,8 @@ Map<String, String> comptsSearch = {
 Map<String, String> transactionsCategorys = {
   'caisse': getText('caisse'),
   'users': getText('users'),
+  'loans': getText('loans'),
+  'deposits': getText('deposits'),
   'specials': getText('specials'),
 };
 

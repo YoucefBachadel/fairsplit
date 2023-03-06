@@ -78,7 +78,7 @@ class _AddUnitState extends State<AddUnit> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .66),
+      height: getHeight(context, .69),
       width: getWidth(context, .29),
       child: Column(
         children: [

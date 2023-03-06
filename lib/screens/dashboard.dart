@@ -21,7 +21,7 @@ class _DashboardState extends State<Dashboard> {
   void locadData() async {
     var params = {
       'sql':
-          '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,(SELECT SUM(amount) FROM Transaction WHERE type = 'in' AND year = s.currentYear) as totalIn, (SELECT SUM(amount) FROM Transaction WHERE type = 'out' AND year = s.currentYear) as totalOut, s.* FROM Settings s;'''
+          '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,(SELECT SUM(amount) FROM Transaction WHERE type = 'in' AND year = s.currentYear) as totalIn, (SELECT SUM(amount) FROM Transaction WHERE type = 'out' AND year = s.currentYear) as totalOut,(SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,(SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit, s.* FROM Settings s;'''
     };
     var res = await http.post(selectUrl, body: params);
     data = (json.decode(res.body))['data'][0];
@@ -74,6 +74,14 @@ class _DashboardState extends State<Dashboard> {
                     [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
                   ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
                 ),
+                Row(
+                  children: [
+                    [getText(''), '0', const Color(0xbbcdf6f2), false],
+                    [getText(''), '0', const Color(0xbb5a80fb), false],
+                    [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
+                    [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
+                  ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+                ),
               ],
             ),
     );
@@ -121,7 +129,11 @@ class _DashboardState extends State<Dashboard> {
             : InkWell(
                 onTap: () async => await createDialog(
                   context,
-                  AddTransaction(sourceTab: 'da', category: getKeyFromValue(title)),
+                  AddTransaction(
+                    sourceTab: 'da',
+                    category: getKeyFromValue(title),
+                    selectedTransactionType: 0,
+                  ),
                   false,
                 ),
                 child: column,

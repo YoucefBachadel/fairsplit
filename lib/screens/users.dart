@@ -37,8 +37,7 @@ class _UsersState extends State<Users> {
   bool _isAscending = true;
   TextEditingController _controller = TextEditingController();
 
-  void _newUser(BuildContext context, User user) async =>
-      await createDialog(context, AddUser(user: user), false);
+  void _newUser(BuildContext context, User user) async => await createDialog(context, AddUser(user: user), false);
 
   void loadData() async {
     var params = {'sql': 'SELECT * FROM Threshold;'};
@@ -57,21 +56,17 @@ class _UsersState extends State<Users> {
     res = await http.post(selectUrl, body: params);
     var dataUsers = (json.decode(res.body))['data'];
 
-    allUsers = toUsers(dataUsers, toThresholds(dataThresholds),
-        toFoundings(dataFoundings), toEfforts(dataEfforts));
+    allUsers = toUsers(dataUsers, toThresholds(dataThresholds), toFoundings(dataFoundings), toEfforts(dataEfforts));
 
     for (var ele in dataUsers) {
       userNames.add(ele['name']);
     }
 
-    params = {
-      'sql': '''SELECT unitId , name FROM Units WHERE type = 'intern';'''
-    };
+    params = {'sql': '''SELECT unitId , name FROM Units WHERE type = 'intern';'''};
     res = await http.post(selectUrl, body: params);
     List<dynamic> dataUnits = (json.decode(res.body))['data'];
     for (var element in dataUnits) {
-      units.add(
-          Unit(unitId: int.parse(element['unitId']), name: element['name']));
+      units.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
     }
 
     units.sort((a, b) => a.name.compareTo(b.name));
@@ -94,6 +89,7 @@ class _UsersState extends State<Users> {
         for (var element in user.thresholds) {
           if (element.unitId == _thresholdUnitFilter) {
             _isthresholdFilter = true;
+            user.thresholdPerc = element.thresholdPerc;
             break;
           }
         }
@@ -103,6 +99,7 @@ class _UsersState extends State<Users> {
         for (var element in user.foundings) {
           if (element.unitId == _foundingUnitFilter) {
             _isfoundingFilter = true;
+            user.foundingPerc = element.foundingPerc;
             break;
           }
         }
@@ -112,6 +109,8 @@ class _UsersState extends State<Users> {
         for (var element in user.efforts) {
           if (element.unitId == _effortUnitFilter) {
             _iseffortFilter = true;
+            user.effortPerc = element.effortPerc;
+            user.evaluation = element.evaluation;
             break;
           }
         }
@@ -122,9 +121,7 @@ class _UsersState extends State<Users> {
           (_type == 'tout' || user.type == _type) &&
           (_thresholdUnitFilter == -2 || _isthresholdFilter) &&
           (_foundingUnitFilter == -2 || _isfoundingFilter) &&
-          (_effortUnitFilter == -2 || _iseffortFilter)) {
-        users.add(user);
-      }
+          (_effortUnitFilter == -2 || _iseffortFilter)) users.add(user);
 
       //at the end we reset the serch atrebut for the next user
       _isthresholdFilter = false;
@@ -139,44 +136,75 @@ class _UsersState extends State<Users> {
     switch (_sortColumnIndex) {
       case 1:
         users.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.name.compareTo(tr1.name)
-              : tr1.name.compareTo(tr2.name);
-        });
-        break;
-      case 3:
-        users.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.capital.compareTo(tr1.capital)
-              : tr1.capital.compareTo(tr2.capital);
-        });
-        break;
-      case 4:
-        users.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.money.compareTo(tr1.money)
-              : tr1.money.compareTo(tr2.money);
+          return !_isAscending ? tr2.name.compareTo(tr1.name) : tr1.name.compareTo(tr2.name);
         });
         break;
       case 5:
         users.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.threshold.compareTo(tr1.threshold)
-              : tr1.threshold.compareTo(tr2.threshold);
+          return !_isAscending ? tr2.capital.compareTo(tr1.capital) : tr1.capital.compareTo(tr2.capital);
         });
         break;
       case 6:
         users.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.founding.compareTo(tr1.founding)
-              : tr1.founding.compareTo(tr2.founding);
+          return !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money);
         });
         break;
       case 7:
         users.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.effort.compareTo(tr1.effort)
-              : tr1.effort.compareTo(tr2.effort);
+          return !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold);
+        });
+        break;
+      case 8:
+        users.sort((tr1, tr2) {
+          return !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding);
+        });
+        break;
+      case 9:
+        users.sort((tr1, tr2) {
+          return !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort);
+        });
+        break;
+      case 10:
+        users.sort((tr1, tr2) {
+          if (_thresholdUnitFilter != -2) {
+            return !_isAscending
+                ? tr2.thresholdPerc.compareTo(tr1.thresholdPerc)
+                : tr1.thresholdPerc.compareTo(tr2.thresholdPerc);
+          } else if (_foundingUnitFilter != -2) {
+            return !_isAscending
+                ? tr2.foundingPerc.compareTo(tr1.foundingPerc)
+                : tr1.foundingPerc.compareTo(tr2.foundingPerc);
+          } else {
+            return !_isAscending ? tr2.effortPerc.compareTo(tr1.effortPerc) : tr1.effortPerc.compareTo(tr2.effortPerc);
+          }
+        });
+        break;
+      case 11:
+        users.sort((tr1, tr2) {
+          if (_thresholdUnitFilter != -2 && _foundingUnitFilter != -2) {
+            return !_isAscending
+                ? tr2.foundingPerc.compareTo(tr1.foundingPerc)
+                : tr1.foundingPerc.compareTo(tr2.foundingPerc);
+          } else if ((_thresholdUnitFilter == -2 && _foundingUnitFilter != -2) ||
+              (_thresholdUnitFilter != -2 && _foundingUnitFilter == -2)) {
+            return !_isAscending ? tr2.effortPerc.compareTo(tr1.effortPerc) : tr1.effortPerc.compareTo(tr2.effortPerc);
+          } else {
+            return !_isAscending ? tr2.evaluation.compareTo(tr1.evaluation) : tr1.evaluation.compareTo(tr2.evaluation);
+          }
+        });
+        break;
+      case 12:
+        users.sort((tr1, tr2) {
+          if (_thresholdUnitFilter != -2 && _foundingUnitFilter != -2) {
+            return !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort);
+          } else {
+            return !_isAscending ? tr2.evaluation.compareTo(tr1.evaluation) : tr1.evaluation.compareTo(tr2.evaluation);
+          }
+        });
+        break;
+      case 13:
+        users.sort((tr1, tr2) {
+          return !_isAscending ? tr2.evaluation.compareTo(tr1.evaluation) : tr1.evaluation.compareTo(tr2.evaluation);
         });
         break;
     }
@@ -209,34 +237,31 @@ class _UsersState extends State<Users> {
           _isAscending = ascending;
         }),
       ),
-      dataColumn(context, getText('type')),
+      ...[
+        getText('joinDate'),
+        getText('phone'),
+        getText('type'),
+      ].map((e) => dataColumn(context, e)),
       ...[
         getText('capital'),
         getText('money'),
         getText('threshold'),
         getText('founding'),
         getText('effort'),
-      ]
-          .map(
-            (e) => sortableDataColumn(
-              context,
-              e,
-              (columnIndex, ascending) => setState(() {
-                _sortColumnIndex = columnIndex;
-                _isAscending = ascending;
-              }),
-            ),
-          )
-          .toList(),
-      ...[
         if (_thresholdUnitFilter != -2) '${getText('threshold')} %',
         if (_foundingUnitFilter != -2) '${getText('founding')} %',
-        if (_effortUnitFilter != -2) ...[
-          '${getText('effort')} %',
-          getText('evaluation')
-        ],
-        ''
-      ].map((e) => dataColumn(context, e)).toList(),
+        if (_effortUnitFilter != -2) ...['${getText('effort')} %', getText('evaluation')],
+      ].map(
+        (e) => sortableDataColumn(
+          context,
+          e,
+          (columnIndex, ascending) => setState(() {
+            _sortColumnIndex = columnIndex;
+            _isAscending = ascending;
+          }),
+        ),
+      ),
+      ...[''].map((e) => dataColumn(context, e)),
     ];
 
     List<DataRow> rows = users
@@ -244,88 +269,67 @@ class _UsersState extends State<Users> {
               onSelectChanged: (value) async => await createDialog(
                 context,
                 AddTransaction(
-                    sourceTab: 'us',
-                    userId: user.userId,
-                    selectedName: user.name,
-                    userCapital: user.capital),
+                  sourceTab: 'us',
+                  userId: user.userId,
+                  selectedName: user.name,
+                  userCapital: user.capital,
+                  selectedTransactionType: 1,
+                ),
                 false,
               ),
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, user.name, textAlign: TextAlign.start),
-                dataCell(
-                    context,
-                    user.type == 'money'
-                        ? getText('money')
-                        : user.type == 'effort'
-                            ? getText('effort')
-                            : getText('both')),
+                dataCell(context, myDateFormate.format(user.joinDate)),
+                dataCell(context, user.phone),
+                dataCell(context, getText(user.type)),
                 dataCell(
                   context,
                   user.type == 'effort' ? '/' : myCurrency.format(user.capital),
-                  textAlign:
-                      user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
                 ),
                 dataCell(
                   context,
                   user.type == 'effort' ? '/' : myCurrency.format(user.money),
-                  textAlign:
-                      user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
                 ),
                 dataCell(
                   context,
-                  user.type == 'effort'
-                      ? '/'
-                      : myCurrency.format(user.threshold),
-                  textAlign:
-                      user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  user.type == 'effort' ? '/' : myCurrency.format(user.threshold),
+                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
                 ),
                 dataCell(
                   context,
-                  user.type == 'effort'
-                      ? '/'
-                      : myCurrency.format(user.founding),
-                  textAlign:
-                      user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  user.type == 'effort' ? '/' : myCurrency.format(user.founding),
+                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
                 ),
                 dataCell(
                   context,
                   user.type == 'money' ? '/' : myCurrency.format(user.effort),
-                  textAlign:
-                      user.type == 'money' ? TextAlign.center : TextAlign.end,
+                  textAlign: user.type == 'money' ? TextAlign.center : TextAlign.end,
                 ),
                 if (_thresholdUnitFilter != -2)
                   dataCell(
                       context,
                       user.thresholds
-                          .firstWhere((element) =>
-                              element.unitId == _thresholdUnitFilter)
+                          .firstWhere((element) => element.unitId == _thresholdUnitFilter)
                           .thresholdPerc
                           .toString()),
                 if (_foundingUnitFilter != -2)
                   dataCell(
                       context,
                       user.foundings
-                          .firstWhere((element) =>
-                              element.unitId == _foundingUnitFilter)
+                          .firstWhere((element) => element.unitId == _foundingUnitFilter)
                           .foundingPerc
                           .toString()),
                 if (_effortUnitFilter != -2) ...[
                   dataCell(
                     context,
-                    user.efforts
-                        .firstWhere(
-                            (element) => element.unitId == _effortUnitFilter)
-                        .effortPerc
-                        .toString(),
+                    user.efforts.firstWhere((element) => element.unitId == _effortUnitFilter).effortPerc.toString(),
                   ),
                   dataCell(
                     context,
-                    user.efforts
-                        .firstWhere(
-                            (element) => element.unitId == _effortUnitFilter)
-                        .evaluation
-                        .toString(),
+                    user.efforts.firstWhere((element) => element.unitId == _effortUnitFilter).evaluation.toString(),
                   ),
                 ],
                 DataCell(IconButton(
@@ -371,8 +375,7 @@ class _UsersState extends State<Users> {
                   child: isloading
                       ? myPogress()
                       : users.isEmpty
-                          ? SizedBox(
-                              width: getWidth(context, .45), child: emptyList())
+                          ? SizedBox(width: getWidth(context, .45), child: emptyList())
                           : users.isEmpty
                               ? emptyList()
                               : SingleChildScrollView(
@@ -416,9 +419,7 @@ class _UsersState extends State<Users> {
                   _search = item;
                 }),
                 optionsBuilder: (textEditingValue) {
-                  return userNames.where((item) => item
-                      .toLowerCase()
-                      .contains(textEditingValue.text.toLowerCase()));
+                  return userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
                 },
                 fieldViewBuilder: (
                   context,
@@ -431,12 +432,8 @@ class _UsersState extends State<Users> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(
-                            color: _controller.text.isEmpty
-                                ? Colors.grey
-                                : winTileColor),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(12)),
+                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : winTileColor),
+                        borderRadius: const BorderRadius.all(Radius.circular(12)),
                       ),
                       child: TextFormField(
                         controller: _controller,
@@ -444,8 +441,7 @@ class _UsersState extends State<Users> {
                         style: const TextStyle(fontSize: 18.0),
                         onChanged: ((value) => setState(() {})),
                         decoration: InputDecoration(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 8.0),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
                           hintText: getText('search'),
                           border: const OutlineInputBorder(
                             borderSide: BorderSide.none,
@@ -475,9 +471,8 @@ class _UsersState extends State<Users> {
                     child: Material(
                       elevation: 8.0,
                       child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                            maxHeight: getHeight(context, .2),
-                            maxWidth: getWidth(context, .22)),
+                        constraints:
+                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .22)),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,
@@ -549,8 +544,7 @@ class _UsersState extends State<Users> {
               value: _thresholdUnitFilter,
               width: getWidth(context, .14),
               color: _thresholdUnitFilter == -2 ? Colors.grey : winTileColor,
-              items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units)
-                  .map((item) {
+              items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
                 return DropdownMenuItem(
                   value: item.unitId,
                   alignment: AlignmentDirectional.center,
@@ -581,8 +575,7 @@ class _UsersState extends State<Users> {
               value: _foundingUnitFilter,
               width: getWidth(context, .14),
               color: _foundingUnitFilter == -2 ? Colors.grey : winTileColor,
-              items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units)
-                  .map((item) {
+              items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
                 return DropdownMenuItem(
                   value: item.unitId,
                   alignment: AlignmentDirectional.center,
@@ -647,6 +640,7 @@ class _UsersState extends State<Users> {
                   _thresholdUnitFilter = -2;
                   _foundingUnitFilter = -2;
                   _effortUnitFilter = -2;
+                  if (_sortColumnIndex! > 9) _sortColumnIndex = 1;
                 }),
                 icon: Icon(
                   Icons.update,

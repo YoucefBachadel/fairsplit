@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:fairsplit/classes/transactio_others.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,11 +20,15 @@ class Transactions extends StatefulWidget {
 }
 
 class _TransactionsState extends State<Transactions> {
-  List<Transaction> allTransactions = [],
-      transactions = [],
-      allCaisseTransactions = [];
+  List<Transaction> allTransactions = [], transactions = [], allCaisseTransactions = [];
   List<TransactionSP> allTransactionsSP = [], transactionsSP = [];
+  List<TransactionOther> allLoanTransactions = [],
+      allDepositTransactions = [],
+      loanTransactions = [],
+      depositTransactions = [];
   var userNames = <String>{};
+  var loanNames = <String>{};
+  var depositNames = <String>{};
   var years = <String>{'1900'};
 
   bool isloading = true;
@@ -36,16 +41,21 @@ class _TransactionsState extends State<Transactions> {
   double totalIn = 0;
   double totalOut = 0;
 
-  final DateTime today =
-      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+  final DateTime today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
   DateTime _fromDate = DateTime.now();
   DateTime _toDate = DateTime.now();
 
-  int? _sortColumnIndexTrans = 3;
+  int? _sortColumnIndexTrans = 2;
   bool _isAscendingTrans = false;
-  int? _sortColumnIndexTransSP = 3;
+  int? _sortColumnIndexTransCaisse = 3;
+  bool _isAscendingTransCaisse = false;
+  int? _sortColumnIndexTransSP = 2;
   bool _isAscendingTransSP = false;
+  int? _sortColumnIndexTransLoan = 2;
+  bool _isAscendingTransLoan = false;
+  int? _sortColumnIndexTransDeposit = 2;
+  bool _isAscendingTransDeposit = false;
 
   TextEditingController _controller = TextEditingController();
 
@@ -95,11 +105,11 @@ class _TransactionsState extends State<Transactions> {
         allCaisseTransactions.add(Transaction(
           transactionId: int.parse(ele['transactionId']),
           userName: ele['category'],
+          source: 'caisse',
           year: int.parse(ele['year']),
           date: DateTime.parse(ele['date']),
           type: ele['type'],
           amount: double.parse(ele['amount']),
-          soldeUser: 0,
           soldeCaisse: double.parse(ele['solde']),
           note: ele['note'],
         ));
@@ -108,7 +118,49 @@ class _TransactionsState extends State<Transactions> {
       years.add(ele['year']);
     }
 
+    params = {'sql': 'SELECT * FROM TransactionOthers;'};
+    res = await http.post(selectUrl, body: params);
+    data = (json.decode(res.body))['data'];
+
+    for (var ele in data) {
+      TransactionOther other = TransactionOther(
+        transactionId: int.parse(ele['transactionId']),
+        userName: ele['userName'],
+        category: ele['category'],
+        year: int.parse(ele['year']),
+        date: DateTime.parse(ele['date']),
+        type: ele['type'],
+        amount: double.parse(ele['amount']),
+        soldeCaisse: double.parse(ele['soldeCaisse']),
+        note: ele['note'],
+      );
+      Transaction trans = Transaction(
+        transactionId: other.transactionId,
+        userName: other.userName,
+        source: other.category,
+        year: other.year,
+        date: other.date,
+        type: other.type,
+        amount: other.amount,
+        soldeCaisse: other.soldeCaisse,
+        note: other.note,
+      );
+
+      if (other.category == 'loan') {
+        allLoanTransactions.add(other);
+        loanNames.add(other.userName);
+      } else {
+        allDepositTransactions.add(other);
+        depositNames.add(other.userName);
+      }
+
+      allCaisseTransactions.add(trans);
+      years.add(other.year.toString());
+    }
+
     userNames = SplayTreeSet.from(userNames);
+    loanNames = SplayTreeSet.from(loanNames);
+    depositNames = SplayTreeSet.from(depositNames);
     years = SplayTreeSet.from(years, (a, b) => b.compareTo(a));
 
     _fromDate = DateTime(int.parse(years.last));
@@ -165,73 +217,156 @@ class _TransactionsState extends State<Transactions> {
     onSortTransSP();
   }
 
+  void filterTransactionLoan() {
+    loanTransactions.clear();
+    for (var trans in allLoanTransactions) {
+      if ((_search.isEmpty || trans.userName == _search) &&
+          (_year == 'tout' || trans.year.toString() == _year) &&
+          (_type == 'tout' || trans.type == _type) &&
+          (trans.date.isAfter(_fromDate) || trans.date == _fromDate) &&
+          (trans.date.isBefore(_toDate) || trans.date == _toDate)) {
+        loanTransactions.add(trans);
+        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
+      }
+    }
+    onSortTransLoan();
+  }
+
+  void filterTransactionDeposit() {
+    depositTransactions.clear();
+    for (var trans in allDepositTransactions) {
+      if ((_search.isEmpty || trans.userName == _search) &&
+          (_year == 'tout' || trans.year.toString() == _year) &&
+          (_type == 'tout' || trans.type == _type) &&
+          (trans.date.isAfter(_fromDate) || trans.date == _fromDate) &&
+          (trans.date.isBefore(_toDate) || trans.date == _toDate)) {
+        depositTransactions.add(trans);
+        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
+      }
+    }
+    onSortTransDeposit();
+  }
+
   void onSortTrans() {
     switch (_sortColumnIndexTrans) {
       case 1:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTrans
-              ? tr2.userName.compareTo(tr1.userName)
-              : tr1.userName.compareTo(tr2.userName);
+          return !_isAscendingTrans ? tr2.userName.compareTo(tr1.userName) : tr1.userName.compareTo(tr2.userName);
         });
         break;
-      case 3:
+      case 2:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTrans
-              ? tr2.date.compareTo(tr1.date)
-              : tr1.date.compareTo(tr2.date);
+          return !_isAscendingTrans ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
         });
+        break;
+      case 4:
+        transactions.sort(
+            (tr1, tr2) => !_isAscendingTrans ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
+        transactions.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
         break;
       case 5:
-        transactions.sort((tr1, tr2) {
-          return !_isAscendingTrans
-              ? tr2.amount.compareTo(tr1.amount)
-              : tr1.amount.compareTo(tr2.amount);
-        });
+        transactions.sort(
+            (tr1, tr2) => !_isAscendingTrans ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
+        transactions.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
         break;
     }
   }
 
   void onSortTransCaisse() {
-    switch (_sortColumnIndexTrans) {
+    switch (_sortColumnIndexTransCaisse) {
       case 1:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTrans
-              ? tr2.userName.compareTo(tr1.userName)
-              : tr1.userName.compareTo(tr2.userName);
+          return !_isAscendingTransCaisse ? tr2.userName.compareTo(tr1.userName) : tr1.userName.compareTo(tr2.userName);
         });
         break;
       case 3:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTrans
-              ? tr2.date.compareTo(tr1.date)
-              : tr1.date.compareTo(tr2.date);
+          return !_isAscendingTransCaisse ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
         });
         break;
       case 5:
-        transactions.sort((tr1, tr2) {
-          return !_isAscendingTrans
-              ? tr2.amount.compareTo(tr1.amount)
-              : tr1.amount.compareTo(tr2.amount);
-        });
+        transactions.sort((tr1, tr2) =>
+            !_isAscendingTransCaisse ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
+        transactions.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
+        break;
+      case 6:
+        transactions.sort((tr1, tr2) =>
+            !_isAscendingTransCaisse ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
+        transactions.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
         break;
     }
   }
 
   void onSortTransSP() {
     switch (_sortColumnIndexTransSP) {
-      case 3:
+      case 2:
         transactionsSP.sort((tr1, tr2) {
-          return !_isAscendingTransSP
-              ? tr2.date.compareTo(tr1.date)
-              : tr1.date.compareTo(tr2.date);
+          return !_isAscendingTransSP ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
         });
+        break;
+      case 4:
+        transactionsSP.sort((tr1, tr2) {
+          return !_isAscendingTransSP ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount);
+        });
+        transactionsSP.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
         break;
       case 5:
         transactionsSP.sort((tr1, tr2) {
-          return !_isAscendingTransSP
-              ? tr2.amount.compareTo(tr1.amount)
-              : tr1.amount.compareTo(tr2.amount);
+          return !_isAscendingTransSP ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount);
         });
+        transactionsSP.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
+        break;
+    }
+  }
+
+  void onSortTransLoan() {
+    switch (_sortColumnIndexTransLoan) {
+      case 1:
+        loanTransactions.sort((tr1, tr2) {
+          return !_isAscendingTransLoan ? tr2.userName.compareTo(tr1.userName) : tr1.userName.compareTo(tr2.userName);
+        });
+        break;
+      case 2:
+        loanTransactions.sort((tr1, tr2) {
+          return !_isAscendingTransLoan ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
+        });
+        break;
+      case 4:
+        loanTransactions.sort(
+            (tr1, tr2) => !_isAscendingTransLoan ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
+        loanTransactions.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
+        break;
+      case 5:
+        loanTransactions.sort(
+            (tr1, tr2) => !_isAscendingTransLoan ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
+        loanTransactions.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
+        break;
+    }
+  }
+
+  void onSortTransDeposit() {
+    switch (_sortColumnIndexTransDeposit) {
+      case 1:
+        depositTransactions.sort((tr1, tr2) {
+          return !_isAscendingTransDeposit
+              ? tr2.userName.compareTo(tr1.userName)
+              : tr1.userName.compareTo(tr2.userName);
+        });
+        break;
+      case 2:
+        depositTransactions.sort((tr1, tr2) {
+          return !_isAscendingTransDeposit ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
+        });
+        break;
+      case 4:
+        depositTransactions.sort((tr1, tr2) =>
+            !_isAscendingTransDeposit ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
+        depositTransactions.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
+        break;
+      case 5:
+        depositTransactions.sort((tr1, tr2) =>
+            !_isAscendingTransDeposit ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
+        depositTransactions.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
         break;
     }
   }
@@ -258,8 +393,12 @@ class _TransactionsState extends State<Transactions> {
       filterTransactionCaisse();
     } else if (transactionCategory == 'users') {
       filterTransaction();
-    } else {
+    } else if (transactionCategory == 'specials') {
       filterTransactionSP();
+    } else if (transactionCategory == 'loans') {
+      filterTransactionLoan();
+    } else {
+      filterTransactionDeposit();
     }
 
     List<DataColumn> columnsTransCaisse = [
@@ -268,31 +407,31 @@ class _TransactionsState extends State<Transactions> {
           context,
           getText('name'),
           (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTrans = columnIndex;
-                _isAscendingTrans = ascending;
+                _sortColumnIndexTransCaisse = columnIndex;
+                _isAscendingTransCaisse = ascending;
               })),
-      dataColumn(context, getText('year')),
+      dataColumn(context, getText('source')),
       sortableDataColumn(
           context,
           getText('date'),
           (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTrans = columnIndex;
-                _isAscendingTrans = ascending;
+                _sortColumnIndexTransCaisse = columnIndex;
+                _isAscendingTransCaisse = ascending;
               })),
       dataColumn(context, getText('type')),
       sortableDataColumn(
           context,
           getText('in'),
           (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTrans = columnIndex;
-                _isAscendingTrans = ascending;
+                _sortColumnIndexTransCaisse = columnIndex;
+                _isAscendingTransCaisse = ascending;
               })),
       sortableDataColumn(
           context,
           getText('out'),
           (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTrans = columnIndex;
-                _isAscendingTrans = ascending;
+                _sortColumnIndexTransCaisse = columnIndex;
+                _isAscendingTransCaisse = ascending;
               })),
       dataColumn(context, getText('soldeCaisse')),
       dataColumn(context, getText('note')),
@@ -306,7 +445,6 @@ class _TransactionsState extends State<Transactions> {
                 _sortColumnIndexTrans = columnIndex;
                 _isAscendingTrans = ascending;
               })),
-      dataColumn(context, getText('year')),
       sortableDataColumn(
           context,
           getText('date'),
@@ -336,7 +474,6 @@ class _TransactionsState extends State<Transactions> {
     List<DataColumn> columnsTransSP = [
       dataColumn(context, ''),
       dataColumn(context, getText('category')),
-      dataColumn(context, getText('year')),
       sortableDataColumn(
           context,
           getText('date'),
@@ -362,54 +499,99 @@ class _TransactionsState extends State<Transactions> {
       dataColumn(context, getText('solde')),
       dataColumn(context, getText('note')),
     ];
+    List<DataColumn> columnsTransLoan = [
+      dataColumn(context, ''),
+      sortableDataColumn(
+          context,
+          getText('name'),
+          (columnIndex, ascending) => setState(() {
+                _sortColumnIndexTransLoan = columnIndex;
+                _isAscendingTransLoan = ascending;
+              })),
+      sortableDataColumn(
+          context,
+          getText('date'),
+          (columnIndex, ascending) => setState(() {
+                _sortColumnIndexTransLoan = columnIndex;
+                _isAscendingTransLoan = ascending;
+              })),
+      dataColumn(context, getText('type')),
+      sortableDataColumn(
+          context,
+          getText('in'),
+          (columnIndex, ascending) => setState(() {
+                _sortColumnIndexTransLoan = columnIndex;
+                _isAscendingTransLoan = ascending;
+              })),
+      sortableDataColumn(
+          context,
+          getText('out'),
+          (columnIndex, ascending) => setState(() {
+                _sortColumnIndexTransLoan = columnIndex;
+                _isAscendingTransLoan = ascending;
+              })),
+      dataColumn(context, getText('soldeCaisse')),
+      dataColumn(context, getText('note')),
+    ];
+    List<DataColumn> columnsTransDeposit = [
+      dataColumn(context, ''),
+      sortableDataColumn(
+          context,
+          getText('name'),
+          (columnIndex, ascending) => setState(() {
+                _sortColumnIndexTransDeposit = columnIndex;
+                _isAscendingTransDeposit = ascending;
+              })),
+      sortableDataColumn(
+          context,
+          getText('date'),
+          (columnIndex, ascending) => setState(() {
+                _sortColumnIndexTransDeposit = columnIndex;
+                _isAscendingTransDeposit = ascending;
+              })),
+      dataColumn(context, getText('type')),
+      sortableDataColumn(
+          context,
+          getText('in'),
+          (columnIndex, ascending) => setState(() {
+                _sortColumnIndexTransDeposit = columnIndex;
+                _isAscendingTransDeposit = ascending;
+              })),
+      sortableDataColumn(
+          context,
+          getText('out'),
+          (columnIndex, ascending) => setState(() {
+                _sortColumnIndexTransDeposit = columnIndex;
+                _isAscendingTransDeposit = ascending;
+              })),
+      dataColumn(context, getText('soldeCaisse')),
+      dataColumn(context, getText('note')),
+    ];
 
     List<DataRow> rowsTransCaisse = transactions
         .map((transaction) => DataRow(
               cells: [
-                dataCell(context,
-                    (transactions.indexOf(transaction) + 1).toString()),
-                dataCell(context, transaction.userName,
-                    textAlign: TextAlign.start),
-                dataCell(context, transaction.year.toString()),
+                dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
+                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context, getText(transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(
-                    context,
-                    transaction.type == 'in'
-                        ? transactionsTypes['in'] ?? ''
-                        : transactionsTypes['out'] ?? ''),
-                dataCell(
-                    context,
-                    transaction.type == 'in'
-                        ? myCurrency.format(transaction.amount)
-                        : '/',
-                    textAlign: transaction.type == 'in'
-                        ? TextAlign.end
-                        : TextAlign.center),
-                dataCell(
-                    context,
-                    transaction.type == 'out'
-                        ? myCurrency.format(transaction.amount)
-                        : '/',
-                    textAlign: transaction.type == 'out'
-                        ? TextAlign.end
-                        : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.soldeCaisse),
-                    textAlign: TextAlign.end),
+                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
+                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
+                dataCell(context, myCurrency.format(transaction.soldeCaisse), textAlign: TextAlign.end),
                 transaction.note.length < 40
                     ? dataCell(context, transaction.note)
                     : DataCell(
                         ConstrainedBox(
-                          constraints:
-                              BoxConstraints(maxWidth: getWidth(context, .22)),
+                          constraints: BoxConstraints(maxWidth: getWidth(context, .22)),
                           child: Tooltip(
                             message: transaction.note,
-                            textStyle: Theme.of(context)
-                                .textTheme
-                                .subtitle1
-                                ?.copyWith(color: Colors.white),
+                            textStyle: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.white),
                             padding: const EdgeInsets.all(8.0),
-                            margin:
-                                const EdgeInsets.only(left: 800, right: 100),
+                            margin: const EdgeInsets.only(left: 800, right: 100),
                             child: Text(
                               transaction.note,
                               textAlign: TextAlign.start,
@@ -425,52 +607,27 @@ class _TransactionsState extends State<Transactions> {
     List<DataRow> rowsTrans = transactions
         .map((transaction) => DataRow(
               cells: [
-                dataCell(context,
-                    (transactions.indexOf(transaction) + 1).toString()),
-                dataCell(context, transaction.userName,
-                    textAlign: TextAlign.start),
-                dataCell(context, transaction.year.toString()),
+                dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
+                dataCell(context, transaction.userName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(
-                    context,
-                    transaction.type == 'in'
-                        ? transactionsTypes['in'] ?? ''
-                        : transactionsTypes['out'] ?? ''),
-                dataCell(
-                    context,
-                    transaction.type == 'in'
-                        ? myCurrency.format(transaction.amount)
-                        : '/',
-                    textAlign: transaction.type == 'in'
-                        ? TextAlign.end
-                        : TextAlign.center),
-                dataCell(
-                    context,
-                    transaction.type == 'out'
-                        ? myCurrency.format(transaction.amount)
-                        : '/',
-                    textAlign: transaction.type == 'out'
-                        ? TextAlign.end
-                        : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.soldeUser),
-                    textAlign: TextAlign.end),
-                dataCell(context, myCurrency.format(transaction.soldeCaisse),
-                    textAlign: TextAlign.end),
+                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
+                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
+                dataCell(context, myCurrency.format(transaction.soldeUser), textAlign: TextAlign.end),
+                dataCell(context, myCurrency.format(transaction.soldeCaisse), textAlign: TextAlign.end),
                 transaction.note.length < 40
                     ? dataCell(context, transaction.note)
                     : DataCell(
                         ConstrainedBox(
-                          constraints:
-                              BoxConstraints(maxWidth: getWidth(context, .22)),
+                          constraints: BoxConstraints(maxWidth: getWidth(context, .22)),
                           child: Tooltip(
                             message: transaction.note,
-                            textStyle: Theme.of(context)
-                                .textTheme
-                                .subtitle1
-                                ?.copyWith(color: Colors.white),
+                            textStyle: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.white),
                             padding: const EdgeInsets.all(8.0),
-                            margin:
-                                const EdgeInsets.only(left: 800, right: 100),
+                            margin: const EdgeInsets.only(left: 800, right: 100),
                             child: Text(
                               transaction.note,
                               textAlign: TextAlign.start,
@@ -486,49 +643,96 @@ class _TransactionsState extends State<Transactions> {
     List<DataRow> rowsTransSP = transactionsSP
         .map((transaction) => DataRow(
               cells: [
-                dataCell(context,
-                    (transactionsSP.indexOf(transaction) + 1).toString()),
-                dataCell(context, getText(transaction.category),
-                    textAlign: TextAlign.start),
-                dataCell(context, transaction.year.toString()),
+                dataCell(context, (transactionsSP.indexOf(transaction) + 1).toString()),
+                dataCell(context, getText(transaction.category), textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(
-                    context,
-                    transaction.type == 'in'
-                        ? transactionsTypes['in'] ?? ''
-                        : transactionsTypes['out'] ?? ''),
-                dataCell(
-                    context,
-                    transaction.type == 'in'
-                        ? myCurrency.format(transaction.amount)
-                        : '/',
-                    textAlign: transaction.type == 'in'
-                        ? TextAlign.end
-                        : TextAlign.center),
-                dataCell(
-                    context,
-                    transaction.type == 'out'
-                        ? myCurrency.format(transaction.amount)
-                        : '/',
-                    textAlign: transaction.type == 'out'
-                        ? TextAlign.end
-                        : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.solde),
-                    textAlign: TextAlign.end),
+                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
+                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
+                dataCell(context, myCurrency.format(transaction.solde), textAlign: TextAlign.end),
                 transaction.note.length < 40
                     ? dataCell(context, transaction.note)
                     : DataCell(
                         ConstrainedBox(
-                          constraints:
-                              BoxConstraints(maxWidth: getWidth(context, .22)),
+                          constraints: BoxConstraints(maxWidth: getWidth(context, .22)),
                           child: Tooltip(
                             message: transaction.note,
-                            textStyle: Theme.of(context)
-                                .textTheme
-                                .subtitle1
-                                ?.copyWith(color: Colors.white),
+                            textStyle: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.white),
                             padding: const EdgeInsets.all(8.0),
                             // margin: const EdgeInsets.only(left: 800, right: 100),
+                            child: Text(
+                              transaction.note,
+                              textAlign: TextAlign.start,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.subtitle1,
+                            ),
+                          ),
+                        ),
+                      ),
+              ],
+            ))
+        .toList();
+    List<DataRow> rowsTransLoan = loanTransactions
+        .map((transaction) => DataRow(
+              cells: [
+                dataCell(context, (loanTransactions.indexOf(transaction) + 1).toString()),
+                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context, myDateFormate.format(transaction.date)),
+                dataCell(
+                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
+                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
+                dataCell(context, myCurrency.format(transaction.soldeCaisse), textAlign: TextAlign.end),
+                transaction.note.length < 40
+                    ? dataCell(context, transaction.note)
+                    : DataCell(
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: getWidth(context, .22)),
+                          child: Tooltip(
+                            message: transaction.note,
+                            textStyle: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.white),
+                            padding: const EdgeInsets.all(8.0),
+                            margin: const EdgeInsets.only(left: 800, right: 100),
+                            child: Text(
+                              transaction.note,
+                              textAlign: TextAlign.start,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.subtitle1,
+                            ),
+                          ),
+                        ),
+                      ),
+              ],
+            ))
+        .toList();
+    List<DataRow> rowsTransDeposit = depositTransactions
+        .map((transaction) => DataRow(
+              cells: [
+                dataCell(context, (depositTransactions.indexOf(transaction) + 1).toString()),
+                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context, myDateFormate.format(transaction.date)),
+                dataCell(
+                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
+                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
+                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
+                dataCell(context, myCurrency.format(transaction.soldeCaisse), textAlign: TextAlign.end),
+                transaction.note.length < 40
+                    ? dataCell(context, transaction.note)
+                    : DataCell(
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: getWidth(context, .22)),
+                          child: Tooltip(
+                            message: transaction.note,
+                            textStyle: Theme.of(context).textTheme.subtitle1?.copyWith(color: Colors.white),
+                            padding: const EdgeInsets.all(8.0),
+                            margin: const EdgeInsets.only(left: 800, right: 100),
                             child: Text(
                               transaction.note,
                               textAlign: TextAlign.start,
@@ -574,51 +778,64 @@ class _TransactionsState extends State<Transactions> {
               Expanded(
                   child: isloading
                       ? myPogress()
-                      : transactionCategory == 'caisse'
-                          ? transactions.isEmpty
-                              ? emptyList()
-                              : SingleChildScrollView(
-                                  child: dataTable(
-                                    isAscending: _isAscendingTrans,
-                                    sortColumnIndex: _sortColumnIndexTrans,
-                                    columns: columnsTransCaisse,
-                                    rows: rowsTransCaisse,
-                                  ),
-                                )
-                          : transactionCategory == 'users'
-                              ? transactions.isEmpty
-                                  ? emptyList()
-                                  : SingleChildScrollView(
-                                      child: dataTable(
+                      : SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              if (transactionCategory == 'caisse')
+                                transactions.isEmpty
+                                    ? emptyList()
+                                    : dataTable(
+                                        isAscending: _isAscendingTransCaisse,
+                                        sortColumnIndex: _sortColumnIndexTransCaisse,
+                                        columns: columnsTransCaisse,
+                                        rows: rowsTransCaisse,
+                                      ),
+                              if (transactionCategory == 'users')
+                                transactions.isEmpty
+                                    ? emptyList()
+                                    : dataTable(
                                         isAscending: _isAscendingTrans,
                                         sortColumnIndex: _sortColumnIndexTrans,
                                         columns: columnsTrans,
                                         rows: rowsTrans,
                                       ),
-                                    )
-                              : transactionsSP.isEmpty
-                                  ? emptyList()
-                                  : SingleChildScrollView(
-                                      child: dataTable(
-                                          isAscending: _isAscendingTransSP,
-                                          sortColumnIndex:
-                                              _sortColumnIndexTransSP,
-                                          columns: columnsTransSP,
-                                          rows: rowsTransSP),
-                                    )),
+                              if (transactionCategory == 'specials')
+                                transactionsSP.isEmpty
+                                    ? emptyList()
+                                    : dataTable(
+                                        isAscending: _isAscendingTransSP,
+                                        sortColumnIndex: _sortColumnIndexTransSP,
+                                        columns: columnsTransSP,
+                                        rows: rowsTransSP),
+                              if (transactionCategory == 'loans')
+                                loanTransactions.isEmpty
+                                    ? emptyList()
+                                    : dataTable(
+                                        isAscending: _isAscendingTransLoan,
+                                        sortColumnIndex: _sortColumnIndexTransLoan,
+                                        columns: columnsTransLoan,
+                                        rows: rowsTransLoan),
+                              if (transactionCategory == 'deposits')
+                                depositTransactions.isEmpty
+                                    ? emptyList()
+                                    : dataTable(
+                                        isAscending: _isAscendingTransDeposit,
+                                        sortColumnIndex: _sortColumnIndexTransDeposit,
+                                        columns: columnsTransDeposit,
+                                        rows: rowsTransDeposit),
+                            ],
+                          ),
+                        )),
               const SizedBox(height: 8.0),
               SizedBox(width: getWidth(context, .52), child: const Divider()),
               const SizedBox(height: 8.0),
               Row(
                 children: [
-                  myText(
-                      '${getText('totalIn')} :      ${myCurrency.format(totalIn)}'),
+                  myText('${getText('totalIn')} :      ${myCurrency.format(totalIn)}'),
                   SizedBox(width: getWidth(context, .05)),
-                  myText(
-                      '${getText('totalOut')} :      ${myCurrency.format(totalOut)}'),
+                  myText('${getText('totalOut')} :      ${myCurrency.format(totalOut)}'),
                   SizedBox(width: getWidth(context, .05)),
-                  myText(
-                      '${getText('total')} :      ${myCurrency.format(totalIn - totalOut)}'),
+                  myText('${getText('total')} :      ${myCurrency.format(totalIn - totalOut)}'),
                 ],
               ),
               const SizedBox(height: 8.0),
@@ -647,166 +864,159 @@ class _TransactionsState extends State<Transactions> {
           }).toList(),
           onChanged: (value) => setState(() {
             transactionCategory = value.toString();
-            if (transactionCategory == 'caisse') {
-              _compt = 'tout';
-              _controller.clear();
-              _search = '';
-            } else if (transactionCategory == 'users') {
-              _compt = 'tout';
-            } else {
-              _controller.clear();
-              _search = '';
-            }
+            _search = '';
+            _controller.clear();
+            _compt = 'tout';
+            _type = 'tout';
+            _year = 'tout';
+            _fromDate = DateTime(int.parse(years.last));
+            _toDate = today.add(const Duration(seconds: 86399));
           }),
         ),
         const SizedBox(width: 8.0),
         const SizedBox(height: 40, child: VerticalDivider()),
         const SizedBox(width: 8.0),
-        transactionCategory == 'caisse'
-            ? const SizedBox()
-            : transactionCategory == 'users'
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Text(
-                          getText('name'),
-                          style: const TextStyle(fontSize: 14),
+        if (transactionCategory == 'specials')
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('category'),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              myDropDown(
+                context,
+                value: _compt,
+                color: _compt == 'tout' ? Colors.grey : winTileColor,
+                items: comptsSearch.entries.map((item) {
+                  return DropdownMenuItem(
+                    value: getKeyFromValue(item.value),
+                    alignment: AlignmentDirectional.center,
+                    child: Text(item.value),
+                  );
+                }).toList(),
+                onChanged: (value) => setState(() {
+                  _compt = value.toString();
+                }),
+              ),
+            ],
+          ),
+        if (transactionCategory == 'users' || transactionCategory == 'loans' || transactionCategory == 'deposits')
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('name'),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              SizedBox(
+                height: getHeight(context, textFeildHeight),
+                width: getWidth(context, .22),
+                child: Autocomplete<String>(
+                  onSelected: (item) => setState(() {
+                    _search = item;
+                  }),
+                  optionsBuilder: (textEditingValue) {
+                    if (transactionCategory == 'users') {
+                      return userNames
+                          .where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                    } else if (transactionCategory == 'loans') {
+                      return loanNames
+                          .where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                    } else {
+                      return depositNames
+                          .where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                    }
+                  },
+                  fieldViewBuilder: (
+                    context,
+                    textEditingController,
+                    focusNode,
+                    onFieldSubmitted,
+                  ) {
+                    _controller = textEditingController;
+                    return Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: _controller.text.isEmpty ? Colors.grey : winTileColor),
+                          borderRadius: const BorderRadius.all(Radius.circular(12)),
                         ),
-                      ),
-                      SizedBox(
-                        height: getHeight(context, textFeildHeight),
-                        width: getWidth(context, .22),
-                        child: Autocomplete<String>(
-                          onSelected: (item) => setState(() {
-                            _search = item;
-                          }),
-                          optionsBuilder: (textEditingValue) {
-                            return userNames.where((item) => item
-                                .toLowerCase()
-                                .contains(textEditingValue.text.toLowerCase()));
-                          },
-                          fieldViewBuilder: (
-                            context,
-                            textEditingController,
-                            focusNode,
-                            onFieldSubmitted,
-                          ) {
-                            _controller = textEditingController;
-                            return Container(
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(
-                                      color: _controller.text.isEmpty
-                                          ? Colors.grey
-                                          : winTileColor),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(12)),
-                                ),
-                                child: TextFormField(
-                                  controller: _controller,
-                                  focusNode: focusNode,
-                                  style: const TextStyle(fontSize: 18.0),
-                                  onChanged: ((value) => setState(() {})),
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    hintText: getText('search'),
-                                    border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(12)),
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.search,
-                                      size: 20.0,
-                                    ),
-                                    suffixIcon: textEditingController
-                                            .text.isEmpty
-                                        ? const SizedBox()
-                                        : IconButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                textEditingController.clear();
-                                                _search = '';
-                                              });
-                                            },
-                                            icon: const Icon(
-                                              Icons.clear,
-                                              size: 20.0,
-                                            )),
-                                  ),
-                                ));
-                          },
-                          optionsViewBuilder: (
-                            BuildContext context,
-                            AutocompleteOnSelected<String> onSelected,
-                            Iterable<String> options,
-                          ) {
-                            return Align(
-                              alignment: Alignment.topLeft,
-                              child: Material(
-                                elevation: 8.0,
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                      maxHeight: getHeight(context, .2),
-                                      maxWidth: getWidth(context, .23)),
-                                  child: ListView.builder(
-                                    padding: EdgeInsets.zero,
-                                    shrinkWrap: true,
-                                    itemCount: options.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      final String option =
-                                          options.elementAt(index);
-                                      return InkWell(
-                                        onTap: () {
-                                          onSelected(option);
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.all(16.0),
-                                          child: myText(option),
-                                        ),
-                                      );
+                        child: TextFormField(
+                          controller: _controller,
+                          focusNode: focusNode,
+                          style: const TextStyle(fontSize: 18.0),
+                          onChanged: ((value) => setState(() {})),
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            hintText: getText('search'),
+                            border: const OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.all(Radius.circular(12)),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              size: 20.0,
+                            ),
+                            suffixIcon: textEditingController.text.isEmpty
+                                ? const SizedBox()
+                                : IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        textEditingController.clear();
+                                        _search = '';
+                                      });
                                     },
-                                  ),
+                                    icon: const Icon(
+                                      Icons.clear,
+                                      size: 20.0,
+                                    )),
+                          ),
+                        ));
+                  },
+                  optionsViewBuilder: (
+                    BuildContext context,
+                    AutocompleteOnSelected<String> onSelected,
+                    Iterable<String> options,
+                  ) {
+                    return Align(
+                      alignment: Alignment.topLeft,
+                      child: Material(
+                        elevation: 8.0,
+                        child: ConstrainedBox(
+                          constraints:
+                              BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .23)),
+                          child: ListView.builder(
+                            padding: EdgeInsets.zero,
+                            shrinkWrap: true,
+                            itemCount: options.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final String option = options.elementAt(index);
+                              return InkWell(
+                                onTap: () {
+                                  onSelected(option);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: myText(option),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ],
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Text(
-                          getText('category'),
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ),
-                      myDropDown(
-                        context,
-                        value: _compt,
-                        color: _compt == 'tout' ? Colors.grey : winTileColor,
-                        items: comptsSearch.entries.map((item) {
-                          return DropdownMenuItem(
-                            value: getKeyFromValue(item.value),
-                            alignment: AlignmentDirectional.center,
-                            child: Text(item.value),
-                          );
-                        }).toList(),
-                        onChanged: (value) => setState(() {
-                          _compt = value.toString();
-                        }),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         const SizedBox(width: 8.0),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -866,8 +1076,7 @@ class _TransactionsState extends State<Transactions> {
                   _fromDate = DateTime(int.parse(_year));
                   _toDate = double.parse(_year) == currentYear
                       ? today.add(const Duration(seconds: 86399))
-                      : DateTime(int.parse(_year) + 1)
-                          .subtract(const Duration(seconds: 1));
+                      : DateTime(int.parse(_year) + 1).subtract(const Duration(seconds: 1));
                 }
               }),
             ),
@@ -889,9 +1098,7 @@ class _TransactionsState extends State<Transactions> {
                 final DateTime? selected = await showDatePicker(
                   context: context,
                   initialDate: _fromDate,
-                  firstDate: _year == 'tout'
-                      ? DateTime(int.parse(years.last))
-                      : DateTime(int.parse(_year)),
+                  firstDate: _year == 'tout' ? DateTime(int.parse(years.last)) : DateTime(int.parse(_year)),
                   lastDate: _toDate,
                 );
                 if (selected != null && selected != _fromDate) {
@@ -908,9 +1115,7 @@ class _TransactionsState extends State<Transactions> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
-                      color: _fromDate == DateTime(int.parse(years.last))
-                          ? Colors.grey
-                          : winTileColor,
+                      color: _fromDate == DateTime(int.parse(years.last)) ? Colors.grey : winTileColor,
                     ),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),
@@ -937,8 +1142,7 @@ class _TransactionsState extends State<Transactions> {
                   firstDate: _fromDate,
                   lastDate: _year == 'tout'
                       ? today.add(const Duration(seconds: 86399))
-                      : DateTime(int.parse(_year) + 1)
-                          .subtract(const Duration(seconds: 1)),
+                      : DateTime(int.parse(_year) + 1).subtract(const Duration(seconds: 1)),
                 );
                 if (selected != null && selected != _toDate) {
                   setState(() {
@@ -954,10 +1158,7 @@ class _TransactionsState extends State<Transactions> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
-                      color:
-                          _toDate == today.add(const Duration(seconds: 86399))
-                              ? Colors.grey
-                              : winTileColor,
+                      color: _toDate == today.add(const Duration(seconds: 86399)) ? Colors.grey : winTileColor,
                     ),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),

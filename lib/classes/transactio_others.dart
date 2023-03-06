@@ -1,6 +1,7 @@
-class TransactionOthers {
+class TransactionOther {
   int transactionId;
   String userName;
+  String category;
   int year;
   String type;
   DateTime date;
@@ -8,9 +9,10 @@ class TransactionOthers {
   double soldeCaisse;
   String note;
 
-  TransactionOthers({
+  TransactionOther({
     required this.transactionId,
     this.userName = '',
+    required this.category,
     required this.year,
     required this.date,
     required this.type,

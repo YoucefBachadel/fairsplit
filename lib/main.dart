@@ -32,8 +32,7 @@ final Map<int, Color> color = {
 void main() => runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'FairSplit',
-      theme: ThemeData(
-          primarySwatch: MaterialColor(0XFF303F9F, color), fontFamily: 'Itim'),
+      theme: ThemeData(primarySwatch: MaterialColor(0XFF303F9F, color), fontFamily: 'Itim'),
       home: const MyApp(index: 'da'),
     ));
 
@@ -110,12 +109,15 @@ class _MyAppState extends State<MyApp> {
                   )
                   .toList(),
               const Spacer(flex: 10),
-              Text(
-                myDateFormate2.format(DateTime.now()),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w500,
+              InkWell(
+                onTap: (() => setState(() {})),
+                child: Text(
+                  myDateFormate2.format(DateTime.now()),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               const SizedBox(height: 16.0),

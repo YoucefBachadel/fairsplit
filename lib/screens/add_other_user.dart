@@ -23,7 +23,18 @@ class _AddOtherUserState extends State<AddOtherUser> {
 
   bool isLoading = false, isDeposit = false;
 
-  void deleteUser(int userId) {}
+  void deleteUser(int userId) async {
+    var sql = 'DELETE FROM OtherUsers WHERE userId = $userId';
+    var res = await http.post(insertUrl, body: {'sql': sql});
+
+    final data = json.decode(res.body);
+    if (data['data'] == true) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+      snackBar(context, 'User deleted successfully');
+    } else {
+      snackBar(context, 'something went wrong!!');
+    }
+  }
 
   @override
   void initState() {
@@ -49,11 +60,11 @@ class _AddOtherUserState extends State<AddOtherUser> {
                 widget.user.userId != -1 && widget.user.rest == 0
                     ? IconButton(
                         onPressed: () => createDialog(
-                            context,
-                            delteConfirmation(context, 'Are you sure you want to delete this user!!', () {
-                              deleteUser(widget.user.userId);
-                            }),
-                            true),
+                              context,
+                              delteConfirmation(context, 'Are you sure you want to delete this user!!',
+                                  () => deleteUser(widget.user.userId)),
+                              true,
+                            ),
                         icon: const Icon(
                           Icons.delete_forever,
                           color: Colors.white,
@@ -88,7 +99,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
           ),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
                   color: scaffoldColor,
                   borderRadius: const BorderRadius.only(
@@ -147,7 +158,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8.0),
+                        mySizedBox(context),
                         Row(
                           children: [
                             Expanded(child: myText(getText('joinDate'))),
@@ -162,7 +173,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                     enabled: false,
                                     onChanged: ((text) {}),
                                   ),
-                                  const SizedBox(width: 5.0),
+                                  mySizedBox(context),
                                   IconButton(
                                     icon: Icon(
                                       Icons.calendar_month,
@@ -187,7 +198,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8.0),
+                        mySizedBox(context),
                         Row(
                           children: [
                             Expanded(child: myText(getText('phone'))),
@@ -205,7 +216,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16.0),
+                        mySizedBox(context),
                         saveButton(),
                       ],
                     ),
@@ -220,10 +231,18 @@ class _AddOtherUserState extends State<AddOtherUser> {
     return myButton(context, onTap: () async {
       if (name != '') {
         String _type = isDeposit ? 'deposit' : 'loan';
-        var params = {
-          'sql':
-              '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);''',
-        };
+        var params = {};
+        if (widget.user.userId == -1) {
+          params = {
+            'sql':
+                '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);''',
+          };
+        } else {
+          params = {
+            'sql':
+                '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};''',
+          };
+        }
 
         // sending a post request to the url
         var res = await http.post(
@@ -236,7 +255,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
 
         if (data['data'] == true) {
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-          snackBar(context, 'Unit added successfully');
+          snackBar(context, widget.user.userId == -1 ? 'User added successfully' : 'User updated successfully');
         } else {
           snackBar(context, 'something went wrong!!');
         }

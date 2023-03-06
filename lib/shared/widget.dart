@@ -21,6 +21,7 @@ Widget myButton(
   IconData icon = Icons.save,
   double? width,
   Color color = Colors.green,
+  Color textColor = Colors.white,
 }) {
   return InkWell(
     onTap: onTap,
@@ -42,7 +43,7 @@ Widget myButton(
                   color: Colors.white,
                 ),
           const SizedBox(width: 6.0),
-          myText(text ?? getText('save'), color: Colors.white)
+          myText(text ?? getText('save'), color: textColor)
         ],
       ),
     ),
@@ -70,11 +71,7 @@ Widget myTextField(
         enabled: enabled,
         style: const TextStyle(fontSize: 22),
         decoration: textInputDecoration(hint),
-        inputFormatters: [
-          isNumberOnly
-              ? DecimalTextInputFormatter()
-              : FilteringTextInputFormatter.deny(r'')
-        ],
+        inputFormatters: [isNumberOnly ? DecimalTextInputFormatter() : FilteringTextInputFormatter.deny(r'')],
       ),
     ),
   );
@@ -155,10 +152,7 @@ Widget delteConfirmation(
         Text(
           getText('deleteConfirmation'),
           textAlign: TextAlign.center,
-          style: Theme.of(context)
-              .textTheme
-              .headline5
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headline5?.copyWith(fontWeight: FontWeight.bold),
         ),
         SizedBox(width: getWidth(context, .16), child: const Divider()),
         const SizedBox(height: 12.0),
@@ -168,11 +162,7 @@ Widget delteConfirmation(
           style: Theme.of(context).textTheme.headline6,
         ),
         const SizedBox(height: 16.0),
-        myButton(context,
-            onTap: onTap,
-            noIcon: true,
-            color: Colors.red,
-            text: getText('confirm'))
+        myButton(context, onTap: onTap, noIcon: true, color: Colors.red, text: getText('confirm'))
       ],
     ),
   );
@@ -201,8 +191,7 @@ void snackBar(BuildContext context, String message, {int duration = 3}) {
     ..showSnackBar(SnackBar(
       elevation: 1.0,
       shape: RoundedRectangleBorder(
-        side: BorderSide(
-            color: Theme.of(context).colorScheme.secondary, width: 2.0),
+        side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 2.0),
         borderRadius: BorderRadius.circular(6.0),
       ),
       content: Text(
@@ -226,8 +215,7 @@ InputDecoration textInputDecoration(String hint) {
   );
 }
 
-DataCell dataCell(BuildContext context, String text,
-    {TextAlign textAlign = TextAlign.center}) {
+DataCell dataCell(BuildContext context, String text, {TextAlign textAlign = TextAlign.center}) {
   return DataCell(
     SizedBox(
       width: double.infinity,
@@ -248,17 +236,13 @@ DataColumn dataColumn(BuildContext context, String text) {
         text,
         textAlign: TextAlign.center,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context)
-            .textTheme
-            .subtitle1
-            ?.copyWith(fontWeight: FontWeight.w500),
+        style: Theme.of(context).textTheme.subtitle1?.copyWith(fontWeight: FontWeight.w500),
       ),
     ),
   );
 }
 
-DataColumn sortableDataColumn(BuildContext context, String text,
-    Function(int columnIndex, bool ascending) onSort) {
+DataColumn sortableDataColumn(BuildContext context, String text, Function(int columnIndex, bool ascending) onSort) {
   return DataColumn(
     onSort: onSort,
     label: Expanded(
@@ -266,10 +250,7 @@ DataColumn sortableDataColumn(BuildContext context, String text,
         text,
         textAlign: TextAlign.center,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context)
-            .textTheme
-            .subtitle1
-            ?.copyWith(fontWeight: FontWeight.w500),
+        style: Theme.of(context).textTheme.subtitle1?.copyWith(fontWeight: FontWeight.w500),
       ),
     ),
   );
@@ -306,8 +287,7 @@ String currencyFormate(double currency) {
 
 class DecimalTextInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     final regEx = RegExp(r'^\d*\.?\d*');
     final String newString = regEx.stringMatch(newValue.text) ?? '';
     return newString == newValue.text ? newValue : oldValue;

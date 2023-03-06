@@ -17,6 +17,10 @@ class User {
   List<Threshold> thresholds;
   List<Founding> foundings;
   List<Effort> efforts;
+  double thresholdPerc; // used in users filter for sort
+  double foundingPerc; // used in users filter for sort
+  double effortPerc; // used in users filter for sort
+  double evaluation; // used in users filter for sort
 
   User({
     this.userId = -1,
@@ -33,6 +37,10 @@ class User {
     List<Threshold>? thresholds,
     List<Founding>? foundings,
     List<Effort>? efforts,
+    this.thresholdPerc = 0,
+    this.foundingPerc = 0,
+    this.effortPerc = 0,
+    this.evaluation = 0,
   })  : joinDate = joinDate ?? DateTime.now(),
         thresholds = thresholds ?? [],
         foundings = foundings ?? [],

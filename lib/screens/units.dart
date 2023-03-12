@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../classes/unit.dart';
+import '../models/unit.dart';
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 import 'add_unit.dart';
 
 class Units extends StatefulWidget {
@@ -28,9 +25,8 @@ class _UnitsState extends State<Units> {
   void _newUnit(BuildContext context, Unit unit) async => await createDialog(context, AddUnit(unit: unit), false);
 
   void loadUnits() async {
-    var params = {'sql': 'SELECT * FROM Units;'};
-    var res = await http.post(selectUrl, body: params);
-    var dataUnits = (json.decode(res.body))['data'];
+    var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM Units;'});
+    var dataUnits = res[0];
     for (var ele in dataUnits) {
       units.add(Unit(
         unitId: int.parse(ele['unitId']),
@@ -78,17 +74,19 @@ class _UnitsState extends State<Units> {
         units.sort((a, b) => _isAscending ? a.capital.compareTo(b.capital) : b.capital.compareTo(a.capital));
         break;
       case 4:
-        units.sort((a, b) => _isAscending ? a.reservePerc.compareTo(b.reservePerc) : b.reservePerc.compareTo(a.reservePerc));
+        units.sort(
+            (a, b) => _isAscending ? a.reservePerc.compareTo(b.reservePerc) : b.reservePerc.compareTo(a.reservePerc));
         break;
       case 5:
-        units.sort(
-            (a, b) => _isAscending ? a.donationPerc.compareTo(b.donationPerc) : b.donationPerc.compareTo(a.donationPerc));
+        units.sort((a, b) =>
+            _isAscending ? a.donationPerc.compareTo(b.donationPerc) : b.donationPerc.compareTo(a.donationPerc));
         break;
       case 6:
         units.sort((a, b) => _isAscending ? a.moneyPerc.compareTo(b.moneyPerc) : b.moneyPerc.compareTo(a.moneyPerc));
         break;
       case 7:
-        units.sort((a, b) => _isAscending ? a.effortPerc.compareTo(b.effortPerc) : b.effortPerc.compareTo(a.effortPerc));
+        units
+            .sort((a, b) => _isAscending ? a.effortPerc.compareTo(b.effortPerc) : b.effortPerc.compareTo(a.effortPerc));
         break;
       case 8:
         units.sort((a, b) => _isAscending
@@ -100,8 +98,8 @@ class _UnitsState extends State<Units> {
             _isAscending ? a.thresholdPerc.compareTo(b.thresholdPerc) : b.thresholdPerc.compareTo(a.thresholdPerc));
         break;
       case 10:
-        units.sort(
-            (a, b) => _isAscending ? a.foundingPerc.compareTo(b.foundingPerc) : b.foundingPerc.compareTo(a.foundingPerc));
+        units.sort((a, b) =>
+            _isAscending ? a.foundingPerc.compareTo(b.foundingPerc) : b.foundingPerc.compareTo(a.foundingPerc));
         break;
     }
   }
@@ -225,7 +223,8 @@ class _UnitsState extends State<Units> {
                             const SizedBox(width: 40, child: Divider()),
                             const SizedBox(height: 8.0),
                             totalItem(getText('count'), internCount.toString()),
-                            totalItem(getText('percentage'), '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
+                            totalItem(
+                                getText('percentage'), '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
                             totalItem(getText('capital'), myCurrency.format(internCapital)),
                           ],
                         ),
@@ -236,7 +235,8 @@ class _UnitsState extends State<Units> {
                             const SizedBox(width: 40, child: Divider()),
                             const SizedBox(height: 8.0),
                             totalItem(getText('count'), externCount.toString()),
-                            totalItem(getText('percentage'), '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
+                            totalItem(
+                                getText('percentage'), '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
                             totalItem(getText('capital'), myCurrency.format(externCapital)),
                           ],
                         ),

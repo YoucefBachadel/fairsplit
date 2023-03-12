@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../shared/lists.dart';
-import 'parameters.dart';
+import '../shared/parameters.dart';
 
 Widget myPogress() {
   return Center(

@@ -1,12 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import '../classes/unit.dart';
+
+import '../models/unit.dart';
 import '../main.dart';
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 
 class AddUnit extends StatefulWidget {
   final Unit unit;
@@ -22,42 +20,15 @@ class _AddUnitState extends State<AddUnit> {
   bool isLoading = false;
 
   void deleteUnit(int unitId) async {
-    String sql = '';
-    sql = 'DELETE FROM Threshold WHERE unitId = $unitId';
-    await http.post(
-      insertUrl,
-      body: {'sql': sql},
-    );
+    sqlQuery(insertUrl, {
+      'sql1': 'DELETE FROM Threshold WHERE unitId = $unitId',
+      'sql2': 'DELETE FROM Founding WHERE unitId = $unitId',
+      'sql3': 'DELETE FROM Effort WHERE unitId = $unitId',
+      'sql4': 'DELETE FROM Units WHERE unitId = $unitId',
+    });
 
-    sql = 'DELETE FROM Founding WHERE unitId = $unitId';
-    await http.post(
-      insertUrl,
-      body: {'sql': sql},
-    );
-
-    sql = 'DELETE FROM Effort WHERE unitId = $unitId';
-    await http.post(
-      insertUrl,
-      body: {'sql': sql},
-    );
-
-    sql = 'DELETE FROM Units WHERE unitId = $unitId';
-    var res = await http.post(
-      insertUrl,
-      body: {'sql': sql},
-    );
-
-    final data = json.decode(res.body);
-    if (data['data'] == true) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const MyApp(index: 'un'),
-        ),
-      );
-      snackBar(context, 'Unit deleted successfully');
-    } else {
-      snackBar(context, 'something went wrong!!');
-    }
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+    snackBar(context, 'Unit deleted successfully');
   }
 
   @override
@@ -325,7 +296,6 @@ class _AddUnitState extends State<AddUnit> {
   Widget saveButton() {
     return myButton(context, onTap: () async {
       if (name != '') {
-        var params = {};
         try {
           int _unitId = widget.unit.unitId;
           String _type = isExtern ? 'extern' : 'intern';
@@ -337,42 +307,18 @@ class _AddUnitState extends State<AddUnit> {
           double _thresholdFounding = double.parse(thresholdFounding);
           double _threshold = double.parse(threshold);
           double _founding = double.parse(founding);
-          if (_unitId == -1) {
-            params = {
-              'sql':
-                  '''INSERT INTO Units (name,type,capital,reservePerc,donationPerc,thresholdFoundingPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated) VALUES ('$name' ,'$_type',$_capital, $_reserve , $_donation , $_thresholdFounding ,$_threshold , $_founding , $_effort , $_money , 0);''',
-            };
-          } else {
-            params = {
-              'sql':
-                  '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdFoundingPerc = $_thresholdFounding ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
-            };
-          }
+
+          // sending a post request to the url
+          sqlQuery(insertUrl, {
+            'sql1': _unitId == -1
+                ? '''INSERT INTO Units (name,type,capital,reservePerc,donationPerc,thresholdFoundingPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated) VALUES ('$name' ,'$_type',$_capital, $_reserve , $_donation , $_thresholdFounding ,$_threshold , $_founding , $_effort , $_money , 0);'''
+                : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdFoundingPerc = $_thresholdFounding ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
+          });
+
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+          snackBar(context, widget.unit.unitId == -1 ? 'Unit added successfully' : 'Unit updated successfully');
         } catch (e) {
           snackBar(context, 'Check Your Data!!!', duration: 5);
-        }
-        setState(() {
-          isLoading = true;
-        });
-
-        // sending a post request to the url
-        var res = await http.post(
-          insertUrl,
-          body: params,
-        );
-
-        //converting the fetched data from json to key value pair that can be displayed on the screen
-        final data = json.decode(res.body);
-
-        if (data['data'] == true) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => const MyApp(index: 'un'),
-            ),
-          );
-          snackBar(context, widget.unit.unitId == -1 ? 'Unit added successfully' : 'Unit updated successfully');
-        } else {
-          snackBar(context, 'something went wrong!!');
         }
       } else {
         snackBar(context, 'Name can not be empty!!!', duration: 5);

@@ -1,13 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../classes/other_user.dart';
+import '../models/other_user.dart';
 import '../main.dart';
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 
 class AddOtherUser extends StatefulWidget {
   final OtherUser user;
@@ -24,16 +21,10 @@ class _AddOtherUserState extends State<AddOtherUser> {
   bool isLoading = false, isDeposit = false;
 
   void deleteUser(int userId) async {
-    var sql = 'DELETE FROM OtherUsers WHERE userId = $userId';
-    var res = await http.post(insertUrl, body: {'sql': sql});
+    sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
 
-    final data = json.decode(res.body);
-    if (data['data'] == true) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-      snackBar(context, 'User deleted successfully');
-    } else {
-      snackBar(context, 'something went wrong!!');
-    }
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+    snackBar(context, 'User deleted successfully');
   }
 
   @override
@@ -231,34 +222,15 @@ class _AddOtherUserState extends State<AddOtherUser> {
     return myButton(context, onTap: () async {
       if (name != '') {
         String _type = isDeposit ? 'deposit' : 'loan';
-        var params = {};
-        if (widget.user.userId == -1) {
-          params = {
-            'sql':
-                '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);''',
-          };
-        } else {
-          params = {
-            'sql':
-                '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};''',
-          };
-        }
 
-        // sending a post request to the url
-        var res = await http.post(
-          insertUrl,
-          body: params,
-        );
+        sqlQuery(insertUrl, {
+          'sql1': widget.user.userId == -1
+              ? '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);'''
+              : '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};'''
+        });
 
-        //converting the fetched data from json to key value pair that can be displayed on the screen
-        final data = json.decode(res.body);
-
-        if (data['data'] == true) {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-          snackBar(context, widget.user.userId == -1 ? 'User added successfully' : 'User updated successfully');
-        } else {
-          snackBar(context, 'something went wrong!!');
-        }
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+        snackBar(context, widget.user.userId == -1 ? 'User added successfully' : 'User updated successfully');
       } else {
         snackBar(context, 'Name can not be empty!!!', duration: 5);
       }

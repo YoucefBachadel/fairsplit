@@ -1,13 +1,11 @@
 import 'dart:collection';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../classes/user_history.dart';
+import '../models/user_history.dart';
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 
 class UserHistoryScreen extends StatefulWidget {
   const UserHistoryScreen({Key? key}) : super(key: key);
@@ -30,9 +28,8 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
   TextEditingController _controller = TextEditingController();
 
   void loadData() async {
-    var params = {'sql': 'SELECT * FROM UserHistory;'};
-    var res = await http.post(selectUrl, body: params);
-    var data = (json.decode(res.body))['data'];
+    var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM UserHistory;'});
+    var data = res[0];
 
     for (var ele in data) {
       allUsersHistroy.add(UserHistory(
@@ -78,16 +75,12 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
     switch (_sortColumnIndex) {
       case 1:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.name.compareTo(tr1.name)
-              : tr1.name.compareTo(tr2.name);
+          return !_isAscending ? tr2.name.compareTo(tr1.name) : tr1.name.compareTo(tr2.name);
         });
         break;
       case 2:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.year.compareTo(tr1.year)
-              : tr1.year.compareTo(tr2.year);
+          return !_isAscending ? tr2.year.compareTo(tr1.year) : tr1.year.compareTo(tr2.year);
         });
         break;
       case 3:
@@ -99,16 +92,12 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         break;
       case 4:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.totalIn.compareTo(tr1.totalIn)
-              : tr1.totalIn.compareTo(tr2.totalIn);
+          return !_isAscending ? tr2.totalIn.compareTo(tr1.totalIn) : tr1.totalIn.compareTo(tr2.totalIn);
         });
         break;
       case 5:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.totalOut.compareTo(tr1.totalOut)
-              : tr1.totalOut.compareTo(tr2.totalOut);
+          return !_isAscending ? tr2.totalOut.compareTo(tr1.totalOut) : tr1.totalOut.compareTo(tr2.totalOut);
         });
         break;
       case 6:
@@ -148,9 +137,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         break;
       case 11:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.zakat.compareTo(tr1.zakat)
-              : tr1.zakat.compareTo(tr2.zakat);
+          return !_isAscending ? tr2.zakat.compareTo(tr1.zakat) : tr1.zakat.compareTo(tr2.zakat);
         });
         break;
     }
@@ -203,40 +190,20 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         .map(
           (userHistory) => DataRow(
             cells: [
-              dataCell(
-                  context, (usersHistory.indexOf(userHistory) + 1).toString()),
+              dataCell(context, (usersHistory.indexOf(userHistory) + 1).toString()),
               dataCell(context, userHistory.name, textAlign: TextAlign.start),
               ...[
                 userHistory.year.toString(),
-                userHistory.isMoney
-                    ? myCurrency.format(userHistory.startCapital)
-                    : '/',
-                userHistory.isMoney
-                    ? myCurrency.format(userHistory.totalIn)
-                    : '/',
-                userHistory.isMoney
-                    ? myCurrency.format(userHistory.totalOut)
-                    : '/',
-                userHistory.isMoney
-                    ? myCurrency.format(userHistory.moneyProfit)
-                    : '/',
-                userHistory.isMoney
-                    ? myCurrency.format(userHistory.thresholdProfit)
-                    : '/',
-                userHistory.isMoney
-                    ? myCurrency.format(userHistory.foundingProfit)
-                    : '/',
-                userHistory.isEffort
-                    ? myCurrency.format(userHistory.effortProfit)
-                    : '/',
+                userHistory.isMoney ? myCurrency.format(userHistory.startCapital) : '/',
+                userHistory.isMoney ? myCurrency.format(userHistory.totalIn) : '/',
+                userHistory.isMoney ? myCurrency.format(userHistory.totalOut) : '/',
+                userHistory.isMoney ? myCurrency.format(userHistory.moneyProfit) : '/',
+                userHistory.isMoney ? myCurrency.format(userHistory.thresholdProfit) : '/',
+                userHistory.isMoney ? myCurrency.format(userHistory.foundingProfit) : '/',
+                userHistory.isEffort ? myCurrency.format(userHistory.effortProfit) : '/',
                 myCurrency.format(userHistory.totalProfit),
-                userHistory.isMoney
-                    ? myCurrency.format(userHistory.zakat)
-                    : '/',
-              ]
-                  .map((e) => dataCell(context, e,
-                      textAlign: e == '/' ? TextAlign.center : TextAlign.end))
-                  .toList(),
+                userHistory.isMoney ? myCurrency.format(userHistory.zakat) : '/',
+              ].map((e) => dataCell(context, e, textAlign: e == '/' ? TextAlign.center : TextAlign.end)).toList(),
             ],
           ),
         )
@@ -313,9 +280,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                   _search = item;
                 }),
                 optionsBuilder: (textEditingValue) {
-                  return userNames.where((item) => item
-                      .toLowerCase()
-                      .contains(textEditingValue.text.toLowerCase()));
+                  return userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
                 },
                 fieldViewBuilder: (
                   context,
@@ -328,12 +293,8 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(
-                            color: _controller.text.isEmpty
-                                ? Colors.grey
-                                : winTileColor),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(12)),
+                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : winTileColor),
+                        borderRadius: const BorderRadius.all(Radius.circular(12)),
                       ),
                       child: TextFormField(
                         controller: _controller,
@@ -341,8 +302,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                         style: const TextStyle(fontSize: 18.0),
                         onChanged: ((value) => setState(() {})),
                         decoration: InputDecoration(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 8.0),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
                           hintText: getText('search'),
                           border: const OutlineInputBorder(
                             borderSide: BorderSide.none,
@@ -378,9 +338,8 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                     child: Material(
                       elevation: 8.0,
                       child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                            maxHeight: getHeight(context, .2),
-                            maxWidth: getWidth(context, .22)),
+                        constraints:
+                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .22)),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,

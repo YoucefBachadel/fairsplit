@@ -1,17 +1,15 @@
 import 'dart:collection';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../classes/effort.dart';
-import '../classes/founding.dart';
-import '../classes/threshold.dart';
+import '../models/effort.dart';
+import '../models/founding.dart';
+import '../models/threshold.dart';
 import '../shared/lists.dart';
-import '../classes/unit.dart';
-import '../classes/user.dart';
+import '../models/unit.dart';
+import '../models/user.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 import '../screens/add_user.dart';
 import 'add_transaction.dart';
 
@@ -40,31 +38,24 @@ class _UsersState extends State<Users> {
   void _newUser(BuildContext context, User user) async => await createDialog(context, AddUser(user: user), false);
 
   void loadData() async {
-    var params = {'sql': 'SELECT * FROM Threshold;'};
-    var res = await http.post(selectUrl, body: params);
-    var dataThresholds = (json.decode(res.body))['data'];
-
-    params = {'sql': 'SELECT * FROM Founding;'};
-    res = await http.post(selectUrl, body: params);
-    var dataFoundings = (json.decode(res.body))['data'];
-
-    params = {'sql': 'SELECT * FROM Effort;'};
-    res = await http.post(selectUrl, body: params);
-    var dataEfforts = (json.decode(res.body))['data'];
-
-    params = {'sql': 'SELECT * FROM Users;'};
-    res = await http.post(selectUrl, body: params);
-    var dataUsers = (json.decode(res.body))['data'];
+    var data = await sqlQuery(selectUrl, {
+      'sql1': 'SELECT * FROM Threshold;',
+      'sql2': 'SELECT * FROM Founding;',
+      'sql3': 'SELECT * FROM Effort;',
+      'sql4': 'SELECT * FROM Users;',
+      'sql5': '''SELECT unitId , name FROM Units WHERE type = 'intern';''',
+    });
+    var dataThresholds = data[0];
+    var dataFoundings = data[1];
+    var dataEfforts = data[2];
+    var dataUsers = data[3];
+    var dataUnits = data[4];
 
     allUsers = toUsers(dataUsers, toThresholds(dataThresholds), toFoundings(dataFoundings), toEfforts(dataEfforts));
 
     for (var ele in dataUsers) {
       userNames.add(ele['name']);
     }
-
-    params = {'sql': '''SELECT unitId , name FROM Units WHERE type = 'intern';'''};
-    res = await http.post(selectUrl, body: params);
-    List<dynamic> dataUnits = (json.decode(res.body))['data'];
     for (var element in dataUnits) {
       units.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
     }

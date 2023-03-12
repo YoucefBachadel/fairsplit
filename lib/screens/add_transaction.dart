@@ -1,12 +1,9 @@
-import 'dart:convert';
-
-import 'package:fairsplit/classes/other_user.dart';
+import 'package:fairsplit/models/other_user.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../classes/user.dart';
+import '../models/user.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 import '../main.dart';
 import '../shared/lists.dart';
 
@@ -48,9 +45,8 @@ class _AddTransactionState extends State<AddTransaction> {
   OtherUser selectedOtherUser = OtherUser();
 
   void loadData() async {
-    var params = {'sql': 'SELECT * FROM Settings;'};
-    var res = await http.post(selectUrl, body: params);
-    var dataSettings = (json.decode(res.body))['data'][0];
+    var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM Settings;'});
+    var dataSettings = res[0][0];
 
     caisse = double.parse(dataSettings['caisse']);
     reserve = double.parse(dataSettings['reserve']);
@@ -58,18 +54,17 @@ class _AddTransactionState extends State<AddTransaction> {
     zakat = double.parse(dataSettings['zakat']);
 
     if (widget.sourceTab == 'tr') {
-      params = {'sql': '''SELECT userId,name,capital FROM Users;'''};
-      res = await http.post(selectUrl, body: params);
-      var dataUsers = (json.decode(res.body))['data'];
+      var res = await sqlQuery(selectUrl, {
+        'sql1': '''SELECT userId,name,capital FROM Users;''',
+        'sql2': '''SELECT userId,name,type,amount,rest FROM OtherUsers;''',
+      });
+      var dataUsers = res[0];
+      var dataOtherUsers = res[1];
 
       for (var element in dataUsers) {
         users.add(User(
             userId: int.parse(element['userId']), name: element['name'], capital: double.parse(element['capital'])));
       }
-
-      params = {'sql': '''SELECT userId,name,type,amount,rest FROM OtherUsers;'''};
-      res = await http.post(selectUrl, body: params);
-      var dataOtherUsers = (json.decode(res.body))['data'];
 
       for (var element in dataOtherUsers) {
         OtherUser user = OtherUser(
@@ -569,18 +564,12 @@ class _AddTransactionState extends State<AddTransaction> {
 
           if (selectedTransactionType == 0) {
             //insert the special transaction
-            await http.post(
-              insertUrl,
-              body: {
-                'sql':
-                    '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,note) VALUES ($currentYear , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
-              },
-            );
             //update the setting category
-            await http.post(
-              insertUrl,
-              body: {'sql': '''UPDATE Settings SET $category = $_solde WHERE 1;'''},
-            );
+            sqlQuery(insertUrl, {
+              'sql1':
+                  '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,note) VALUES ($currentYear , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
+              'sql2': '''UPDATE Settings SET $category = $_solde WHERE 1;'''
+            });
           } else {
             bool nameWrite = false;
             //check if the name is write
@@ -615,23 +604,15 @@ class _AddTransactionState extends State<AddTransaction> {
               if (selectedName.isNotEmpty && (users.isEmpty || nameWrite)) {
                 double _soldeUser = selectedUser.capital + _amount;
 
-                await http.post(
-                  insertUrl,
-                  body: {
-                    'sql':
-                        '''INSERT INTO Transaction (userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${selectedUser.name}',$currentYear , '$date' , '$type' ,${_amount.abs()} ,$_soldeUser, $_solde , '$note' );''',
-                  },
-                );
+                //insert the transaction
                 //update the User capital
-                await http.post(
-                  insertUrl,
-                  body: {'sql': '''UPDATE Users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};'''},
-                );
                 //update the setting caisse
-                await http.post(
-                  insertUrl,
-                  body: {'sql': '''UPDATE Settings SET caisse = $_solde WHERE 1;'''},
-                );
+                sqlQuery(insertUrl, {
+                  'sql1':
+                      '''INSERT INTO Transaction (userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${selectedUser.name}',$currentYear , '$date' , '$type' ,${_amount.abs()} ,$_soldeUser, $_solde , '$note' );''',
+                  'sql2': '''UPDATE Users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};''',
+                  'sql3': '''UPDATE Settings SET caisse = $_solde WHERE 1;'''
+                });
               } else {
                 snackBar(context, 'Check The Name');
               }
@@ -644,26 +625,16 @@ class _AddTransactionState extends State<AddTransaction> {
                 double _userRest = selectedOtherUser.rest - _amount;
 
                 if (_userRest >= 0) {
-                  await http.post(
-                    insertUrl,
-                    body: {
-                      'sql':
-                          '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeCaisse,note) VALUES ('${selectedOtherUser.name}', 'loan', $currentYear , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
-                    },
-                  );
+                  //insert the transaction
                   //update the User capital
-                  await http.post(
-                    insertUrl,
-                    body: {
-                      'sql':
-                          '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};'''
-                    },
-                  );
                   //update the setting caisse
-                  await http.post(
-                    insertUrl,
-                    body: {'sql': '''UPDATE Settings SET caisse = $_solde WHERE 1;'''},
-                  );
+                  sqlQuery(insertUrl, {
+                    'sql1':
+                        '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeCaisse,note) VALUES ('${selectedOtherUser.name}', 'loan', $currentYear , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
+                    'sql2':
+                        '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
+                    'sql3': '''UPDATE Settings SET caisse = $_solde WHERE 1;'''
+                  });
                 } else {
                   setState(() {
                     _testsChecked = false;
@@ -683,26 +654,16 @@ class _AddTransactionState extends State<AddTransaction> {
                 double _userRest = selectedOtherUser.rest + _amount;
 
                 if (_userRest >= 0) {
-                  await http.post(
-                    insertUrl,
-                    body: {
-                      'sql':
-                          '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeCaisse,note) VALUES ('${selectedOtherUser.name}','deposit',$currentYear , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
-                    },
-                  );
+                  //insert the transaction
                   //update the User capital
-                  await http.post(
-                    insertUrl,
-                    body: {
-                      'sql':
-                          '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};'''
-                    },
-                  );
                   //update the setting caisse
-                  await http.post(
-                    insertUrl,
-                    body: {'sql': '''UPDATE Settings SET caisse = $_solde WHERE 1;'''},
-                  );
+                  sqlQuery(insertUrl, {
+                    'sql1':
+                        '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeCaisse,note) VALUES ('${selectedOtherUser.name}','deposit',$currentYear , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
+                    'sql2':
+                        '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
+                    'sql3': '''UPDATE Settings SET caisse = $_solde WHERE 1;''',
+                  });
                 } else {
                   setState(() {
                     _testsChecked = false;

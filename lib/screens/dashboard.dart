@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 import 'add_transaction.dart';
 
 class Dashboard extends StatefulWidget {
@@ -19,12 +17,11 @@ class _DashboardState extends State<Dashboard> {
   var data = {};
 
   void locadData() async {
-    var params = {
-      'sql':
+    var res = await sqlQuery(selectUrl, {
+      'sql1':
           '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,(SELECT SUM(amount) FROM Transaction WHERE type = 'in' AND year = s.currentYear) as totalIn, (SELECT SUM(amount) FROM Transaction WHERE type = 'out' AND year = s.currentYear) as totalOut,(SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,(SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit, s.* FROM Settings s;'''
-    };
-    var res = await http.post(selectUrl, body: params);
-    data = (json.decode(res.body))['data'][0];
+    });
+    data = res[0][0];
     currentYear = int.parse(data['currentYear']);
     setState(() {
       isLoadingData = false;

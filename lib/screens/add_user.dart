@@ -1,17 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../classes/effort.dart';
-import '../classes/founding.dart';
-import '../classes/threshold.dart' as my_threshold;
-import '../classes/unit.dart';
+import '../models/effort.dart';
+import '../models/founding.dart';
+import '../models/threshold.dart' as my_threshold;
+import '../models/unit.dart';
 import '../main.dart';
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
-import '../classes/user.dart';
+import '../widgets/widget.dart';
+import '../models/user.dart';
 
 class AddUser extends StatefulWidget {
   final User user;
@@ -39,53 +36,21 @@ class _AddUserState extends State<AddUser> {
   bool typeHasChanged = false;
 
   void deleteUser(int userId) async {
-    String sql = '';
-    sql = 'DELETE FROM Threshold WHERE userId = $userId';
-    await http.post(
-      insertUrl,
-      body: {'sql': sql},
-    );
-
-    sql = 'DELETE FROM Founding WHERE userId = $userId';
-    await http.post(
-      insertUrl,
-      body: {'sql': sql},
-    );
-
-    sql = 'DELETE FROM Effort WHERE userId = $userId';
-    await http.post(
-      insertUrl,
-      body: {'sql': sql},
-    );
-
-    sql = 'DELETE FROM Users WHERE userId = $userId';
-    var res = await http.post(
-      insertUrl,
-      body: {'sql': sql},
-    );
-
-    final data = json.decode(res.body);
-    if (data['data'] == true) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const MyApp(index: 'us'),
-        ),
-      );
-      snackBar(context, 'User deleted successfully');
-    } else {
-      snackBar(context, 'something went wrong!!');
-    }
+    sqlQuery(insertUrl, {
+      'sql1': 'DELETE FROM Threshold WHERE userId = $userId',
+      'sql2': 'DELETE FROM Founding WHERE userId = $userId',
+      'sql3': 'DELETE FROM Effort WHERE userId = $userId',
+      'sql4': 'DELETE FROM Users WHERE userId = $userId',
+    });
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
+    snackBar(context, 'User deleted successfully');
   }
 
   void loadUnits() async {
-    var params = {
-      'sql': '''SELECT unitId , name FROM Units WHERE type = 'intern';'''
-    };
-    var res = await http.post(selectUrl, body: params);
-    List<dynamic> data = (json.decode(res.body))['data'];
+    var res = await sqlQuery(selectUrl, {'sql1': '''SELECT unitId , name FROM Units WHERE type = 'intern';'''});
+    List<dynamic> data = res[0];
     for (var element in data) {
-      allUnits.add(
-          Unit(unitId: int.parse(element['unitId']), name: element['name']));
+      allUnits.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
     }
     setState(() {
       isloading = false;
@@ -185,9 +150,7 @@ class _AddUserState extends State<AddUser> {
                           children: [
                             Expanded(child: information()),
                             isEffort
-                                ? SizedBox(
-                                    height: getHeight(context, .25),
-                                    child: const VerticalDivider(width: 50))
+                                ? SizedBox(height: getHeight(context, .25), child: const VerticalDivider(width: 50))
                                 : const SizedBox(),
                             isEffort ? monthsDetail() : const SizedBox(),
                           ],
@@ -353,17 +316,12 @@ class _AddUserState extends State<AddUser> {
                     : IconButton(
                         onPressed: () {
                           final _allIds = allUnits.map((e) => e.unitId).toSet();
-                          final _thresholdsIds =
-                              thresholds.map((e) => e.unitId).toSet();
-                          final _filteredIds =
-                              _allIds.difference(_thresholdsIds);
+                          final _thresholdsIds = thresholds.map((e) => e.unitId).toSet();
+                          final _filteredIds = _allIds.difference(_thresholdsIds);
                           createDialog(
                               context,
                               unitSelect(2,
-                                  units: allUnits
-                                      .where((element) =>
-                                          _filteredIds.contains(element.unitId))
-                                      .toList()),
+                                  units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
                               true);
                         },
                         icon: Icon(
@@ -383,9 +341,7 @@ class _AddUserState extends State<AddUser> {
                 ? emptyList()
                 : SingleChildScrollView(
                     child: dataTable(
-                      columns: [getText('unit'), getText('percentage'), '']
-                          .map((e) => dataColumn(context, e))
-                          .toList(),
+                      columns: [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
                       rows: thresholds
                           .map((e) => DataRow(
                                 onSelectChanged: (value) => createDialog(
@@ -404,9 +360,7 @@ class _AddUserState extends State<AddUser> {
                                   true,
                                 ),
                                 cells: [
-                                  dataCell(
-                                      context, getUnitName(allUnits, e.unitId),
-                                      textAlign: TextAlign.start),
+                                  dataCell(context, getUnitName(allUnits, e.unitId), textAlign: TextAlign.start),
                                   dataCell(context, e.thresholdPerc.toString()),
                                   DataCell(
                                     Center(
@@ -472,16 +426,12 @@ class _AddUserState extends State<AddUser> {
                   : IconButton(
                       onPressed: () {
                         final _allIds = allUnits.map((e) => e.unitId).toSet();
-                        final _foundingsIds =
-                            foundings.map((e) => e.unitId).toSet();
+                        final _foundingsIds = foundings.map((e) => e.unitId).toSet();
                         final _filteredIds = _allIds.difference(_foundingsIds);
                         createDialog(
                             context,
                             unitSelect(3,
-                                units: allUnits
-                                    .where((element) =>
-                                        _filteredIds.contains(element.unitId))
-                                    .toList()),
+                                units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
                             true);
                       },
                       icon: Icon(
@@ -501,9 +451,7 @@ class _AddUserState extends State<AddUser> {
                 ? emptyList()
                 : SingleChildScrollView(
                     child: dataTable(
-                      columns: [getText('unit'), getText('percentage'), '']
-                          .map((e) => dataColumn(context, e))
-                          .toList(),
+                      columns: [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
                       rows: foundings
                           .map((e) => DataRow(
                                 onSelectChanged: (value) => createDialog(
@@ -522,9 +470,7 @@ class _AddUserState extends State<AddUser> {
                                   true,
                                 ),
                                 cells: [
-                                  dataCell(
-                                      context, getUnitName(allUnits, e.unitId),
-                                      textAlign: TextAlign.start),
+                                  dataCell(context, getUnitName(allUnits, e.unitId), textAlign: TextAlign.start),
                                   dataCell(context, e.foundingPerc.toString()),
                                   DataCell(
                                     Center(
@@ -583,25 +529,19 @@ class _AddUserState extends State<AddUser> {
                   style: Theme.of(context).textTheme.headline5,
                 ),
               ),
-              efforts.isNotEmpty && efforts[0].unitId == -1 ||
-                      efforts.length == allUnits.length
+              efforts.isNotEmpty && efforts[0].unitId == -1 || efforts.length == allUnits.length
                   ? const SizedBox()
                   : IconButton(
                       onPressed: () {
                         final _allIds = allUnits.map((e) => e.unitId).toSet();
-                        final _effortsIds =
-                            efforts.map((e) => e.unitId).toSet();
+                        final _effortsIds = efforts.map((e) => e.unitId).toSet();
                         final _filteredIds = _allIds.difference(_effortsIds);
                         createDialog(
                             context,
                             unitSelect(1,
                                 units: _effortsIds.isEmpty
-                                    ? [Unit(unitId: -1, name: 'Global')] +
-                                        allUnits
-                                    : allUnits
-                                        .where((element) => _filteredIds
-                                            .contains(element.unitId))
-                                        .toList()),
+                                    ? [Unit(unitId: -1, name: 'Global')] + allUnits
+                                    : allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
                             true);
                       },
                       icon: Icon(
@@ -621,12 +561,9 @@ class _AddUserState extends State<AddUser> {
               ? emptyList()
               : SingleChildScrollView(
                   child: dataTable(
-                    columns: [
-                      getText('unit'),
-                      getText('percentage'),
-                      getText('evaluation'),
-                      ''
-                    ].map((e) => dataColumn(context, e)).toList(),
+                    columns: [getText('unit'), getText('percentage'), getText('evaluation'), '']
+                        .map((e) => dataColumn(context, e))
+                        .toList(),
                     rows: efforts
                         .map((e) => DataRow(
                               onSelectChanged: (value) => createDialog(
@@ -639,10 +576,7 @@ class _AddUserState extends State<AddUser> {
                                   units: [
                                     Unit(
                                       unitId: e.unitId,
-                                      name: getUnitName(
-                                          [Unit(unitId: -1, name: 'Global')] +
-                                              allUnits,
-                                          e.unitId),
+                                      name: getUnitName([Unit(unitId: -1, name: 'Global')] + allUnits, e.unitId),
                                     )
                                   ],
                                 ),
@@ -651,10 +585,7 @@ class _AddUserState extends State<AddUser> {
                               cells: [
                                 dataCell(
                                   context,
-                                  getUnitName(
-                                      [Unit(unitId: -1, name: 'Global')] +
-                                          allUnits,
-                                      e.unitId),
+                                  getUnitName([Unit(unitId: -1, name: 'Global')] + allUnits, e.unitId),
                                   textAlign: TextAlign.start,
                                 ),
                                 dataCell(context, e.effortPerc.toString()),
@@ -711,8 +642,7 @@ class _AddUserState extends State<AddUser> {
                           onChanged: (val) {
                             setState(() {
                               final chars = months.characters.toList();
-                              chars[monthsOfYear.indexOf(e)] =
-                                  val == false ? '0' : '1';
+                              chars[monthsOfYear.indexOf(e)] = val == false ? '0' : '1';
                               months = chars.join('');
                             });
                           }),
@@ -733,8 +663,7 @@ class _AddUserState extends State<AddUser> {
                           onChanged: (val) {
                             setState(() {
                               final chars = months.characters.toList();
-                              chars[monthsOfYear.indexOf(e)] =
-                                  val == false ? '0' : '1';
+                              chars[monthsOfYear.indexOf(e)] = val == false ? '0' : '1';
                               months = chars.join('');
                             });
                           }),
@@ -909,35 +838,20 @@ class _AddUserState extends State<AddUser> {
           isloading = true;
         });
 
-        var params = {};
-        late dynamic res;
-
         bool isNew = widget.user.userId == -1;
         int _userId = widget.user.userId;
-        dynamic data;
+        List<String> sqls = [];
         if (isNew) {
-          params = {
+          // sending a post request to the url and get the inserted id
+          _userId = await sqlQuery(insertSPUrl, {
             'sql':
-                '''INSERT INTO Users (name,phone,joinDate,type,capital,threshold,founding,effort,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , '$months');''',
-          };
-          // sending a post request to the url
-          res = await http.post(
-            insertSPUrl,
-            body: params,
-          );
-
-          //converting the fetched data from json to key value pair that can be displayed on the screen
-          data = json.decode(res.body);
-          _userId = data['data'];
+                '''INSERT INTO Users (name,phone,joinDate,type,capital,money,threshold,founding,effort,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , '$months');''',
+          });
+          // _userId = data;
         } else {
-          params = {
-            'sql':
-                '''UPDATE Users SET name = '$name' ,phone = '$phone'  ,joinDate = '$joinDate' ,type = '$type' ,months = '$months' Where userId = $_userId;''',
-          };
           // sending a post request to the url
-          res = await http.post(
-            insertUrl,
-            body: params,
+          sqls.add(
+            '''UPDATE Users SET name = '$name' ,phone = '$phone'  ,joinDate = '$joinDate' ,type = '$type' ,months = '$months' Where userId = $_userId;''',
           );
         }
 
@@ -947,35 +861,14 @@ class _AddUserState extends State<AddUser> {
 
         if (!isNew) {
           //if the type or the list has changed we delete all existing items of the user and we insert it again
-          if (typeHasChanged || thresholdsHasChanged) {
-            sql = 'DELETE FROM Threshold WHERE userId = $_userId';
-            params = {'sql': sql};
-            res = await http.post(
-              insertUrl,
-              body: params,
-            );
-          }
-          if (typeHasChanged || foundingssHasChanged) {
-            sql = 'DELETE FROM Founding WHERE userId = $_userId';
-            params = {'sql': sql};
-            res = await http.post(
-              insertUrl,
-              body: params,
-            );
-          }
-          if (typeHasChanged || effortssHasChanged) {
-            sql = 'DELETE FROM Effort WHERE userId = $_userId';
-            params = {'sql': sql};
-            res = await http.post(
-              insertUrl,
-              body: params,
-            );
-          }
+          if (typeHasChanged || thresholdsHasChanged) sqls.add('DELETE FROM Threshold WHERE userId = $_userId');
+
+          if (typeHasChanged || foundingssHasChanged) sqls.add('DELETE FROM Founding WHERE userId = $_userId');
+
+          if (typeHasChanged || effortssHasChanged) sqls.add('DELETE FROM Effort WHERE userId = $_userId');
         }
 
-        if (isMoney &&
-            thresholds.isNotEmpty &&
-            (typeHasChanged || thresholdsHasChanged)) {
+        if (isMoney && thresholds.isNotEmpty && (typeHasChanged || thresholdsHasChanged)) {
           sql = 'INSERT INTO Threshold(userId, unitId, thresholdPerc) VALUES ';
           for (var element in thresholds) {
             sql += '($_userId , ${element.unitId} , ${element.thresholdPerc}),';
@@ -983,16 +876,9 @@ class _AddUserState extends State<AddUser> {
           sql = sql.substring(0, sql.length - 1);
           sql += ';';
 
-          params = {'sql': sql};
-          // sending a post request to the url
-          res = await http.post(
-            insertUrl,
-            body: params,
-          );
+          sqls.add(sql);
         }
-        if (isMoney &&
-            foundings.isNotEmpty &&
-            (typeHasChanged || foundingssHasChanged)) {
+        if (isMoney && foundings.isNotEmpty && (typeHasChanged || foundingssHasChanged)) {
           sql = 'INSERT INTO Founding(userId, unitId, foundingPerc) VALUES ';
           for (var element in foundings) {
             sql += '($_userId , ${element.unitId} , ${element.foundingPerc}),';
@@ -1000,39 +886,23 @@ class _AddUserState extends State<AddUser> {
           sql = sql.substring(0, sql.length - 1);
           sql += ';';
 
-          params = {'sql': sql};
-          // sending a post request to the url
-          res = await http.post(
-            insertUrl,
-            body: params,
-          );
+          sqls.add(sql);
         }
-        if (isEffort &&
-            efforts.isNotEmpty &&
-            (typeHasChanged || effortssHasChanged)) {
-          sql =
-              'INSERT INTO Effort(userId, unitId, effortPerc, evaluation) VALUES ';
+        if (isEffort && efforts.isNotEmpty && (typeHasChanged || effortssHasChanged)) {
+          sql = 'INSERT INTO Effort(userId, unitId, effortPerc, evaluation) VALUES ';
           for (var element in efforts) {
-            sql +=
-                '($_userId , ${element.unitId} , ${element.effortPerc} , ${element.evaluation}),';
+            sql += '($_userId , ${element.unitId} , ${element.effortPerc} , ${element.evaluation}),';
           }
           sql = sql.substring(0, sql.length - 1);
           sql += ';';
 
-          params = {'sql': sql};
-          // sending a post request to the url
-          res = await http.post(
-            insertUrl,
-            body: params,
-          );
+          sqls.add(sql);
         }
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const MyApp(index: 'us'),
-          ),
-        );
-        snackBar(context,
-            isNew ? 'User added successfully' : 'User updated successfully');
+
+        sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
+
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
+        snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');
       } else {
         snackBar(context, 'Name can not be empty!!!', duration: 5);
       }

@@ -1,16 +1,14 @@
 import 'dart:collection';
-import 'dart:convert';
 
-import 'package:fairsplit/classes/transactio_others.dart';
+import 'package:fairsplit/models/transactio_others.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../shared/lists.dart';
-import '../classes/transaction.dart';
-import '../classes/transaction_sp.dart';
+import '../models/transaction.dart';
+import '../models/transaction_sp.dart';
 import '../screens/add_transaction.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 
 class Transactions extends StatefulWidget {
   const Transactions({Key? key}) : super(key: key);
@@ -60,13 +58,18 @@ class _TransactionsState extends State<Transactions> {
   TextEditingController _controller = TextEditingController();
 
   void loadData() async {
-    var params = {'sql': 'SELECT * FROM Transaction;'};
-    var res = await http.post(selectUrl, body: params);
-    var data = (json.decode(res.body))['data'];
+    var res = await sqlQuery(selectUrl, {
+      'sql1': 'SELECT * FROM Transaction;',
+      'sql2': 'SELECT * FROM TransactionSP;',
+      'sql3': 'SELECT * FROM TransactionOthers;',
+    });
+    var dataTransaction = res[0];
+    var dataTransactionSP = res[1];
+    var dataTransactionOther = res[2];
 
     years.clear();
 
-    for (var ele in data) {
+    for (var ele in dataTransaction) {
       allTransactions.add(Transaction(
         transactionId: int.parse(ele['transactionId']),
         userName: ele['userName'],
@@ -85,11 +88,7 @@ class _TransactionsState extends State<Transactions> {
 
     allCaisseTransactions.addAll(allTransactions);
 
-    params = {'sql': 'SELECT * FROM TransactionSP;'};
-    res = await http.post(selectUrl, body: params);
-    data = (json.decode(res.body))['data'];
-
-    for (var ele in data) {
+    for (var ele in dataTransactionSP) {
       allTransactionsSP.add(TransactionSP(
         transactionId: int.parse(ele['transactionId']),
         category: ele['category'],
@@ -118,11 +117,7 @@ class _TransactionsState extends State<Transactions> {
       years.add(ele['year']);
     }
 
-    params = {'sql': 'SELECT * FROM TransactionOthers;'};
-    res = await http.post(selectUrl, body: params);
-    data = (json.decode(res.body))['data'];
-
-    for (var ele in data) {
+    for (var ele in dataTransactionOther) {
       TransactionOther other = TransactionOther(
         transactionId: int.parse(ele['transactionId']),
         userName: ele['userName'],

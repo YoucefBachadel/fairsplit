@@ -1,14 +1,11 @@
-import 'dart:convert';
-
 import 'package:fairsplit/screens/add_transaction.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../classes/other_user.dart';
+import '../models/other_user.dart';
 import '../screens/add_other_user.dart';
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 
 class OtherUsers extends StatefulWidget {
   const OtherUsers({Key? key}) : super(key: key);
@@ -31,9 +28,8 @@ class _OtherUsersState extends State<OtherUsers> {
       await createDialog(context, AddOtherUser(user: user), false);
 
   void loadData() async {
-    var params = {'sql': 'SELECT * FROM OtherUsers;'};
-    var res = await http.post(selectUrl, body: params);
-    var dataUsers = (json.decode(res.body))['data'];
+    var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM OtherUsers;'});
+    var dataUsers = res[0];
 
     for (var ele in dataUsers) {
       allUsers.add(OtherUser(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../screens/pdf_generator.dart';
 import '../shared/parameters.dart';
-import '../shared/widget.dart';
+import '../widgets/widget.dart';
 
 class Consultaion extends StatefulWidget {
   const Consultaion({Key? key}) : super(key: key);

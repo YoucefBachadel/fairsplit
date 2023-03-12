@@ -1,6 +1,6 @@
-import '../classes/effort.dart';
-import '../classes/founding.dart';
-import '../classes/threshold.dart';
+import '../models/effort.dart';
+import '../models/founding.dart';
+import '../models/threshold.dart';
 
 class User {
   int userId;

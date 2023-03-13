@@ -117,9 +117,7 @@ Widget myDropDown(
   );
 }
 
-String dateFormat(DateTime date) {
-  return DateFormat('dd-MM-yyyy').format(date);
-}
+String dateFormat(DateTime date) => DateFormat('dd-MM-yyyy').format(date);
 
 Future createDialog(BuildContext context, Widget content, bool dismissable) {
   return showDialog(
@@ -168,12 +166,7 @@ Widget delteConfirmation(
   );
 }
 
-Widget verticalDivider() {
-  return const VerticalDivider(
-    color: Colors.black,
-    thickness: 0.2,
-  );
-}
+Widget verticalDivider() => const VerticalDivider(color: Colors.black, thickness: 0.2);
 
 Widget emptyList() {
   return Container(

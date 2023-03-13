@@ -150,14 +150,14 @@ Widget delteConfirmation(
         Text(
           getText('deleteConfirmation'),
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headline5?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         SizedBox(width: getWidth(context, .16), child: const Divider()),
         const SizedBox(height: 12.0),
         Text(
           message,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headline6,
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 16.0),
         myButton(context, onTap: onTap, noIcon: true, color: Colors.red, text: getText('confirm'))
@@ -216,7 +216,7 @@ DataCell dataCell(BuildContext context, String text, {TextAlign textAlign = Text
         text,
         textAlign: textAlign,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.subtitle1,
+        style: Theme.of(context).textTheme.bodyMedium,
       ),
     ),
   );
@@ -229,7 +229,7 @@ DataColumn dataColumn(BuildContext context, String text) {
         text,
         textAlign: TextAlign.center,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.subtitle1?.copyWith(fontWeight: FontWeight.w500),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
       ),
     ),
   );
@@ -243,7 +243,7 @@ DataColumn sortableDataColumn(BuildContext context, String text, Function(int co
         text,
         textAlign: TextAlign.center,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.subtitle1?.copyWith(fontWeight: FontWeight.w500),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
       ),
     ),
   );

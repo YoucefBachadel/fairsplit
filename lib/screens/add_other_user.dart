@@ -107,8 +107,8 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             Text(
                               getText('loan'),
                               style: !isDeposit
-                                  ? Theme.of(context).textTheme.headline4?.copyWith(color: winTileColor)
-                                  : Theme.of(context).textTheme.headline6,
+                                  ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: winTileColor)
+                                  : Theme.of(context).textTheme.headlineSmall,
                             ),
                             Transform.scale(
                               scale: 1.8,
@@ -129,8 +129,8 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             Text(
                               getText('deposit'),
                               style: isDeposit
-                                  ? Theme.of(context).textTheme.headline4?.copyWith(color: winTileColor)
-                                  : Theme.of(context).textTheme.headline6,
+                                  ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: winTileColor)
+                                  : Theme.of(context).textTheme.headlineSmall,
                             ),
                           ],
                         ),

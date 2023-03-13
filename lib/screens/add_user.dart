@@ -308,7 +308,7 @@ class _AddUserState extends State<AddUser> {
                 Expanded(
                   child: Text(
                     getText('threshold'),
-                    style: Theme.of(context).textTheme.headline5,
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
                 thresholds.length == allUnits.length
@@ -418,7 +418,7 @@ class _AddUserState extends State<AddUser> {
               Expanded(
                 child: Text(
                   getText('founding'),
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
               foundings.length == allUnits.length
@@ -526,7 +526,7 @@ class _AddUserState extends State<AddUser> {
               Expanded(
                 child: Text(
                   getText('effort'),
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
               efforts.isNotEmpty && efforts[0].unitId == -1 || efforts.length == allUnits.length

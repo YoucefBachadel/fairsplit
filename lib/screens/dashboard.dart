@@ -91,7 +91,7 @@ class _DashboardState extends State<Dashboard> {
           padding: const EdgeInsets.all(8.0),
           child: Text(
             title,
-            style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.grey[900]),
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.grey[900]),
           ),
         ),
         Divider(thickness: 0.3, color: Colors.grey[900]),
@@ -100,7 +100,7 @@ class _DashboardState extends State<Dashboard> {
             padding: const EdgeInsets.only(top: 35),
             child: Text(
               myCurrency.format(amount),
-              style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 30, color: Colors.grey[900]),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 30, color: Colors.grey[900]),
             ),
           ),
         ),

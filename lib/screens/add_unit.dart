@@ -164,7 +164,7 @@ class _AddUnitState extends State<AddUnit> {
           children: [
             Text(
               getText('intern'),
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
             Transform.scale(
               scale: 1.8,
@@ -182,7 +182,7 @@ class _AddUnitState extends State<AddUnit> {
             ),
             Text(
               getText('extern'),
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ],
         ),

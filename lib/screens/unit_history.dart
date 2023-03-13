@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 import '../shared/lists.dart';
 import '../models/unit_history.dart';
@@ -236,13 +235,13 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
                       : unitsHistory.isEmpty
                           ? SizedBox(width: getWidth(context, .45), child: emptyList())
                           : SingleChildScrollView(
-                              // child: dataTable(
-                              //   isAscending: _isAscending,
-                              //   sortColumnIndex: _sortColumnIndex,
-                              //   columns: columns,
-                              //   rows: rows,
-                              // ),
-                              child: sfGride(),
+                              child: dataTable(
+                                isAscending: _isAscending,
+                                sortColumnIndex: _sortColumnIndex,
+                                columns: columns,
+                                rows: rows,
+                              ),
+                              // child: sfGride(),
                             ),
                 ),
               ],
@@ -332,60 +331,60 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
     );
   }
 
-  Widget sfGride() {
-    return SfDataGrid(
-      columnWidthMode: ColumnWidthMode.fill,
-      columns: [
-        '',
-        getText('name'),
-        getText('year'),
-        getText('rawProfit'),
-        getText('reserve'),
-        getText('donation'),
-        getText('netProfit'),
-        getText('thresholdFounding'),
-        getText('threshold'),
-        getText('founding'),
-        getText('effort'),
-        getText('money'),
-        getText('capital'),
-        '${getText('profitability')} %',
-      ].map((e) => GridColumn(columnName: e, label: myText(e))).toList(),
-      source: UnitHistoryDataSource(unitsHistory: unitsHistory),
-    );
-  }
+//   Widget sfGride() {
+//     return SfDataGrid(
+//       columnWidthMode: ColumnWidthMode.fill,
+//       columns: [
+//         '',
+//         getText('name'),
+//         getText('year'),
+//         getText('rawProfit'),
+//         getText('reserve'),
+//         getText('donation'),
+//         getText('netProfit'),
+//         getText('thresholdFounding'),
+//         getText('threshold'),
+//         getText('founding'),
+//         getText('effort'),
+//         getText('money'),
+//         getText('capital'),
+//         '${getText('profitability')} %',
+//       ].map((e) => GridColumn(columnName: e, label: myText(e))).toList(),
+//       source: UnitHistoryDataSource(unitsHistory: unitsHistory),
+//     );
+//   }
 }
 
-class UnitHistoryDataSource extends DataGridSource {
-  UnitHistoryDataSource({required List<UnitHistory> unitsHistory}) {
-    _unitsHistory = unitsHistory
-        .map((unitHistory) => DataGridRow(cells: [
-              DataGridCell(columnName: '', value: (unitsHistory.indexOf(unitHistory) + 1)),
-              ...[
-                unitHistory.name,
-                unitHistory.year,
-                myCurrency.format(unitHistory.rawProfit),
-                myCurrency.format(unitHistory.reserve),
-                myCurrency.format(unitHistory.donation),
-                myCurrency.format(unitHistory.netProfit),
-                myCurrency.format(unitHistory.thresholdFounding),
-                myCurrency.format(unitHistory.threshold),
-                myCurrency.format(unitHistory.founding),
-                myCurrency.format(unitHistory.effort),
-                myCurrency.format(unitHistory.money),
-                myCurrency.format(unitHistory.capital),
-                unitHistory.profitability,
-              ].map((e) => DataGridCell(columnName: e.toString(), value: e)).toList(),
-            ]))
-        .toList();
-  }
+// class UnitHistoryDataSource extends DataGridSource {
+//   UnitHistoryDataSource({required List<UnitHistory> unitsHistory}) {
+//     _unitsHistory = unitsHistory
+//         .map((unitHistory) => DataGridRow(cells: [
+//               DataGridCell(columnName: '', value: (unitsHistory.indexOf(unitHistory) + 1)),
+//               ...[
+//                 unitHistory.name,
+//                 unitHistory.year,
+//                 myCurrency.format(unitHistory.rawProfit),
+//                 myCurrency.format(unitHistory.reserve),
+//                 myCurrency.format(unitHistory.donation),
+//                 myCurrency.format(unitHistory.netProfit),
+//                 myCurrency.format(unitHistory.thresholdFounding),
+//                 myCurrency.format(unitHistory.threshold),
+//                 myCurrency.format(unitHistory.founding),
+//                 myCurrency.format(unitHistory.effort),
+//                 myCurrency.format(unitHistory.money),
+//                 myCurrency.format(unitHistory.capital),
+//                 unitHistory.profitability,
+//               ].map((e) => DataGridCell(columnName: e.toString(), value: e)).toList(),
+//             ]))
+//         .toList();
+//   }
 
-  List<DataGridRow> _unitsHistory = [];
+//   List<DataGridRow> _unitsHistory = [];
 
-  @override
-  List<DataGridRow> get rows => _unitsHistory;
+//   @override
+//   List<DataGridRow> get rows => _unitsHistory;
 
-  @override
-  DataGridRowAdapter? buildRow(DataGridRow row) =>
-      DataGridRowAdapter(cells: row.getCells().map((e) => myText(e.toString())).toList());
-}
+//   @override
+//   DataGridRowAdapter? buildRow(DataGridRow row) =>
+//       DataGridRowAdapter(cells: row.getCells().map((e) => myText(e.toString())).toList());
+// }

@@ -42,7 +42,7 @@ class _OtherUsersState extends State<OtherUsers> {
         rest: double.parse(ele['rest']),
       ));
 
-      userNames.add(ele['name']);
+      userNames.add(namesHidden ? ele['userId'] : ele['name']);
     }
 
     setState(() {
@@ -53,7 +53,8 @@ class _OtherUsersState extends State<OtherUsers> {
   void filterUsers() {
     users.clear();
     for (var user in allUsers) {
-      if ((_search.isEmpty || user.name == _search) && (_type == 'tout' || user.type == _type)) users.add(user);
+      if ((_search.isEmpty || user.name == _search || (namesHidden && user.userId == int.parse(_search))) &&
+          (_type == 'tout' || user.type == _type)) users.add(user);
     }
 
     onSort();
@@ -122,7 +123,8 @@ class _OtherUsersState extends State<OtherUsers> {
               ),
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
-                dataCell(context, user.name, textAlign: TextAlign.start),
+                dataCell(context, namesHidden ? user.userId.toString() : user.name,
+                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, myDateFormate.format(user.joinDate)),
                 dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
@@ -279,6 +281,7 @@ class _OtherUsersState extends State<OtherUsers> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(16.0),
+                                alignment: namesHidden ? Alignment.center : Alignment.centerLeft,
                                 child: myText(option),
                               ),
                             );

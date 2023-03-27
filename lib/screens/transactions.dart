@@ -103,7 +103,7 @@ class _TransactionsState extends State<Transactions> {
       if (ele['category'] == 'caisse') {
         allCaisseTransactions.add(Transaction(
           transactionId: int.parse(ele['transactionId']),
-          userName: ele['category'],
+          userName: getText('caisse'),
           source: 'caisse',
           year: int.parse(ele['year']),
           date: DateTime.parse(ele['date']),
@@ -567,7 +567,18 @@ class _TransactionsState extends State<Transactions> {
         .map((transaction) => DataRow(
               cells: [
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
-                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(
+                    context,
+                    namesHidden
+                        ? transaction.source == 'user'
+                            ? '1${userNames.toList().indexOf(transaction.userName)}'
+                            : transaction.source == 'loan'
+                                ? '2${loanNames.toList().indexOf(transaction.userName)}'
+                                : transaction.source == 'deposit'
+                                    ? '3${depositNames.toList().indexOf(transaction.userName)}'
+                                    : '4'
+                        : transaction.userName,
+                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, getText(transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(
@@ -603,7 +614,9 @@ class _TransactionsState extends State<Transactions> {
         .map((transaction) => DataRow(
               cells: [
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
-                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context,
+                    namesHidden ? userNames.toList().indexOf(transaction.userName).toString() : transaction.userName,
+                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(
                     context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
@@ -674,7 +687,9 @@ class _TransactionsState extends State<Transactions> {
         .map((transaction) => DataRow(
               cells: [
                 dataCell(context, (loanTransactions.indexOf(transaction) + 1).toString()),
-                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context,
+                    namesHidden ? loanNames.toList().indexOf(transaction.userName).toString() : transaction.userName,
+                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(
                     context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
@@ -709,7 +724,9 @@ class _TransactionsState extends State<Transactions> {
         .map((transaction) => DataRow(
               cells: [
                 dataCell(context, (depositTransactions.indexOf(transaction) + 1).toString()),
-                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context,
+                    namesHidden ? depositNames.toList().indexOf(transaction.userName).toString() : transaction.userName,
+                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(
                     context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
@@ -899,119 +916,64 @@ class _TransactionsState extends State<Transactions> {
               ),
             ],
           ),
-        if (transactionCategory == 'users' || transactionCategory == 'loans' || transactionCategory == 'deposits')
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('name'),
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ),
-              SizedBox(
-                height: getHeight(context, textFeildHeight),
-                width: getWidth(context, .22),
-                child: Autocomplete<String>(
-                  onSelected: (item) => setState(() {
-                    _search = item;
-                  }),
-                  optionsBuilder: (textEditingValue) {
-                    if (transactionCategory == 'users') {
-                      return userNames
-                          .where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-                    } else if (transactionCategory == 'loans') {
-                      return loanNames
-                          .where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-                    } else {
-                      return depositNames
-                          .where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+        transactionCategory == 'users'
+            ? autoComplete(
+                onSeleted: (item) =>
+                    setState(() => _search = namesHidden ? userNames.elementAt(int.parse(item)) : item),
+                optionsBuilder: (textEditingValue) {
+                  if (namesHidden) {
+                    Set<String> indexes = {};
+                    for (var ele in userNames) {
+                      if (userNames.toList().indexOf(ele).toString().contains(textEditingValue.text)) {
+                        indexes.add(userNames.toList().indexOf(ele).toString());
+                      }
                     }
-                  },
-                  fieldViewBuilder: (
-                    context,
-                    textEditingController,
-                    focusNode,
-                    onFieldSubmitted,
-                  ) {
-                    _controller = textEditingController;
-                    return Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: _controller.text.isEmpty ? Colors.grey : winTileColor),
-                          borderRadius: const BorderRadius.all(Radius.circular(12)),
-                        ),
-                        child: TextFormField(
-                          controller: _controller,
-                          focusNode: focusNode,
-                          style: const TextStyle(fontSize: 18.0),
-                          onChanged: ((value) => setState(() {})),
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            hintText: getText('search'),
-                            border: const OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.all(Radius.circular(12)),
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.search,
-                              size: 20.0,
-                            ),
-                            suffixIcon: textEditingController.text.isEmpty
-                                ? const SizedBox()
-                                : IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        textEditingController.clear();
-                                        _search = '';
-                                      });
-                                    },
-                                    icon: const Icon(
-                                      Icons.clear,
-                                      size: 20.0,
-                                    )),
-                          ),
-                        ));
-                  },
-                  optionsViewBuilder: (
-                    BuildContext context,
-                    AutocompleteOnSelected<String> onSelected,
-                    Iterable<String> options,
-                  ) {
-                    return Align(
-                      alignment: Alignment.topLeft,
-                      child: Material(
-                        elevation: 8.0,
-                        child: ConstrainedBox(
-                          constraints:
-                              BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .23)),
-                          child: ListView.builder(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            itemCount: options.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final String option = options.elementAt(index);
-                              return InkWell(
-                                onTap: () {
-                                  onSelected(option);
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: myText(option),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+                    return indexes;
+                  } else {
+                    return userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                  }
+                },
+              )
+            : const SizedBox(),
+        transactionCategory == 'loans'
+            ? autoComplete(
+                onSeleted: (item) =>
+                    setState(() => _search = namesHidden ? loanNames.elementAt(int.parse(item)) : item),
+                optionsBuilder: (textEditingValue) {
+                  if (namesHidden) {
+                    Set<String> indexes = {};
+                    for (var ele in loanNames) {
+                      if (loanNames.toList().indexOf(ele).toString().contains(textEditingValue.text)) {
+                        indexes.add(loanNames.toList().indexOf(ele).toString());
+                      }
+                    }
+                    return indexes;
+                  } else {
+                    return loanNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                  }
+                },
+              )
+            : const SizedBox(),
+        transactionCategory == 'deposits'
+            ? autoComplete(
+                onSeleted: (item) =>
+                    setState(() => _search = namesHidden ? depositNames.elementAt(int.parse(item)) : item),
+                optionsBuilder: (textEditingValue) {
+                  if (namesHidden) {
+                    Set<String> indexes = {};
+                    for (var ele in depositNames) {
+                      if (depositNames.toList().indexOf(ele).toString().contains(textEditingValue.text)) {
+                        indexes.add(depositNames.toList().indexOf(ele).toString());
+                      }
+                    }
+                    return indexes;
+                  } else {
+                    return depositNames
+                        .where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                  }
+                },
+              )
+            : const SizedBox(),
         const SizedBox(width: 8.0),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1204,6 +1166,107 @@ class _TransactionsState extends State<Transactions> {
                 ),
               )
             : const SizedBox(),
+      ],
+    );
+  }
+
+  Widget autoComplete(
+      {required Function(String) onSeleted, required Iterable<String> Function(TextEditingValue) optionsBuilder}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Text(
+            getText('name'),
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
+        SizedBox(
+          height: getHeight(context, textFeildHeight),
+          width: getWidth(context, .22),
+          child: Autocomplete<String>(
+            onSelected: onSeleted,
+            optionsBuilder: optionsBuilder,
+            fieldViewBuilder: (
+              context,
+              textEditingController,
+              focusNode,
+              onFieldSubmitted,
+            ) {
+              _controller = textEditingController;
+              return Container(
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: _controller.text.isEmpty ? Colors.grey : winTileColor),
+                    borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  ),
+                  child: TextFormField(
+                    controller: _controller,
+                    focusNode: focusNode,
+                    style: const TextStyle(fontSize: 18.0),
+                    onChanged: ((value) => setState(() {})),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      hintText: getText('search'),
+                      border: const OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        size: 20.0,
+                      ),
+                      suffixIcon: textEditingController.text.isEmpty
+                          ? const SizedBox()
+                          : IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  textEditingController.clear();
+                                  _search = '';
+                                });
+                              },
+                              icon: const Icon(
+                                Icons.clear,
+                                size: 20.0,
+                              )),
+                    ),
+                  ));
+            },
+            optionsViewBuilder: (
+              BuildContext context,
+              AutocompleteOnSelected<String> onSelected,
+              Iterable<String> options,
+            ) {
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 8.0,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .23)),
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      itemCount: options.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final String option = options.elementAt(index);
+                        return InkWell(
+                          onTap: () => onSelected(option),
+                          child: Container(
+                            padding: const EdgeInsets.all(16.0),
+                            alignment: namesHidden ? Alignment.center : Alignment.centerLeft,
+                            child: myText(option),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../screens/other_users.dart';
-import '../screens/units.dart';
-import '../shared/lists.dart';
-import '../screens/transactions.dart';
-import '../screens/user_history.dart';
-import '../screens/users.dart';
-import '../screens/consultaion.dart';
-import '../screens/dashboard.dart';
-import '../screens/unit_history.dart';
+import 'screens/other_users.dart';
+import 'screens/units.dart';
+import 'shared/lists.dart';
+import 'screens/transactions.dart';
+import 'screens/user_history.dart';
+import 'screens/users.dart';
+import 'screens/consultaion.dart';
+import 'screens/dashboard.dart';
+import 'screens/unit_history.dart';
 import 'shared/parameters.dart';
+import 'widgets/widget.dart';
 
 //used to conver color to material color in material theme
 final Map<int, Color> color = {
@@ -99,18 +100,23 @@ class _MyAppState extends State<MyApp> {
               ...tabs
                   .map(
                     (e) => InkWell(
-                      onTap: (() {
-                        setState(() {
-                          selectedTab = tabs.indexOf(e);
-                        });
-                      }),
+                      onTap: (() => setState(() => selectedTab = tabs.indexOf(e))),
                       child: tabItem(e, tabs.indexOf(e) == selectedTab),
                     ),
                   )
                   .toList(),
               const Spacer(flex: 10),
               InkWell(
-                onTap: (() => setState(() {})),
+                onTap: () async {
+                  if (!namesHidden) {
+                    namesHidden = true;
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) =>
+                            MyApp(index: tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
+                  } else {
+                    await createDialog(context, passwordDialog(), true);
+                  }
+                },
                 child: Text(
                   myDateFormate2.format(DateTime.now()),
                   style: const TextStyle(
@@ -154,6 +160,70 @@ class _MyAppState extends State<MyApp> {
           fontWeight: selected ? FontWeight.bold : FontWeight.normal,
           color: selected ? winTileColor : Colors.white,
         ),
+      ),
+    );
+  }
+
+  Widget passwordDialog() {
+    String _password = '';
+    return Container(
+      height: getHeight(context, .20),
+      width: getWidth(context, .20),
+      decoration: BoxDecoration(color: scaffoldColor, borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        children: [
+          Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    getText('password'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 20.0),
+                  ),
+                ),
+              ],
+            ),
+            decoration: BoxDecoration(
+                color: winTileColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
+                )),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                myTextField(
+                  context,
+                  width: getWidth(context, .18),
+                  onChanged: (text) => _password = text,
+                  autoFocus: true,
+                  isPassword: true,
+                  isCenter: true,
+                ),
+                myButton(
+                  context,
+                  noIcon: true,
+                  text: getText('confirm'),
+                  onTap: () {
+                    if (_password == password) {
+                      namesHidden = false;
+                    } else {
+                      snackBar(context, 'Wrong Password!!', duration: 1);
+                    }
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) =>
+                            MyApp(index: tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

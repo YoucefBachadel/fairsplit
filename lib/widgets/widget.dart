@@ -57,10 +57,12 @@ Widget myTextField(
   bool enabled = true,
   bool isNumberOnly = false,
   bool autoFocus = false,
+  bool isPassword = false,
+  bool isCenter = false,
   required Function(String text) onChanged,
 }) {
   return Container(
-    alignment: Alignment.centerLeft,
+    alignment: isCenter ? Alignment.center : Alignment.centerLeft,
     child: SizedBox(
       height: getHeight(context, textFeildHeight),
       width: width ?? getWidth(context, .06),
@@ -68,6 +70,7 @@ Widget myTextField(
         onChanged: onChanged,
         autofocus: autoFocus,
         textAlign: TextAlign.center,
+        obscureText: isPassword,
         enabled: enabled,
         style: const TextStyle(fontSize: 22),
         decoration: textInputDecoration(hint),

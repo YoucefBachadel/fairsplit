@@ -54,7 +54,7 @@ class _UsersState extends State<Users> {
     allUsers = toUsers(dataUsers, toThresholds(dataThresholds), toFoundings(dataFoundings), toEfforts(dataEfforts));
 
     for (var ele in dataUsers) {
-      userNames.add(ele['name']);
+      userNames.add(namesHidden ? ele['userId'] : ele['name']);
     }
     for (var element in dataUnits) {
       units.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
@@ -108,7 +108,7 @@ class _UsersState extends State<Users> {
       }
 
       //to add user it mast contain search name and the type and the three list filter
-      if ((_search.isEmpty || user.name == _search) &&
+      if ((_search.isEmpty || user.name == _search || (namesHidden && user.userId == int.parse(_search))) &&
           (_type == 'tout' || user.type == _type) &&
           (_thresholdUnitFilter == -2 || _isthresholdFilter) &&
           (_foundingUnitFilter == -2 || _isfoundingFilter) &&
@@ -270,7 +270,8 @@ class _UsersState extends State<Users> {
               ),
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
-                dataCell(context, user.name, textAlign: TextAlign.start),
+                dataCell(context, namesHidden ? user.userId.toString() : user.name,
+                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, myDateFormate.format(user.joinDate)),
                 dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
@@ -471,11 +472,10 @@ class _UsersState extends State<Users> {
                           itemBuilder: (BuildContext context, int index) {
                             final String option = options.elementAt(index);
                             return InkWell(
-                              onTap: () {
-                                onSelected(option);
-                              },
+                              onTap: () => onSelected(option),
                               child: Container(
                                 padding: const EdgeInsets.all(16.0),
+                                alignment: namesHidden ? Alignment.center : Alignment.centerLeft,
                                 child: myText(option),
                               ),
                             );

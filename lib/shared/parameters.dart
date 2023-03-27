@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pdf;
 import 'package:http/http.dart' as http;
 
+String password = '';
 int currentYear = 2023;
 bool namesHidden = true;
 DateTime startDate = DateTime.now();

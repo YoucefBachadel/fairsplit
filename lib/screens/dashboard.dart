@@ -23,6 +23,7 @@ class _DashboardState extends State<Dashboard> {
     });
     data = res[0][0];
     currentYear = int.parse(data['currentYear']);
+    password = data['password'];
     setState(() {
       isLoadingData = false;
     });

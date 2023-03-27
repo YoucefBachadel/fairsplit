@@ -191,7 +191,9 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
           (userHistory) => DataRow(
             cells: [
               dataCell(context, (usersHistory.indexOf(userHistory) + 1).toString()),
-              dataCell(context, userHistory.name, textAlign: TextAlign.start),
+              dataCell(
+                  context, namesHidden ? userNames.toList().indexOf(userHistory.name).toString() : userHistory.name,
+                  textAlign: namesHidden ? TextAlign.center : TextAlign.start),
               ...[
                 userHistory.year.toString(),
                 userHistory.isMoney ? myCurrency.format(userHistory.startCapital) : '/',
@@ -276,11 +278,20 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
               height: getHeight(context, textFeildHeight),
               width: getWidth(context, .22),
               child: Autocomplete<String>(
-                onSelected: (item) => setState(() {
-                  _search = item;
-                }),
+                onSelected: (item) =>
+                    setState(() => _search = namesHidden ? userNames.elementAt(int.parse(item)) : item),
                 optionsBuilder: (textEditingValue) {
-                  return userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                  if (namesHidden) {
+                    List<String> indexes = [];
+                    for (var ele in userNames) {
+                      if (userNames.toList().indexOf(ele).toString().contains(textEditingValue.text)) {
+                        indexes.add(userNames.toList().indexOf(ele).toString());
+                      }
+                    }
+                    return indexes;
+                  } else {
+                    return userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                  }
                 },
                 fieldViewBuilder: (
                   context,
@@ -352,6 +363,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(16.0),
+                                alignment: namesHidden ? Alignment.center : Alignment.centerLeft,
                                 child: myText(option),
                               ),
                             );

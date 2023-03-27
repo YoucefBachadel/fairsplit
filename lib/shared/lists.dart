@@ -78,6 +78,7 @@ Map<String, String> constans = {
   'rest': 'Rest',
   'loans': 'Loans',
   'source': 'Source',
+  'password': 'Password',
 };
 
 Map<String, String> messages = {};

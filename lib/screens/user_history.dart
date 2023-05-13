@@ -304,7 +304,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : winTileColor),
+                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : primaryColor),
                         borderRadius: const BorderRadius.all(Radius.circular(12)),
                       ),
                       child: TextFormField(
@@ -391,7 +391,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
             myDropDown(
               context,
               value: _year,
-              color: _year == 'tout' ? Colors.grey : winTileColor,
+              color: _year == 'tout' ? Colors.grey : primaryColor,
               items: [constans['tout'] ?? '', ...years].map((item) {
                 return DropdownMenuItem(
                   value: item == constans['tout'] ? 'tout' : item,
@@ -415,7 +415,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                 }),
                 icon: Icon(
                   Icons.update,
-                  color: winTileColor,
+                  color: primaryColor,
                 ),
               )
             : const SizedBox(),

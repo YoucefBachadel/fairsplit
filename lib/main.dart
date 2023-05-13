@@ -14,16 +14,16 @@ import 'widgets/widget.dart';
 
 //used to conver color to material color in material theme
 final Map<int, Color> color = {
-  50: winTileColor,
-  100: winTileColor,
-  200: winTileColor,
-  300: winTileColor,
-  400: winTileColor,
-  500: winTileColor,
-  600: winTileColor,
-  700: winTileColor,
-  800: winTileColor,
-  900: winTileColor,
+  50: primaryColor,
+  100: primaryColor,
+  200: primaryColor,
+  300: primaryColor,
+  400: primaryColor,
+  500: primaryColor,
+  600: primaryColor,
+  700: primaryColor,
+  800: primaryColor,
+  900: primaryColor,
 };
 // textTheme: GoogleFonts.gothicA1TextTheme(),
 // textTheme: GoogleFonts.gothicA1TextTheme(),
@@ -33,7 +33,7 @@ final Map<int, Color> color = {
 void main() => runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'FairSplit',
-      theme: ThemeData(primarySwatch: MaterialColor(0XFF303F9F, color), fontFamily: 'Itim'),
+      theme: ThemeData(primarySwatch: MaterialColor(0XFF02333c, color), fontFamily: 'Itim'),
       home: const MyApp(index: 'da'),
     ));
 
@@ -88,12 +88,12 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: winTileColor,
+      backgroundColor: primaryColor,
       body: Row(
         children: [
           Container(
             width: MediaQuery.of(context).size.width * 0.1,
-            color: winTileColor,
+            color: primaryColor,
             padding: const EdgeInsets.only(left: 5),
             child: Column(children: [
               const Spacer(),
@@ -158,7 +158,7 @@ class _MyAppState extends State<MyApp> {
         style: TextStyle(
           fontSize: 18,
           fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-          color: selected ? winTileColor : Colors.white,
+          color: selected ? primaryColor : Colors.white,
         ),
       ),
     );
@@ -187,7 +187,7 @@ class _MyAppState extends State<MyApp> {
               ],
             ),
             decoration: BoxDecoration(
-                color: winTileColor,
+                color: primaryColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20.0),
                   topRight: Radius.circular(20.0),

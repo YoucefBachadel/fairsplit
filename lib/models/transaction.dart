@@ -1,5 +1,6 @@
 class Transaction {
   int transactionId;
+  int userId;
   String userName;
   String source; //used for all caisse transactions inTransactions users-specials-loan-deposit-caisse
   int year;
@@ -12,14 +13,15 @@ class Transaction {
 
   Transaction({
     required this.transactionId,
+    this.userId = 0,
     this.userName = '',
     this.source = 'user',
-    required this.year,
+    this.year = 0,
     required this.date,
     required this.type,
     required this.amount,
     this.soldeUser = 0,
-    required this.soldeCaisse,
-    required this.note,
+    this.soldeCaisse = 0,
+    this.note = '',
   });
 }

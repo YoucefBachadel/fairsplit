@@ -36,7 +36,7 @@ class _AddUserState extends State<AddUser> {
   bool typeHasChanged = false;
 
   void deleteUser(int userId) async {
-    sqlQuery(insertUrl, {
+    await sqlQuery(insertUrl, {
       'sql1': 'DELETE FROM Threshold WHERE userId = $userId',
       'sql2': 'DELETE FROM Founding WHERE userId = $userId',
       'sql3': 'DELETE FROM Effort WHERE userId = $userId',
@@ -126,7 +126,7 @@ class _AddUserState extends State<AddUser> {
               ],
             ),
             decoration: BoxDecoration(
-                color: winTileColor,
+                color: primaryColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20.0),
                   topRight: Radius.circular(20.0),
@@ -245,7 +245,7 @@ class _AddUserState extends State<AddUser> {
                   IconButton(
                     icon: Icon(
                       Icons.calendar_month,
-                      color: winTileColor,
+                      color: primaryColor,
                     ),
                     onPressed: () async {
                       final DateTime? selected = await showDatePicker(
@@ -326,7 +326,7 @@ class _AddUserState extends State<AddUser> {
                         },
                         icon: Icon(
                           Icons.add,
-                          color: winTileColor,
+                          color: primaryColor,
                         ),
                       ),
               ],
@@ -436,7 +436,7 @@ class _AddUserState extends State<AddUser> {
                       },
                       icon: Icon(
                         Icons.add,
-                        color: winTileColor,
+                        color: primaryColor,
                       ),
                     ),
             ],
@@ -546,7 +546,7 @@ class _AddUserState extends State<AddUser> {
                       },
                       icon: Icon(
                         Icons.add,
-                        color: winTileColor,
+                        color: primaryColor,
                       ),
                     ),
             ],
@@ -759,9 +759,8 @@ class _AddUserState extends State<AddUser> {
           const Spacer(),
           myButton(
             context,
-            noIcon: true,
-            color: Colors.orange,
-            text: getText('confirm'),
+            icon: Icons.add,
+            text: getText('add'),
             onTap: () {
               try {
                 if (_percentage != '0' && _evaluation != '0') {
@@ -899,7 +898,7 @@ class _AddUserState extends State<AddUser> {
           sqls.add(sql);
         }
 
-        sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
+        await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
         snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');

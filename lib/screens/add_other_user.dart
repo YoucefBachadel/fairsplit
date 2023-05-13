@@ -21,7 +21,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
   bool isLoading = false, isDeposit = false;
 
   void deleteUser(int userId) async {
-    sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
+    await sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
 
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
     snackBar(context, 'User deleted successfully');
@@ -82,7 +82,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
               ],
             ),
             decoration: BoxDecoration(
-                color: winTileColor,
+                color: primaryColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20.0),
                   topRight: Radius.circular(20.0),
@@ -107,7 +107,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             Text(
                               getText('loan'),
                               style: !isDeposit
-                                  ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: winTileColor)
+                                  ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: primaryColor)
                                   : Theme.of(context).textTheme.headlineSmall,
                             ),
                             Transform.scale(
@@ -122,14 +122,14 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                         },
                                       ),
                                 thumbColor: MaterialStateProperty.all(Colors.white),
-                                trackColor: MaterialStateProperty.all(winTileColor),
+                                trackColor: MaterialStateProperty.all(primaryColor),
                                 hoverColor: Colors.transparent,
                               ),
                             ),
                             Text(
                               getText('deposit'),
                               style: isDeposit
-                                  ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: winTileColor)
+                                  ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: primaryColor)
                                   : Theme.of(context).textTheme.headlineSmall,
                             ),
                           ],
@@ -168,7 +168,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                   IconButton(
                                     icon: Icon(
                                       Icons.calendar_month,
-                                      color: winTileColor,
+                                      color: primaryColor,
                                     ),
                                     onPressed: () async {
                                       final DateTime? selected = await showDatePicker(
@@ -223,7 +223,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
       if (name != '') {
         String _type = isDeposit ? 'deposit' : 'loan';
 
-        sqlQuery(insertUrl, {
+        await sqlQuery(insertUrl, {
           'sql1': widget.user.userId == -1
               ? '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);'''
               : '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};'''

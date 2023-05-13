@@ -327,7 +327,7 @@ class _UsersState extends State<Users> {
                 DataCell(IconButton(
                   onPressed: () => _newUser(context, user),
                   hoverColor: Colors.transparent,
-                  icon: Icon(Icons.edit, size: 22, color: winTileColor),
+                  icon: Icon(Icons.edit, size: 22, color: primaryColor),
                 )),
               ],
             ))
@@ -424,7 +424,7 @@ class _UsersState extends State<Users> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : winTileColor),
+                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : primaryColor),
                         borderRadius: const BorderRadius.all(Radius.circular(12)),
                       ),
                       child: TextFormField(
@@ -503,7 +503,7 @@ class _UsersState extends State<Users> {
             myDropDown(
               context,
               value: _type,
-              color: _type == 'tout' ? Colors.grey : winTileColor,
+              color: _type == 'tout' ? Colors.grey : primaryColor,
               items: usersTypesSearch.entries.map((item) {
                 return DropdownMenuItem(
                   value: getKeyFromValue(item.value),
@@ -534,7 +534,7 @@ class _UsersState extends State<Users> {
               context,
               value: _thresholdUnitFilter,
               width: getWidth(context, .14),
-              color: _thresholdUnitFilter == -2 ? Colors.grey : winTileColor,
+              color: _thresholdUnitFilter == -2 ? Colors.grey : primaryColor,
               items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
                 return DropdownMenuItem(
                   value: item.unitId,
@@ -565,7 +565,7 @@ class _UsersState extends State<Users> {
               context,
               value: _foundingUnitFilter,
               width: getWidth(context, .14),
-              color: _foundingUnitFilter == -2 ? Colors.grey : winTileColor,
+              color: _foundingUnitFilter == -2 ? Colors.grey : primaryColor,
               items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
                 return DropdownMenuItem(
                   value: item.unitId,
@@ -596,7 +596,7 @@ class _UsersState extends State<Users> {
               context,
               value: _effortUnitFilter,
               width: getWidth(context, .14),
-              color: _effortUnitFilter == -2 ? Colors.grey : winTileColor,
+              color: _effortUnitFilter == -2 ? Colors.grey : primaryColor,
               items: ([
                         Unit(unitId: -2, name: constans['tout'] ?? ''),
                         Unit(unitId: -1, name: constans['global'] ?? '')
@@ -635,7 +635,7 @@ class _UsersState extends State<Users> {
                 }),
                 icon: Icon(
                   Icons.update,
-                  color: winTileColor,
+                  color: primaryColor,
                 ),
               )
             : const SizedBox(),

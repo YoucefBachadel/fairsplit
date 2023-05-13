@@ -902,7 +902,7 @@ class _TransactionsState extends State<Transactions> {
               myDropDown(
                 context,
                 value: _compt,
-                color: _compt == 'tout' ? Colors.grey : winTileColor,
+                color: _compt == 'tout' ? Colors.grey : primaryColor,
                 items: comptsSearch.entries.map((item) {
                   return DropdownMenuItem(
                     value: getKeyFromValue(item.value),
@@ -988,7 +988,7 @@ class _TransactionsState extends State<Transactions> {
             myDropDown(
               context,
               value: _type,
-              color: _type == 'tout' ? Colors.grey : winTileColor,
+              color: _type == 'tout' ? Colors.grey : primaryColor,
               items: transactionsTypesSearch.entries.map((item) {
                 return DropdownMenuItem(
                   value: getKeyFromValue(item.value),
@@ -1016,7 +1016,7 @@ class _TransactionsState extends State<Transactions> {
             myDropDown(
               context,
               value: _year,
-              color: _year == 'tout' ? Colors.grey : winTileColor,
+              color: _year == 'tout' ? Colors.grey : primaryColor,
               items: [constans['tout'] ?? '', ...years].map((item) {
                 return DropdownMenuItem(
                   value: item == constans['tout'] ? 'tout' : item,
@@ -1072,7 +1072,7 @@ class _TransactionsState extends State<Transactions> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
-                      color: _fromDate == DateTime(int.parse(years.last)) ? Colors.grey : winTileColor,
+                      color: _fromDate == DateTime(int.parse(years.last)) ? Colors.grey : primaryColor,
                     ),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),
@@ -1115,7 +1115,7 @@ class _TransactionsState extends State<Transactions> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
-                      color: _toDate == today.add(const Duration(seconds: 86399)) ? Colors.grey : winTileColor,
+                      color: _toDate == today.add(const Duration(seconds: 86399)) ? Colors.grey : primaryColor,
                     ),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),
@@ -1127,7 +1127,7 @@ class _TransactionsState extends State<Transactions> {
         IconButton(
           icon: Icon(
             Icons.calendar_month,
-            color: winTileColor,
+            color: primaryColor,
           ),
           onPressed: () async {
             final DateTime? selected = await showDatePicker(
@@ -1162,7 +1162,7 @@ class _TransactionsState extends State<Transactions> {
                 }),
                 icon: Icon(
                   Icons.update,
-                  color: winTileColor,
+                  color: primaryColor,
                 ),
               )
             : const SizedBox(),
@@ -1199,7 +1199,7 @@ class _TransactionsState extends State<Transactions> {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border.all(color: _controller.text.isEmpty ? Colors.grey : winTileColor),
+                    border: Border.all(color: _controller.text.isEmpty ? Colors.grey : primaryColor),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),
                   child: TextFormField(

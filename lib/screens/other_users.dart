@@ -133,7 +133,7 @@ class _OtherUsersState extends State<OtherUsers> {
                 DataCell(IconButton(
                   onPressed: () => _newUser(context, user),
                   hoverColor: Colors.transparent,
-                  icon: Icon(Icons.edit, size: 22, color: winTileColor),
+                  icon: Icon(Icons.edit, size: 22, color: primaryColor),
                 )),
               ],
             ))
@@ -228,7 +228,7 @@ class _OtherUsersState extends State<OtherUsers> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : winTileColor),
+                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : primaryColor),
                         borderRadius: const BorderRadius.all(Radius.circular(12)),
                       ),
                       child: TextFormField(
@@ -309,7 +309,7 @@ class _OtherUsersState extends State<OtherUsers> {
             myDropDown(
               context,
               value: _type,
-              color: _type == 'tout' ? Colors.grey : winTileColor,
+              color: _type == 'tout' ? Colors.grey : primaryColor,
               items: otherUsersTypesSearch.entries.map((item) {
                 return DropdownMenuItem(
                   value: getKeyFromValue(item.value),
@@ -331,7 +331,7 @@ class _OtherUsersState extends State<OtherUsers> {
                 }),
                 icon: Icon(
                   Icons.update,
-                  color: winTileColor,
+                  color: primaryColor,
                 ),
               )
             : const SizedBox(),

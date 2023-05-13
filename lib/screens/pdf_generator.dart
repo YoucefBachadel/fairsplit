@@ -49,9 +49,7 @@ class _PdfGeneratorState extends State<PdfGenerator> {
           canChangeOrientation: false,
           canChangePageFormat: false,
           loadingWidget: Center(
-            child: CircularProgressIndicator(
-              color: winTileColor,
-            ),
+            child: CircularProgressIndicator(color: primaryColor),
           ),
         ),
       ),

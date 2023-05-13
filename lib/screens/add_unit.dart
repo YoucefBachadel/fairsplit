@@ -20,7 +20,7 @@ class _AddUnitState extends State<AddUnit> {
   bool isLoading = false;
 
   void deleteUnit(int unitId) async {
-    sqlQuery(insertUrl, {
+    await sqlQuery(insertUrl, {
       'sql1': 'DELETE FROM Threshold WHERE unitId = $unitId',
       'sql2': 'DELETE FROM Founding WHERE unitId = $unitId',
       'sql3': 'DELETE FROM Effort WHERE unitId = $unitId',
@@ -93,7 +93,7 @@ class _AddUnitState extends State<AddUnit> {
               ],
             ),
             decoration: BoxDecoration(
-                color: winTileColor,
+                color: primaryColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20.0),
                   topRight: Radius.circular(20.0),
@@ -176,7 +176,7 @@ class _AddUnitState extends State<AddUnit> {
                   },
                 ),
                 thumbColor: MaterialStateProperty.all(Colors.white),
-                trackColor: MaterialStateProperty.all(winTileColor),
+                trackColor: MaterialStateProperty.all(primaryColor),
                 hoverColor: Colors.transparent,
               ),
             ),
@@ -309,7 +309,7 @@ class _AddUnitState extends State<AddUnit> {
           double _founding = double.parse(founding);
 
           // sending a post request to the url
-          sqlQuery(insertUrl, {
+          await sqlQuery(insertUrl, {
             'sql1': _unitId == -1
                 ? '''INSERT INTO Units (name,type,capital,reservePerc,donationPerc,thresholdFoundingPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated) VALUES ('$name' ,'$_type',$_capital, $_reserve , $_donation , $_thresholdFounding ,$_threshold , $_founding , $_effort , $_money , 0);'''
                 : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdFoundingPerc = $_thresholdFounding ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',

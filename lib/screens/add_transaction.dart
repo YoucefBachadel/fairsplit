@@ -142,7 +142,7 @@ class _AddTransactionState extends State<AddTransaction> {
             ],
           ),
           decoration: BoxDecoration(
-              color: winTileColor,
+              color: primaryColor,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20.0),
                 topRight: Radius.circular(20.0),
@@ -472,7 +472,7 @@ class _AddTransactionState extends State<AddTransaction> {
                                     IconButton(
                                       icon: Icon(
                                         Icons.calendar_month,
-                                        color: winTileColor,
+                                        color: primaryColor,
                                       ),
                                       onPressed: () async {
                                         final DateTime? selected = await showDatePicker(
@@ -536,9 +536,7 @@ class _AddTransactionState extends State<AddTransaction> {
       context,
       onTap: () async {
         if (amount.isNotEmpty && amount != '0') {
-          setState(() {
-            isLoading = true;
-          });
+          setState(() => isLoading = true);
           bool _testsChecked = true; //used to test if rest is >= 0 and prevent navigation to main screen
           double _amount = double.parse(amount);
           double _solde = 0;
@@ -565,7 +563,7 @@ class _AddTransactionState extends State<AddTransaction> {
           if (selectedTransactionType == 0) {
             //insert the special transaction
             //update the setting category
-            sqlQuery(insertUrl, {
+            await sqlQuery(insertUrl, {
               'sql1':
                   '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,note) VALUES ($currentYear , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
               'sql2': '''UPDATE Settings SET $category = $_solde WHERE 1;'''
@@ -607,9 +605,9 @@ class _AddTransactionState extends State<AddTransaction> {
                 //insert the transaction
                 //update the User capital
                 //update the setting caisse
-                sqlQuery(insertUrl, {
+                await sqlQuery(insertUrl, {
                   'sql1':
-                      '''INSERT INTO Transaction (userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${selectedUser.name}',$currentYear , '$date' , '$type' ,${_amount.abs()} ,$_soldeUser, $_solde , '$note' );''',
+                      '''INSERT INTO Transaction (userId,userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES (${selectedUser.userId},'${selectedUser.name}',$currentYear , '$date' , '$type' ,${_amount.abs()} ,$_soldeUser, $_solde , '$note' );''',
                   'sql2': '''UPDATE Users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};''',
                   'sql3': '''UPDATE Settings SET caisse = $_solde WHERE 1;'''
                 });
@@ -628,7 +626,7 @@ class _AddTransactionState extends State<AddTransaction> {
                   //insert the transaction
                   //update the User capital
                   //update the setting caisse
-                  sqlQuery(insertUrl, {
+                  await sqlQuery(insertUrl, {
                     'sql1':
                         '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeCaisse,note) VALUES ('${selectedOtherUser.name}', 'loan', $currentYear , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
                     'sql2':
@@ -657,7 +655,7 @@ class _AddTransactionState extends State<AddTransaction> {
                   //insert the transaction
                   //update the User capital
                   //update the setting caisse
-                  sqlQuery(insertUrl, {
+                  await sqlQuery(insertUrl, {
                     'sql1':
                         '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeCaisse,note) VALUES ('${selectedOtherUser.name}','deposit',$currentYear , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
                     'sql2':

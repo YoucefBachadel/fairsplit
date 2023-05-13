@@ -1,3 +1,4 @@
+import 'package:fairsplit/screens/new_calculation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/unit.dart';
@@ -41,6 +42,7 @@ class _UnitsState extends State<Units> {
         thresholdPerc: double.parse(ele['thresholdPerc']),
         foundingPerc: double.parse(ele['foundingPerc']),
         calculated: ele['calculated'] == '1',
+        currentMonth: int.parse(ele['currentMonth']),
       ));
       totalCapital += double.parse(ele['capital']);
       if (ele['type'] == 'intern') {
@@ -136,6 +138,7 @@ class _UnitsState extends State<Units> {
                 }),
               ))
           .toList(),
+      dataColumn(context, getText('month')),
       dataColumn(context, ''),
     ];
 
@@ -152,20 +155,16 @@ class _UnitsState extends State<Units> {
                 unit.effortPerc,
                 unit.thresholdFoundingPerc,
                 unit.thresholdPerc,
-                unit.foundingPerc
+                unit.foundingPerc,
+                unit.type == 'extern' ? '/' : monthsOfYear[unit.currentMonth - 1],
               ].map((e) => dataCell(context, e.toString())).toList(),
               DataCell(
                 unit.calculated
-                    ? const Center(
-                        child: Icon(Icons.done),
-                      )
+                    ? const Center(child: Icon(Icons.done))
                     : IconButton(
-                        onPressed: () {},
+                        onPressed: () => createDialog(context, NewCalculation(unit: unit), false),
                         hoverColor: Colors.transparent,
-                        icon: const Icon(
-                          Icons.play_arrow,
-                          color: Colors.green,
-                        )),
+                        icon: Icon(Icons.play_arrow, color: secondaryColor)),
               ),
             ]))
         .toList();

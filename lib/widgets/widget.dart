@@ -5,13 +5,7 @@ import 'package:intl/intl.dart';
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
 
-Widget myPogress() {
-  return Center(
-    child: CircularProgressIndicator(
-      color: winTileColor,
-    ),
-  );
-}
+Widget myPogress() => Center(child: CircularProgressIndicator(color: primaryColor));
 
 Widget myButton(
   BuildContext context, {
@@ -20,9 +14,10 @@ Widget myButton(
   bool noIcon = false,
   IconData icon = Icons.save,
   double? width,
-  Color color = Colors.green,
+  Color? color,
   Color textColor = Colors.white,
 }) {
+  color = color ?? secondaryColor;
   return InkWell(
     onTap: onTap,
     child: Container(
@@ -52,6 +47,7 @@ Widget myButton(
 
 Widget myTextField(
   BuildContext context, {
+  TextEditingController? controller,
   String hint = '',
   double? width,
   bool enabled = true,
@@ -61,12 +57,14 @@ Widget myTextField(
   bool isCenter = false,
   required Function(String text) onChanged,
 }) {
+  controller = controller ?? TextEditingController();
   return Container(
     alignment: isCenter ? Alignment.center : Alignment.centerLeft,
     child: SizedBox(
       height: getHeight(context, textFeildHeight),
       width: width ?? getWidth(context, .06),
       child: TextFormField(
+        controller: controller,
         onChanged: onChanged,
         autofocus: autoFocus,
         textAlign: TextAlign.center,

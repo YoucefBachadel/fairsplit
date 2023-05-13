@@ -112,15 +112,9 @@ class _DashboardState extends State<Dashboard> {
         height: getHeight(context, .25),
         margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
         decoration: const BoxDecoration(
-          // color: Colors.white,
-          color: Color(0xbbcdf6f2),
+          color: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(20)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey,
-              blurRadius: 2.0,
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 2.0)],
         ),
         child: !clicable
             ? column

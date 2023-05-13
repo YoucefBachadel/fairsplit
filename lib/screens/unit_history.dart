@@ -272,7 +272,7 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
               context,
               value: _name,
               width: getWidth(context, .16),
-              color: _name == 'tout' ? Colors.grey : winTileColor,
+              color: _name == 'tout' ? Colors.grey : primaryColor,
               items: [constans['tout'] ?? '', ...names].map((item) {
                 return DropdownMenuItem(
                   value: item == constans['tout'] ? 'tout' : item,
@@ -300,7 +300,7 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
             myDropDown(
               context,
               value: _year,
-              color: _year == 'tout' ? Colors.grey : winTileColor,
+              color: _year == 'tout' ? Colors.grey : primaryColor,
               items: [constans['tout'] ?? '', ...years].map((item) {
                 return DropdownMenuItem(
                   value: item == constans['tout'] ? 'tout' : item,
@@ -323,7 +323,7 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
                 }),
                 icon: Icon(
                   Icons.update,
-                  color: winTileColor,
+                  color: primaryColor,
                 ),
               )
             : const SizedBox(),

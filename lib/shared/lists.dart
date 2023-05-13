@@ -41,6 +41,7 @@ Map<String, String> constans = {
   'percentage': 'Percentage',
   'evaluation': 'Evaluation',
   'confirm': 'Confirm',
+  'add': 'Add',
   'newUnit': 'New Unit',
   'newTransaction': 'New Transaction',
   'newUser': 'New User',
@@ -79,6 +80,11 @@ Map<String, String> constans = {
   'loans': 'Loans',
   'source': 'Source',
   'password': 'Password',
+  'info': 'Information',
+  'effortUnit': 'Effort Unit',
+  'effortGlobal': 'Effort Global',
+  'month': 'Month',
+  'profit': 'Profit',
 };
 
 Map<String, String> messages = {};

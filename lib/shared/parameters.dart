@@ -13,10 +13,9 @@ DateTime endDate = DateTime.now();
 
 int destinationPageIndex = 1;
 
-Color winTileColor = const Color(0XFF303F9F);
-
-// Color scaffoldColor = const Color(0xFF4f5b62);
-Color scaffoldColor = const Color(0xFFf0f2f5);
+Color primaryColor = const Color(0XFF02333c); //0XFF303F9F
+Color secondaryColor = const Color(0XFF08535d);
+Color scaffoldColor = const Color(0xFFf0f2f5); //0XFF99bcc4
 
 List<pdf.Font> fonts = [];
 double textFeildHeight = .05;
@@ -30,7 +29,7 @@ dynamic sqlQuery(Uri uri, dynamic params) async {
     'host': 'localhost',
     'user': 'root',
     'pass': '',
-    'db': 'wintest',
+    'db': 'fairsplit',
   };
 
   globalParams.addAll(params);

@@ -1,10 +1,13 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../main.dart';
 import '../models/effort.dart';
 import '../models/founding.dart';
 import '../models/threshold.dart';
+import '../providers/transactions_filter.dart';
 import '../shared/lists.dart';
 import '../models/unit.dart';
 import '../models/user.dart';
@@ -257,7 +260,14 @@ class _UsersState extends State<Users> {
 
     List<DataRow> rows = users
         .map((user) => DataRow(
-              onSelectChanged: (value) async => await createDialog(
+              onSelectChanged: (value) {
+                context.read<TransactionsFilter>().change(
+                      transactionCategory: 'users',
+                      search: user.name,
+                    );
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
+              },
+              onLongPress: () async => await createDialog(
                 context,
                 AddTransaction(
                   sourceTab: 'us',
@@ -365,7 +375,7 @@ class _UsersState extends State<Users> {
                 const SizedBox(width: double.minPositive, height: 8.0),
                 Expanded(
                   child: isloading
-                      ? myPogress()
+                      ? myProgress()
                       : users.isEmpty
                           ? SizedBox(width: getWidth(context, .45), child: emptyList())
                           : users.isEmpty
@@ -374,6 +384,7 @@ class _UsersState extends State<Users> {
                                   child: dataTable(
                                     isAscending: _isAscending,
                                     sortColumnIndex: _sortColumnIndex,
+                                    columnSpacing: 30,
                                     columns: columns,
                                     rows: rows,
                                   ),

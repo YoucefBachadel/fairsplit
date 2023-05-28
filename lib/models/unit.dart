@@ -3,9 +3,10 @@ class Unit {
   String name;
   String type;
   double capital;
+  double profit;
   double reservePerc;
   double donationPerc;
-  double thresholdFoundingPerc;
+  // double thresholdFoundingPerc;
   double thresholdPerc;
   double foundingPerc;
   double effortPerc;
@@ -18,9 +19,10 @@ class Unit {
     this.name = '',
     this.type = 'intern',
     this.capital = 0,
+    this.profit = 0,
     this.reservePerc = 0,
     this.donationPerc = 0,
-    this.thresholdFoundingPerc = 0,
+    // this.thresholdFoundingPerc = 0,
     this.thresholdPerc = 0,
     this.foundingPerc = 0,
     this.effortPerc = 0,
@@ -32,9 +34,7 @@ class Unit {
 
 String getUnitName(List<Unit> units, int unitId) {
   for (var element in units) {
-    if (element.unitId == unitId) {
-      return element.name;
-    }
+    if (element.unitId == unitId) return element.name;
   }
   return '';
 }

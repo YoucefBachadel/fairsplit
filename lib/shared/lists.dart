@@ -22,6 +22,7 @@ Map<String, String> constans = {
   'special': 'Special',
   'dashboard': 'Dashboard',
   'transaction': 'Transaction',
+  'profitHistory': 'Profit History',
   'userHistory': 'User History',
   'unitHistory': 'Unit History',
   'consultation': 'Consultation',
@@ -47,7 +48,7 @@ Map<String, String> constans = {
   'newUser': 'New User',
   'listOfUnit': 'List of Unit',
   'year': 'Year',
-  'soldeUser': 'solde User',
+  'soldeUser': 'Solde User',
   'soldeCaisse': 'Solde Caisse',
   'solde': 'Solde',
   'search': 'Search ...',
@@ -85,6 +86,11 @@ Map<String, String> constans = {
   'effortGlobal': 'Effort Global',
   'month': 'Month',
   'profit': 'Profit',
+  'reserveIsPartner': 'Reserve Is Partner',
+  'reserveProfit': 'Reserve Profit',
+  'true': 'True',
+  'false': 'False',
+  'allUsers': 'All Users',
 };
 
 Map<String, String> messages = {};
@@ -141,7 +147,13 @@ Map<String, String> transactionsTypesSearch = {
   'out': getText('out'),
 };
 
-List<String> selectTransactionType = [getText('special'), getText('user'), getText('loan'), getText('deposit')];
+List<String> selectTransactionType = [
+  getText('special'),
+  getText('user'),
+  getText('loan'),
+  getText('deposit'),
+  getText('allUsers'),
+];
 
 Map<String, String> compts = {
   'caisse': getText('caisse'),

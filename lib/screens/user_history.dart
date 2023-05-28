@@ -238,7 +238,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                 Expanded(
                   flex: 5,
                   child: isloading
-                      ? myPogress()
+                      ? myProgress()
                       : usersHistory.isEmpty
                           ? emptyList()
                           : SingleChildScrollView(

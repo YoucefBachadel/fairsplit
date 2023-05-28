@@ -13,9 +13,7 @@ import 'package:fairsplit/main.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp(
-      index: 'da',
-    ));
+    await tester.pumpWidget(const MyApp(index: 'da'));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

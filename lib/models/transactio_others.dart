@@ -6,6 +6,7 @@ class TransactionOther {
   String type;
   DateTime date;
   double amount;
+  double soldeUser;
   double soldeCaisse;
   String note;
 
@@ -17,6 +18,7 @@ class TransactionOther {
     required this.date,
     required this.type,
     required this.amount,
+    required this.soldeUser,
     required this.soldeCaisse,
     required this.note,
   });

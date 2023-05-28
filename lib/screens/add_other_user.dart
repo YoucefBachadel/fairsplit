@@ -17,14 +17,26 @@ class AddOtherUser extends StatefulWidget {
 class _AddOtherUserState extends State<AddOtherUser> {
   late String name, phone;
   late DateTime joinDate;
-
-  bool isLoading = false, isDeposit = false;
+  bool isLoading = false, isDeposit = false, isDeleteLoading = false;
+  String deletePassword = '';
 
   void deleteUser(int userId) async {
-    await sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
+    setState(() => isDeleteLoading = true);
 
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-    snackBar(context, 'User deleted successfully');
+    var res = await sqlQuery(selectUrl, {
+      'sql1': '''SELECT CASE WHEN admin = '$deletePassword' THEN 1 ELSE 0 END AS password FROM settings;''',
+    });
+
+    if (res[0][0]['password'] == '1') {
+      await sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
+
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+      snackBar(context, 'User deleted successfully');
+    } else {
+      snackBar(context, 'Wrong Password!!', duration: 1);
+    }
+
+    setState(() => isDeleteLoading = false);
   }
 
   @override
@@ -40,8 +52,8 @@ class _AddOtherUserState extends State<AddOtherUser> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .40),
-      width: getWidth(context, .29),
+      height: getHeight(context, .45),
+      width: getWidth(context, .3),
       child: Column(
         children: [
           Container(
@@ -52,8 +64,12 @@ class _AddOtherUserState extends State<AddOtherUser> {
                     ? IconButton(
                         onPressed: () => createDialog(
                               context,
-                              delteConfirmation(context, 'Are you sure you want to delete this user!!',
-                                  () => deleteUser(widget.user.userId)),
+                              delteConfirmation(
+                                context,
+                                'Are you sure you want to delete this user!!',
+                                () => deleteUser(widget.user.userId),
+                                onChanged: (text) => deletePassword = text,
+                              ),
                               true,
                             ),
                         icon: const Icon(
@@ -98,7 +114,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                     bottomLeft: Radius.circular(20.0),
                   )),
               child: isLoading
-                  ? myPogress()
+                  ? myProgress()
                   : Column(
                       children: [
                         Row(
@@ -207,8 +223,9 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             ),
                           ],
                         ),
-                        mySizedBox(context),
+                        const Spacer(),
                         saveButton(),
+                        const Spacer(),
                       ],
                     ),
             ),
@@ -229,7 +246,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
               : '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};'''
         });
 
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
         snackBar(context, widget.user.userId == -1 ? 'User added successfully' : 'User updated successfully');
       } else {
         snackBar(context, 'Name can not be empty!!!', duration: 5);

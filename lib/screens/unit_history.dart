@@ -38,7 +38,6 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
           reserve: double.parse(ele['reserve']),
           donation: double.parse(ele['donation']),
           netProfit: double.parse(ele['netProfit']),
-          thresholdFounding: double.parse(ele['thresholdFounding']),
           threshold: double.parse(ele['threshold']),
           founding: double.parse(ele['founding']),
           effort: double.parse(ele['effort']),
@@ -71,73 +70,51 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
   void onSort() {
     switch (_sortColumnIndex) {
       case 1:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.name.compareTo(tr1.name) : tr1.name.compareTo(tr2.name);
-        });
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.name.compareTo(tr1.name) : tr1.name.compareTo(tr2.name));
         break;
       case 2:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.year.compareTo(tr1.year) : tr1.year.compareTo(tr2.year);
-        });
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.year.compareTo(tr1.year) : tr1.year.compareTo(tr2.year));
         break;
       case 3:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.rawProfit.compareTo(tr1.rawProfit) : tr1.rawProfit.compareTo(tr2.rawProfit);
-        });
+        unitsHistory.sort((tr1, tr2) =>
+            !_isAscending ? tr2.rawProfit.compareTo(tr1.rawProfit) : tr1.rawProfit.compareTo(tr2.rawProfit));
         break;
       case 4:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve);
-        });
+        unitsHistory.sort(
+            (tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
         break;
       case 5:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation);
-        });
+        unitsHistory.sort(
+            (tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
         break;
       case 6:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.netProfit.compareTo(tr1.netProfit) : tr1.netProfit.compareTo(tr2.netProfit);
-        });
+        unitsHistory.sort((tr1, tr2) =>
+            !_isAscending ? tr2.netProfit.compareTo(tr1.netProfit) : tr1.netProfit.compareTo(tr2.netProfit));
         break;
       case 7:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.thresholdFounding.compareTo(tr1.thresholdFounding)
-              : tr1.thresholdFounding.compareTo(tr2.thresholdFounding);
-        });
+        unitsHistory.sort((tr1, tr2) =>
+            !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold));
         break;
       case 8:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold);
-        });
+        unitsHistory.sort(
+            (tr1, tr2) => !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding));
         break;
       case 9:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding);
-        });
+        unitsHistory
+            .sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
         break;
       case 10:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort);
-        });
+        unitsHistory
+            .sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
         break;
       case 11:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money);
-        });
+        unitsHistory.sort(
+            (tr1, tr2) => !_isAscending ? tr2.capital.compareTo(tr1.capital) : tr1.capital.compareTo(tr2.capital));
         break;
       case 12:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.capital.compareTo(tr1.capital) : tr1.capital.compareTo(tr2.capital);
-        });
-        break;
-      case 13:
-        unitsHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.profitability.compareTo(tr1.profitability)
-              : tr1.profitability.compareTo(tr2.profitability);
-        });
+        unitsHistory.sort((tr1, tr2) => !_isAscending
+            ? tr2.profitability.compareTo(tr1.profitability)
+            : tr1.profitability.compareTo(tr2.profitability));
         break;
     }
   }
@@ -161,7 +138,6 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
         getText('reserve'),
         getText('donation'),
         getText('netProfit'),
-        getText('thresholdFounding'),
         getText('threshold'),
         getText('founding'),
         getText('effort'),
@@ -192,7 +168,6 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
                 myCurrency.format(unitHistory.reserve),
                 myCurrency.format(unitHistory.donation),
                 myCurrency.format(unitHistory.netProfit),
-                myCurrency.format(unitHistory.thresholdFounding),
                 myCurrency.format(unitHistory.threshold),
                 myCurrency.format(unitHistory.founding),
                 myCurrency.format(unitHistory.effort),
@@ -231,13 +206,14 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
                 const SizedBox(width: double.minPositive, height: 8.0),
                 Expanded(
                   child: isloading
-                      ? myPogress()
+                      ? myProgress()
                       : unitsHistory.isEmpty
                           ? SizedBox(width: getWidth(context, .45), child: emptyList())
                           : SingleChildScrollView(
                               child: dataTable(
                                 isAscending: _isAscending,
                                 sortColumnIndex: _sortColumnIndex,
+                                columnSpacing: 20,
                                 columns: columns,
                                 rows: rows,
                               ),

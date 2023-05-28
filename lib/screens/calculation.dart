@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:fairsplit/models/transaction.dart';
 import 'package:fairsplit/widgets/widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../main.dart';
 import '../shared/lists.dart';
@@ -10,22 +11,22 @@ import '/shared/parameters.dart';
 import '/models/unit.dart';
 import '/models/user.dart';
 
-class NewCalculation extends StatefulWidget {
+class Calculation extends StatefulWidget {
   final Unit unit;
-  const NewCalculation({super.key, required this.unit});
+  const Calculation({super.key, required this.unit});
 
   @override
-  State<NewCalculation> createState() => _NewCalculationState();
+  State<Calculation> createState() => _CalculationState();
 }
 
-class _NewCalculationState extends State<NewCalculation> {
+class _CalculationState extends State<Calculation> {
   TextEditingController controller = TextEditingController();
   List<User> moneyUsers = [], globalEffortUsers = [], unitEffortUsers = [], thresholdUsers = [], foundingUsers = [];
   List<Transaction> transactions = [];
-  var transactionsDaysTest = <DateTime>{}; //list of days that containe transactions
-  late double reserve, donation;
+  var transactionsDays = <DateTime>{}; //list of days that containe transactions
+  late double reserve, donation, reserveProfit;
   double unitProfitValue = 0, unitProfitHint = 0;
-  bool reserveIsMoneyPartner = false;
+  // bool reserveIsMoneyPartner = false;
   bool isloading = true, iscalculated = false;
   int bottemNavigationSelectedInex = 0;
   int daysInMonth = 0;
@@ -37,28 +38,30 @@ class _NewCalculationState extends State<NewCalculation> {
       caEffort = 0,
       caTotalEffortUnit = 0,
       caEffortGlobal = 0,
-      caThresholdFounding = 0,
       caThreshold = 0,
       caFounding = 0;
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT reserve, donation FROM Settings;''',
+      'sql1': '''SELECT reserve, donation,reserveProfit FROM Settings;''',
       'sql2': '''SELECT userId, name, capital FROM Users WHERE type IN ('money','both');''',
       'sql3':
-          '''SELECT e.userId, u.name, e.effortPerc, e.evaluation, u.months FROM Effort e, Users u WHERE e.unitId = -1 AND e.userId = u.userId;''',
+          '''SELECT e.userId, u.name, e.effortPerc,  u.months FROM Effort e, Users u WHERE e.unitId = -1 AND e.userId = u.userId;''',
       'sql4':
-          '''SELECT e.userId, u.name, e.effortPerc, e.evaluation, u.months FROM Effort e, Users u WHERE e.unitId = ${widget.unit.unitId} AND e.userId = u.userId;''',
+          '''SELECT e.userId, u.name, e.effortPerc,  u.months FROM Effort e, Users u WHERE e.unitId = ${widget.unit.unitId} AND e.userId = u.userId;''',
       'sql5':
           '''SELECT t.userId,u.name, t.thresholdPerc FROM Threshold t, Users u WHERE t.unitId = ${widget.unit.unitId} AND t.userId = u.userId;''',
       'sql6':
           '''SELECT f.userId,u.name, f.foundingPerc FROM Founding f, Users u WHERE f.unitId = ${widget.unit.unitId} AND f.userId = u.userId;''',
       'sql7':
           '''SELECT transactionId,userId,userName,date,type,amount FROM Transaction WHERE ${widget.unit.type == 'extern' ? '' : 'Month(date) = ${widget.unit.currentMonth} and '}Year(date) = $currentYear;''',
+      'sql8':
+          '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Month(date) = ${widget.unit.currentMonth} and Year(date) = $currentYear;''',
     });
 
     reserve = double.parse(res[0][0]['reserve']);
     donation = double.parse(res[0][0]['donation']);
+    reserveProfit = double.parse(res[0][0]['reserveProfit']);
 
     for (var ele in res[1]) {
       moneyUsers.add(User(userId: int.parse(ele['userId']), name: ele['name'], capital: double.parse(ele['capital'])));
@@ -67,13 +70,14 @@ class _NewCalculationState extends State<NewCalculation> {
 
     moneyUsers.sort((a, b) => a.name.compareTo(b.name));
 
+    //add reserve to money users list
+    moneyUsers.insert(0, User(userId: 0, name: getText('reserve'), capital: reserve));
+    totalMoneyCapital += reserve;
+
     for (var ele in res[2]) {
       if (ele['months'][widget.unit.currentMonth - 1] == '1') {
-        globalEffortUsers.add(User(
-            userId: int.parse(ele['userId']),
-            name: ele['name'],
-            effortPerc: double.parse(ele['effortPerc']),
-            evaluation: double.parse(ele['evaluation'])));
+        globalEffortUsers.add(
+            User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
       }
     }
 
@@ -81,11 +85,8 @@ class _NewCalculationState extends State<NewCalculation> {
 
     for (var ele in res[3]) {
       if (ele['months'][widget.unit.currentMonth - 1] == '1') {
-        unitEffortUsers.add(User(
-            userId: int.parse(ele['userId']),
-            name: ele['name'],
-            effortPerc: double.parse(ele['effortPerc']),
-            evaluation: double.parse(ele['evaluation'])));
+        unitEffortUsers.add(
+            User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
       }
     }
 
@@ -115,7 +116,20 @@ class _NewCalculationState extends State<NewCalculation> {
         amount: double.parse(ele['amount']),
       );
       transactions.add(transaction);
-      transactionsDaysTest.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
+      transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
+    }
+
+    for (var ele in res[7]) {
+      Transaction transaction = Transaction(
+        transactionId: int.parse(ele['transactionId']),
+        userId: 0,
+        userName: getText('reserve'),
+        date: DateTime.parse(ele['date']),
+        type: ele['type'],
+        amount: double.parse(ele['amount']),
+      );
+      transactions.add(transaction);
+      transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
     }
 
     //  if extern unit we use 365 else we calculate number of days in current month
@@ -125,7 +139,7 @@ class _NewCalculationState extends State<NewCalculation> {
 
     //if is intern unit we add the first day of the current month and next month
     //if is extern unit we add the first dat of janury of the current year and next year
-    transactionsDaysTest.addAll({
+    transactionsDays.addAll({
       DateTime(currentYear, widget.unit.type == 'extern' ? 1 : widget.unit.currentMonth, 1),
       DateTime(
         widget.unit.type == 'extern' ? currentYear + 1 : currentYear,
@@ -134,21 +148,28 @@ class _NewCalculationState extends State<NewCalculation> {
       ),
     });
 
-    transactionsDaysTest = SplayTreeSet.from(transactionsDaysTest);
+    transactionsDays = SplayTreeSet.from(transactionsDays);
     transactions.sort((tr1, tr2) => tr1.date.compareTo(tr2.date));
 
     setState(() => isloading = false);
   }
 
   void calculate() async {
+    setState(() {
+      isloading = true;
+      iscalculated = true;
+    });
+    controller.clear();
+    unitProfitHint = unitProfitValue;
+    caTotalEffortUnit = 0;
+
     caReserve = unitProfitValue * widget.unit.reservePerc / 100;
     caDonation = (unitProfitValue - caReserve) * widget.unit.donationPerc / 100;
     caNetProfit = unitProfitValue - caReserve - caDonation;
     caMoney = caNetProfit * widget.unit.moneyPerc / 100;
     caEffort = caNetProfit * widget.unit.effortPerc / 100;
-    caThresholdFounding = caNetProfit * widget.unit.thresholdFoundingPerc / 100;
-    caThreshold = caThresholdFounding * widget.unit.thresholdPerc / 100;
-    caFounding = caThresholdFounding * widget.unit.foundingPerc / 100;
+    caThreshold = caNetProfit * widget.unit.thresholdPerc / 100;
+    caFounding = caNetProfit * widget.unit.foundingPerc / 100;
 
     for (var user in thresholdUsers) {
       user.threshold = caThreshold * user.thresholdPerc / 100;
@@ -159,14 +180,16 @@ class _NewCalculationState extends State<NewCalculation> {
     }
 
     for (var user in unitEffortUsers) {
-      user.effort = (caEffort * user.effortPerc / 100) * user.evaluation / 100;
+      // user.effort = (caEffort * user.effortPerc / 100) * user.evaluation / 100;
+      user.effort = caEffort * user.effortPerc / 100;
       caTotalEffortUnit += user.effort;
     }
 
     caEffortGlobal = caEffort - caTotalEffortUnit;
 
     for (var user in globalEffortUsers) {
-      user.effort = (caEffortGlobal * user.effortPerc / 100) * user.evaluation / 100;
+      // user.effort = (caEffortGlobal * user.effortPerc / 100) * user.evaluation / 100;
+      user.effort = caEffortGlobal * user.effortPerc / 100;
     }
 
     //reset the users capital to its value in the first day of the month
@@ -179,10 +202,10 @@ class _NewCalculationState extends State<NewCalculation> {
     }
 
     // loop the list of days that has transactions
-    for (var i = 0; i < transactionsDaysTest.length - 1; i++) {
+    for (var i = 0; i < transactionsDays.length - 1; i++) {
       //loop the list of transactions in the selected day
       for (var caTrans in transactions) {
-        if (DateTime(caTrans.date.year, caTrans.date.month, caTrans.date.day) == transactionsDaysTest.elementAt(i)) {
+        if (DateTime(caTrans.date.year, caTrans.date.month, caTrans.date.day) == transactionsDays.elementAt(i)) {
           // get the user of the transaction
           User caTransUser = moneyUsers.firstWhere((user) => user.userId == caTrans.userId);
 
@@ -202,10 +225,10 @@ class _NewCalculationState extends State<NewCalculation> {
 
       // count number of days till the next day that has transaction
       int daysCountToNextTransaction =
-          transactionsDaysTest.elementAt(i + 1).difference(transactionsDaysTest.elementAt(i)).inDays;
+          transactionsDays.elementAt(i + 1).difference(transactionsDays.elementAt(i)).inDays;
 
       for (var user in moneyUsers) {
-        // percetage of user capital compare to tho total users capital
+        // percentage of user capital compare to tho total users capital
         double userCapitalPerc = user.capital * 100 / totalUsersCapital;
 
         // (money profit per day * percentage of user capital /100) * count of days till next transaction then add it to user money profit
@@ -223,24 +246,30 @@ class _NewCalculationState extends State<NewCalculation> {
     String effortUnitSQL = 'INSERT INTO Users(userId, effort) VALUES ';
     String effortGlobalSQL = 'INSERT INTO Users(userId, effort) VALUES ';
 
+    //add careserve,cadonation and reserve money profit to total reserve profit
+    reserve += caReserve;
+    donation += caDonation;
+    reserveProfit += moneyUsers[0].money;
+    moneyUsers.removeAt(0);
+
     for (var user in moneyUsers) {
-      moneySQL += '(${user.userId}, ${user.money.toStringAsFixed(2)}),';
+      moneySQL += '(${user.userId}, ${user.money}),';
     }
 
     for (var user in thresholdUsers) {
-      thresholdSQL += '(${user.userId}, ${user.threshold.toStringAsFixed(2)}),';
+      thresholdSQL += '(${user.userId}, ${user.threshold}),';
     }
 
     for (var user in foundingUsers) {
-      foundingSQL += '(${user.userId}, ${user.founding.toStringAsFixed(2)}),';
+      foundingSQL += '(${user.userId}, ${user.founding}),';
     }
 
     for (var user in unitEffortUsers) {
-      effortUnitSQL += '(${user.userId}, ${user.effort.toStringAsFixed(2)}),';
+      effortUnitSQL += '(${user.userId}, ${user.effort}),';
     }
 
     for (var user in globalEffortUsers) {
-      effortGlobalSQL += '(${user.userId}, ${user.effort.toStringAsFixed(2)}),';
+      effortGlobalSQL += '(${user.userId}, ${user.effort}),';
     }
 
     moneySQL = moneySQL.substring(0, moneySQL.length - 1);
@@ -270,11 +299,13 @@ class _NewCalculationState extends State<NewCalculation> {
       'sql4': effortUnitSQL,
       'sql5': effortGlobalSQL,
       'sql6':
-          ''' UPDATE Units SET calculated = $calculated, currentMonth = $nextMonth  WHERE unitId = ${widget.unit.unitId}; ''',
+          ''' UPDATE Units SET profit = profit + $unitProfitValue, calculated = $calculated, currentMonth = $nextMonth  WHERE unitId = ${widget.unit.unitId}; ''',
+      'sql7':
+          '''INSERT INTO ProfitHistory(name, year, month, profit, reserve, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',$currentYear,${widget.unit.type == 'extern' ? 0 : widget.unit.currentMonth},$unitProfitValue,${caReserve.toStringAsFixed(2)},${caDonation.toStringAsFixed(2)},${caMoney.toStringAsFixed(2)},${caEffort.toStringAsFixed(2)},${caThreshold.toStringAsFixed(2)},${caFounding.toStringAsFixed(2)});''',
+      'sql8': 'UPDATE settings SET reserve = $reserve , donation = $donation , reserveProfit = $reserveProfit'
     });
 
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
     snackBar(context, 'Calculation done successfully');
   }
 
@@ -331,59 +362,40 @@ class _NewCalculationState extends State<NewCalculation> {
               ),
             ),
             child: isloading
-                ? myPogress()
+                ? myProgress()
                 : Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Row(
                           children: [
-                            myText('reserve is money Partner: '),
-                            Switch(
-                                value: reserveIsMoneyPartner,
-                                onChanged: iscalculated
-                                    ? null
-                                    : (value) => setState(() {
-                                          reserveIsMoneyPartner = value;
-                                          if (value) {
-                                            moneyUsers.insert(
-                                                0, User(userId: 0, name: getText('reserve'), capital: reserve));
-                                            totalMoneyCapital += reserve;
-                                          } else {
-                                            moneyUsers.removeAt(0);
-                                            totalMoneyCapital -= reserve;
-                                          }
-                                        })),
                             Expanded(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  myTextField(
-                                    context,
-                                    controller: controller,
-                                    hint: myCurrency.format(unitProfitHint),
-                                    width: getWidth(context, .25),
-                                    onChanged: ((text) => unitProfitValue = double.parse(text)),
-                                    isNumberOnly: true,
-                                    enabled: !iscalculated,
-                                  ),
-                                  iscalculated
-                                      ? const SizedBox()
-                                      : IconButton(
-                                          icon: Icon(Icons.play_arrow, color: secondaryColor),
-                                          hoverColor: Colors.transparent,
-                                          onPressed: () {
-                                            setState(() {
-                                              isloading = true;
-                                              iscalculated = true;
-                                            });
-                                            controller.clear();
-                                            unitProfitHint = unitProfitValue;
-                                            caTotalEffortUnit = 0;
-                                            calculate();
-                                          },
-                                        )
-                                ],
+                              child: RawKeyboardListener(
+                                focusNode: FocusNode(),
+                                onKey: (event) {
+                                  if (event.isKeyPressed(LogicalKeyboardKey.enter) && !iscalculated) calculate();
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    myTextField(
+                                      context,
+                                      controller: controller,
+                                      hint: myCurrency.format(unitProfitHint),
+                                      width: getWidth(context, .25),
+                                      onChanged: ((text) => unitProfitValue = double.parse(text)),
+                                      isNumberOnly: true,
+                                      autoFocus: true,
+                                      enabled: !iscalculated,
+                                    ),
+                                    if (!iscalculated)
+                                      IconButton(
+                                        icon: Icon(Icons.play_arrow, color: secondaryColor),
+                                        hoverColor: Colors.transparent,
+                                        onPressed: () => calculate(),
+                                      )
+                                  ],
+                                ),
                               ),
                             ),
                             !iscalculated
@@ -398,13 +410,14 @@ class _NewCalculationState extends State<NewCalculation> {
                       mySizedBox(context),
                       SizedBox(width: getWidth(context, 1), child: const Divider()),
                       mySizedBox(context),
-                      if (bottemNavigationSelectedInex == 0) tabScreen(information()),
-                      if (bottemNavigationSelectedInex == 1) tabScreen(transaction()),
-                      if (bottemNavigationSelectedInex == 2) tabScreen(money()),
-                      if (bottemNavigationSelectedInex == 3) tabScreen(threshold()),
-                      if (bottemNavigationSelectedInex == 4) tabScreen(founding()),
-                      if (bottemNavigationSelectedInex == 5) tabScreen(effort()),
-                      if (bottemNavigationSelectedInex == 6) tabScreen(global()),
+                      if (bottemNavigationSelectedInex == 0)
+                        Expanded(child: Center(child: SingleChildScrollView(child: information()))),
+                      // if (bottemNavigationSelectedInex == 1) tabScreen(transaction()),
+                      if (bottemNavigationSelectedInex == 1) tabScreen(money()),
+                      if (bottemNavigationSelectedInex == 2) tabScreen(threshold()),
+                      if (bottemNavigationSelectedInex == 3) tabScreen(founding()),
+                      if (bottemNavigationSelectedInex == 4) tabScreen(effort()),
+                      if (bottemNavigationSelectedInex == 5) tabScreen(global()),
                       mySizedBox(context),
                       SizedBox(width: getWidth(context, 1), child: const Divider()),
                       SizedBox(
@@ -412,7 +425,7 @@ class _NewCalculationState extends State<NewCalculation> {
                           type: BottomNavigationBarType.fixed,
                           items: <BottomNavigationBarItem>[
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('info')),
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('transaction')),
+                            // BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('transaction')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('money')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('threshold')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('founding')),
@@ -459,7 +472,6 @@ class _NewCalculationState extends State<NewCalculation> {
             {'key': '${getText('money')} %', 'val': widget.unit.moneyPerc.toString()},
             {'key': '${getText('effort')} %', 'val': widget.unit.effortPerc.toString()},
             {'key': '', 'val': ''},
-            {'key': '${getText('thresholdFounding')} %', 'val': widget.unit.thresholdFoundingPerc.toString()},
             {'key': '${getText('threshold')} %', 'val': widget.unit.thresholdPerc.toString()},
             {'key': '${getText('founding')} %', 'val': widget.unit.foundingPerc.toString()},
           ].map((e) => infoItem(e['key']!, e['val']!)).toList(),
@@ -476,7 +488,6 @@ class _NewCalculationState extends State<NewCalculation> {
             {'key': getText('money'), 'val': myCurrency.format(caMoney)},
             {'key': getText('effort'), 'val': myCurrency.format(caEffort)},
             {'key': getText('effortGlobal'), 'val': myCurrency.format(caEffortGlobal)},
-            {'key': getText('thresholdFounding'), 'val': myCurrency.format(caThresholdFounding)},
             {'key': getText('threshold'), 'val': myCurrency.format(caThreshold)},
             {'key': getText('founding'), 'val': myCurrency.format(caFounding)},
           ].map((e) => infoItem(e['key']!, e['val']!)).toList(),
@@ -609,7 +620,6 @@ class _NewCalculationState extends State<NewCalculation> {
       '',
       getText('name'),
       '${getText('effort')} %',
-      getText('evaluation'),
       getText('profit'),
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = unitEffortUsers
@@ -618,7 +628,6 @@ class _NewCalculationState extends State<NewCalculation> {
             dataCell(context, (unitEffortUsers.indexOf(user) + 1).toString()),
             dataCell(context, user.name, textAlign: TextAlign.start),
             dataCell(context, user.effortPerc.toString()),
-            dataCell(context, user.evaluation.toString()),
             dataCell(context, myCurrency.format(user.effort), textAlign: TextAlign.end),
           ]),
         )
@@ -637,7 +646,6 @@ class _NewCalculationState extends State<NewCalculation> {
       '',
       getText('name'),
       '${getText('effort')} %',
-      '${getText('evaluation')} %',
       getText('profit'),
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = globalEffortUsers
@@ -646,7 +654,6 @@ class _NewCalculationState extends State<NewCalculation> {
             dataCell(context, (globalEffortUsers.indexOf(user) + 1).toString()),
             dataCell(context, user.name, textAlign: TextAlign.start),
             dataCell(context, user.effortPerc.toString()),
-            dataCell(context, user.evaluation.toString()),
             dataCell(context, myCurrency.format(user.effort), textAlign: TextAlign.end),
           ]),
         )

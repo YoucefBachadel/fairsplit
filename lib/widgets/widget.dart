@@ -5,7 +5,10 @@ import 'package:intl/intl.dart';
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
 
-Widget myPogress() => Center(child: CircularProgressIndicator(color: primaryColor));
+Widget myProgress({Color? color}) {
+  color = color ?? primaryColor;
+  return Center(child: CircularProgressIndicator(color: color));
+}
 
 Widget myButton(
   BuildContext context, {
@@ -16,10 +19,11 @@ Widget myButton(
   double? width,
   Color? color,
   Color textColor = Colors.white,
+  bool isLoading = false,
 }) {
   color = color ?? secondaryColor;
   return InkWell(
-    onTap: onTap,
+    onTap: isLoading ? null : onTap,
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       decoration: BoxDecoration(
@@ -28,19 +32,21 @@ Widget myButton(
       ),
       alignment: Alignment.center,
       width: width ?? getWidth(context, .09),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          noIcon
-              ? const SizedBox()
-              : Icon(
-                  icon,
-                  color: Colors.white,
-                ),
-          const SizedBox(width: 6.0),
-          myText(text ?? getText('save'), color: textColor)
-        ],
-      ),
+      child: isLoading
+          ? myProgress(color: Colors.white)
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                noIcon
+                    ? const SizedBox()
+                    : Icon(
+                        icon,
+                        color: Colors.white,
+                      ),
+                const SizedBox(width: 6.0),
+                myText(text ?? getText('save'), color: textColor)
+              ],
+            ),
     ),
   );
 }
@@ -78,10 +84,10 @@ Widget myTextField(
   );
 }
 
-Widget myText(String text, {Color color = Colors.black}) {
+Widget myText(String text, {Color color = Colors.black, double size = 18.0}) {
   return Text(
     text,
-    style: TextStyle(fontSize: 18.0, color: color),
+    style: TextStyle(fontSize: size, color: color),
   );
 }
 
@@ -122,20 +128,24 @@ String dateFormat(DateTime date) => DateFormat('dd-MM-yyyy').format(date);
 
 Future createDialog(BuildContext context, Widget content, bool dismissable) {
   return showDialog(
-    barrierDismissible: dismissable,
-    context: context,
-    builder: (context) => Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-      child: content,
-    ),
-  );
+      barrierDismissible: dismissable,
+      context: context,
+      builder: (context) => StatefulBuilder(
+          builder: (context, setState) => Dialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+                child: content,
+              )));
 }
 
 Widget delteConfirmation(
   BuildContext context,
   String message,
-  Function() onTap,
-) {
+  Function() onTap, {
+  Function(String)? onChanged,
+  bool authontication = true,
+  bool isLoading = false,
+}) {
+  onChanged = onChanged ?? (text) {};
   return Container(
     padding: const EdgeInsets.all(12.0),
     decoration: BoxDecoration(
@@ -154,14 +164,34 @@ Widget delteConfirmation(
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         SizedBox(width: getWidth(context, .16), child: const Divider()),
-        const SizedBox(height: 12.0),
+        mySizedBox(context),
         Text(
           message,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineSmall,
         ),
-        const SizedBox(height: 16.0),
-        myButton(context, onTap: onTap, noIcon: true, color: Colors.red, text: getText('confirm'))
+        if (authontication) mySizedBox(context),
+        if (authontication)
+          SizedBox(
+            width: getWidth(context, .2),
+            child: myTextField(
+              context,
+              width: getWidth(context, .18),
+              onChanged: onChanged,
+              isPassword: true,
+              isCenter: true,
+              hint: getText('password'),
+            ),
+          ),
+        mySizedBox(context),
+        myButton(
+          context,
+          onTap: onTap,
+          noIcon: true,
+          isLoading: isLoading,
+          color: Colors.red,
+          text: getText('confirm'),
+        )
       ],
     ),
   );
@@ -255,12 +285,15 @@ DataTable dataTable({
   required List<DataRow> rows,
   bool isAscending = false,
   int? sortColumnIndex = 0,
+  double columnSpacing = 10,
 }) {
   return DataTable(
     sortAscending: isAscending,
     sortColumnIndex: sortColumnIndex,
     dataRowHeight: 35,
     headingRowHeight: 30,
+    columnSpacing: columnSpacing,
+    horizontalMargin: 8,
     headingRowColor: MaterialStateProperty.all(Colors.grey[300]),
     headingTextStyle: const TextStyle(
       color: Colors.black,
@@ -268,16 +301,12 @@ DataTable dataTable({
     ),
     border: TableBorder.all(width: 0.1),
     showCheckboxColumn: false,
-    columnSpacing: 10.0,
-    horizontalMargin: 8.0,
     columns: columns,
     rows: rows,
   );
 }
 
-String currencyFormate(double currency) {
-  return NumberFormat('#,##0.00', 'fr_FR').format(currency);
-}
+String currencyFormate(double currency) => NumberFormat('#,##0.00', 'fr_FR').format(currency);
 
 class DecimalTextInputFormatter extends TextInputFormatter {
   @override

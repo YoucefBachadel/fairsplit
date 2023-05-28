@@ -1,5 +1,8 @@
+import 'package:fairsplit/providers/transactions_filter.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../main.dart';
 import '../shared/lists.dart';
 import '../shared/parameters.dart';
 import '../widgets/widget.dart';
@@ -19,14 +22,17 @@ class _DashboardState extends State<Dashboard> {
   void locadData() async {
     var res = await sqlQuery(selectUrl, {
       'sql1':
-          '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,(SELECT SUM(amount) FROM Transaction WHERE type = 'in' AND year = s.currentYear) as totalIn, (SELECT SUM(amount) FROM Transaction WHERE type = 'out' AND year = s.currentYear) as totalOut,(SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,(SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit, s.* FROM Settings s;'''
+          '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,
+          (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
+          (SELECT SUM(amount) FROM Transaction WHERE type = 'in' AND year = s.currentYear) as totalIn,
+          (SELECT SUM(amount) FROM Transaction WHERE type = 'out' AND year = s.currentYear) as totalOut,
+          (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
+          (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
+          s.caisse, s.reserve, s.donation, s.zakat,s.reserveProfit, s.currentYear FROM Settings s;'''
     });
     data = res[0][0];
     currentYear = int.parse(data['currentYear']);
-    password = data['password'];
-    setState(() {
-      isLoadingData = false;
-    });
+    setState(() => isLoadingData = false);
   }
 
   @override
@@ -37,89 +43,90 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    // Color(Random().nextInt(0xffffffff)).withAlpha(0xbb); // random color generator
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: isLoadingData
-          ? Container(
-              margin: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    blurRadius: 3.0,
-                  ),
-                ],
-              ),
-              child: myPogress())
+          ? myProgress()
           : Column(
               children: [
                 Row(
                   children: [
-                    [getText('caisse'), data['caisse'], const Color(0xbbb19c97), true],
-                    [getText('reserve'), data['reserve'], const Color(0xbbffbf62), true],
-                    [getText('donation'), data['donation'], const Color(0xbbD3A4F8), true],
-                    [getText('zakat'), data['zakat'], const Color(0xbba1fcf5), true],
-                  ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+                    [getText('caisse'), data['caisse'], const Color(0xbbb19c97), true, 'caisse'],
+                    [getText('reserve'), data['reserve'], const Color(0xbbffbf62), true, 'reserve'],
+                    [getText('donation'), data['donation'], const Color(0xbbD3A4F8), true, 'donation'],
+                    [getText('zakat'), data['zakat'], const Color(0xbba1fcf5), true, 'zakat'],
+                  ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3], compt: e[4])).toList(),
                 ),
-                Row(
-                  children: [
-                    [getText('capitalUsers'), data['capitalUsers'], const Color(0xbbcdf6f2), false],
-                    [getText('capitalUnits'), data['capitalUnits'], const Color(0xbb5a80fb), false],
-                    [getText('totalIn'), data['totalIn'], const Color(0xbbc4a471), false],
-                    [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
-                  ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-                ),
-                Row(
-                  children: [
-                    [getText(''), '0', const Color(0xbbcdf6f2), false],
-                    [getText(''), '0', const Color(0xbb5a80fb), false],
-                    [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
-                    [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
-                  ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-                ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Container(
+                          margin: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: const BorderRadius.all(Radius.circular(20)),
+                              boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
+                              border: Border.all(color: primaryColor, width: .5)),
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            [getText('totalProfit'), data['totalProfit'], const Color(0xbb0e737e), false],
+                            [getText('totalIn'), data['totalIn'], const Color(0xbbc4a471), false],
+                            [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
+                            [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
+                            [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
+                            [getText('reserveProfit'), data['reserveProfit'], const Color(0xbb0e737e), false],
+                          ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
     );
   }
 
-  Widget boxCard(String title, double amount, Color color, {bool clicable = false}) {
+  Widget boxCard(String title, double amount, Color color, {bool clicable = false, String compt = ''}) {
     var column = Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
+        myText(title, size: 24),
+        Container(
           padding: const EdgeInsets.all(8.0),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.grey[900]),
-          ),
-        ),
-        Divider(thickness: 0.3, color: Colors.grey[900]),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 35),
-            child: Text(
-              myCurrency.format(amount),
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 30, color: Colors.grey[900]),
-            ),
-          ),
+          alignment: Alignment.center,
+          child: myText(myCurrency.format(amount), size: 28),
         ),
       ],
     );
     return Expanded(
       child: Container(
-        height: getHeight(context, .25),
-        margin: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-          boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 2.0)],
-        ),
+        height: getHeight(context, .17),
+        width: getWidth(context, .22),
+        margin: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
+            boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
+            border: Border.all(color: primaryColor, width: .5)),
         child: !clicable
             ? column
             : InkWell(
-                onTap: () async => await createDialog(
+                onTap: () {
+                  context.read<TransactionsFilter>().change(
+                        transactionCategory: compt == 'caisse' ? 'caisse' : 'specials',
+                        compt: compt == 'caisse' ? 'tout' : compt,
+                      );
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
+                },
+                onLongPress: () async => await createDialog(
                   context,
                   AddTransaction(
                     sourceTab: 'da',
@@ -134,3 +141,119 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 }
+
+
+// : Column(
+      //     children: [
+      //       Row(
+      //         children: [
+      //           [getText('caisse'), data['caisse'], const Color(0xbbb19c97), true],
+      //           [getText('reserve'), data['reserve'], const Color(0xbbffbf62), true],
+      //           [getText('donation'), data['donation'], const Color(0xbbD3A4F8), true],
+      //           [getText('zakat'), data['zakat'], const Color(0xbba1fcf5), true],
+      //         ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+      //       ),
+      //       Row(
+      //         children: [
+      //           [getText('capitalUsers'), data['capitalUsers'], const Color(0xbbcdf6f2), false],
+      //           [getText('capitalUnits'), data['capitalUnits'], const Color(0xbb5a80fb), false],
+      //           [getText('totalIn'), data['totalIn'], const Color(0xbbc4a471), false],
+      //           [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
+      //         ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+      //       ),
+      //       Row(
+      //         children: [
+      //           [getText(''), '0', const Color(0xbbcdf6f2), false],
+      //           [getText(''), '0', const Color(0xbb5a80fb), false],
+      //           [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
+      //           [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
+      //         ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+      //       ),
+      //     ],
+      //   ),
+
+
+
+
+
+
+// Expanded(
+//                         child: Column(
+//                       children: [
+//                         Row(
+//                           children: [
+//                             [getText('totalIn'), data['totalIn'], const Color(0xbbc4a471), false],
+//                             [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
+//                           ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+//                         ),
+//                         Row(
+//                           children: [
+//                             [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
+//                             [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
+//                           ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+//                         ),
+//                         Row(
+//                           children: [
+//                             [getText('capitalUsers'), data['capitalUsers'], const Color(0xbbcdf6f2), false],
+//                             [getText('capitalUnits'), data['capitalUnits'], const Color(0xbb5a80fb), false],
+//                           ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+//                         ),
+//                       ],
+//                     )),
+
+
+
+
+// Column(
+//               children: [
+//                 Row(
+//                   children: [
+//                     [getText('caisse'), data['caisse'], const Color(0xbbb19c97), true],
+//                     [getText('reserve'), data['reserve'], const Color(0xbbffbf62), true],
+//                     [getText('donation'), data['donation'], const Color(0xbbD3A4F8), true],
+//                     [getText('zakat'), data['zakat'], const Color(0xbba1fcf5), true],
+//                   ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+//                 ),
+//                 Row(
+//                   children: [
+//                     [getText('totalIn'), data['totalIn'], const Color(0xbbc4a471), false],
+//                     [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
+//                     [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
+//                     [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
+//                   ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+//                 ),
+//                 Expanded(
+//                     child: Row(
+//                   children: [
+//                     Expanded(
+//                       child: Container(
+//                         margin: const EdgeInsets.all(8.0),
+//                         padding: const EdgeInsets.all(8.0),
+//                         decoration: BoxDecoration(
+//                             color: Colors.white,
+//                             borderRadius: const BorderRadius.all(Radius.circular(20)),
+//                             boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
+//                             border: Border.all(color: primaryColor, width: .5)),
+//                       ),
+//                     ),
+//                     Expanded(
+//                       child: Container(
+//                         margin: const EdgeInsets.all(8.0),
+//                         padding: const EdgeInsets.all(8.0),
+//                         decoration: BoxDecoration(
+//                             color: Colors.white,
+//                             borderRadius: const BorderRadius.all(Radius.circular(20)),
+//                             boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
+//                             border: Border.all(color: primaryColor, width: .5)),
+//                       ),
+//                     ),
+//                   ],
+//                 ))
+//               ],
+//             ),
+
+
+
+
+
+

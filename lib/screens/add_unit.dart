@@ -15,20 +15,34 @@ class AddUnit extends StatefulWidget {
 }
 
 class _AddUnitState extends State<AddUnit> {
-  late String name, capital, reserve, donation, money, effort, thresholdFounding, threshold, founding;
+  late String name, capital, reserve, donation, money, effort, threshold, founding;
   late bool isExtern;
-  bool isLoading = false;
+  bool isLoading = false, isDeleteLoading = false;
+  String deletePassword = '';
 
   void deleteUnit(int unitId) async {
-    await sqlQuery(insertUrl, {
-      'sql1': 'DELETE FROM Threshold WHERE unitId = $unitId',
-      'sql2': 'DELETE FROM Founding WHERE unitId = $unitId',
-      'sql3': 'DELETE FROM Effort WHERE unitId = $unitId',
-      'sql4': 'DELETE FROM Units WHERE unitId = $unitId',
+    setState(() => isDeleteLoading = true);
+
+    var res = await sqlQuery(selectUrl, {
+      'sql1': '''SELECT CASE WHEN admin = '$deletePassword' THEN 1 ELSE 0 END AS password FROM settings;''',
     });
 
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-    snackBar(context, 'Unit deleted successfully');
+    if (res[0][0]['password'] == '1') {
+      await sqlQuery(insertUrl, {
+        'sql1': 'DELETE FROM Threshold WHERE unitId = $unitId',
+        'sql2': 'DELETE FROM Founding WHERE unitId = $unitId',
+        'sql3': 'DELETE FROM Effort WHERE unitId = $unitId',
+        'sql4': 'DELETE FROM Units WHERE unitId = $unitId',
+      });
+
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+      snackBar(context, 'Unit deleted successfully');
+    } else {
+      Navigator.pop(context);
+      snackBar(context, 'Wrong Password!!', duration: 1);
+    }
+
+    setState(() => isDeleteLoading = false);
   }
 
   @override
@@ -40,7 +54,6 @@ class _AddUnitState extends State<AddUnit> {
     donation = widget.unit.donationPerc.toString();
     money = widget.unit.moneyPerc.toString();
     effort = widget.unit.effortPerc.toString();
-    thresholdFounding = widget.unit.thresholdFoundingPerc.toString();
     threshold = widget.unit.thresholdPerc.toString();
     founding = widget.unit.foundingPerc.toString();
     super.initState();
@@ -49,8 +62,8 @@ class _AddUnitState extends State<AddUnit> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .69),
-      width: getWidth(context, .29),
+      height: getHeight(context, .65),
+      width: getWidth(context, .3),
       child: Column(
         children: [
           Container(
@@ -61,11 +74,13 @@ class _AddUnitState extends State<AddUnit> {
                     ? IconButton(
                         onPressed: () => createDialog(
                             context,
-                            delteConfirmation(context,
-                                'Are you sure you want to delete this unit, once deleted all related information will be deleted as well',
-                                () {
-                              deleteUnit(widget.unit.unitId);
-                            }),
+                            delteConfirmation(
+                              context,
+                              'Are you sure you want to delete this unit, once deleted all related information will be deleted as well',
+                              () => deleteUnit(widget.unit.unitId),
+                              onChanged: (text) => deletePassword = text,
+                              isLoading: isDeleteLoading,
+                            ),
                             true),
                         icon: const Icon(
                           Icons.delete_forever,
@@ -83,9 +98,7 @@ class _AddUnitState extends State<AddUnit> {
                   ),
                 ),
                 IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => Navigator.pop(context),
                     icon: const Icon(
                       Icons.close,
                       color: Colors.white,
@@ -109,12 +122,13 @@ class _AddUnitState extends State<AddUnit> {
                     bottomLeft: Radius.circular(20.0),
                   )),
               child: isLoading
-                  ? myPogress()
+                  ? myProgress()
                   : Column(
                       children: [
                         information(),
-                        const SizedBox(height: 16.0),
+                        const Spacer(),
                         saveButton(),
+                        const Spacer(),
                       ],
                     ),
             ),
@@ -143,7 +157,7 @@ class _AddUnitState extends State<AddUnit> {
             ),
           ],
         ),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         Row(
           children: [
             Expanded(child: myText(getText('capital'))),
@@ -158,7 +172,7 @@ class _AddUnitState extends State<AddUnit> {
                 )),
           ],
         ),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -170,11 +184,13 @@ class _AddUnitState extends State<AddUnit> {
               scale: 1.8,
               child: Switch(
                 value: isExtern,
-                onChanged: (value) => setState(
-                  () {
-                    isExtern = value;
-                  },
-                ),
+                onChanged: (value) => widget.unit.unitId != -1
+                    ? null
+                    : setState(
+                        () {
+                          isExtern = value;
+                        },
+                      ),
                 thumbColor: MaterialStateProperty.all(Colors.white),
                 trackColor: MaterialStateProperty.all(primaryColor),
                 hoverColor: Colors.transparent,
@@ -186,9 +202,9 @@ class _AddUnitState extends State<AddUnit> {
             ),
           ],
         ),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         const Divider(),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         Row(
           children: [
             Expanded(child: myText('${getText('reserve')} %')),
@@ -215,9 +231,9 @@ class _AddUnitState extends State<AddUnit> {
             ),
           ],
         ),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         const Divider(),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         Row(
           children: [
             Expanded(child: myText('${getText('money')} %')),
@@ -244,25 +260,7 @@ class _AddUnitState extends State<AddUnit> {
             ),
           ],
         ),
-        const SizedBox(height: 16.0),
-        Row(
-          children: [
-            Expanded(child: myText('${getText('thresholdFounding')} %')),
-            Expanded(
-              child: myTextField(
-                context,
-                hint: thresholdFounding,
-                onChanged: ((text) {
-                  thresholdFounding = text;
-                }),
-                isNumberOnly: true,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8.0),
-        const Divider(),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         Row(
           children: [
             Expanded(child: myText('${getText('threshold')} %')),
@@ -289,6 +287,9 @@ class _AddUnitState extends State<AddUnit> {
             ),
           ],
         ),
+        mySizedBox(context),
+        const Divider(),
+        mySizedBox(context),
       ],
     );
   }
@@ -304,18 +305,17 @@ class _AddUnitState extends State<AddUnit> {
           double _donation = double.parse(donation);
           double _money = double.parse(money);
           double _effort = double.parse(effort);
-          double _thresholdFounding = double.parse(thresholdFounding);
           double _threshold = double.parse(threshold);
           double _founding = double.parse(founding);
 
           // sending a post request to the url
           await sqlQuery(insertUrl, {
             'sql1': _unitId == -1
-                ? '''INSERT INTO Units (name,type,capital,reservePerc,donationPerc,thresholdFoundingPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated) VALUES ('$name' ,'$_type',$_capital, $_reserve , $_donation , $_thresholdFounding ,$_threshold , $_founding , $_effort , $_money , 0);'''
-                : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdFoundingPerc = $_thresholdFounding ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
+                ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated,currentMonth) VALUES ('$name' ,'$_type',$_capital,0, $_reserve , $_donation  ,$_threshold , $_founding , $_effort , $_money , 0,1);'''
+                : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
           });
 
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
           snackBar(context, widget.unit.unitId == -1 ? 'Unit added successfully' : 'Unit updated successfully');
         } catch (e) {
           snackBar(context, 'Check Your Data!!!', duration: 5);

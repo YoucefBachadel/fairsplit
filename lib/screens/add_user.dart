@@ -25,9 +25,10 @@ class _AddUserState extends State<AddUser> {
   late List<Founding> foundings;
   late List<Effort> efforts;
   late DateTime joinDate;
-  bool isloading = true;
+  bool isloading = true, isDeleteLoading = false;
   bool isMoney = false;
   bool isEffort = false;
+  String deletePassword = '';
 
   // this to check if has been changed, it will be modified on conferm or delete item
   bool thresholdsHasChanged = false;
@@ -36,14 +37,28 @@ class _AddUserState extends State<AddUser> {
   bool typeHasChanged = false;
 
   void deleteUser(int userId) async {
-    await sqlQuery(insertUrl, {
-      'sql1': 'DELETE FROM Threshold WHERE userId = $userId',
-      'sql2': 'DELETE FROM Founding WHERE userId = $userId',
-      'sql3': 'DELETE FROM Effort WHERE userId = $userId',
-      'sql4': 'DELETE FROM Users WHERE userId = $userId',
+    setState(() => isDeleteLoading = true);
+
+    var res = await sqlQuery(selectUrl, {
+      'sql1': '''SELECT CASE WHEN admin = '$deletePassword' THEN 1 ELSE 0 END AS password FROM settings;''',
     });
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
-    snackBar(context, 'User deleted successfully');
+
+    if (res[0][0]['password'] == '1') {
+      await sqlQuery(insertUrl, {
+        'sql1': 'DELETE FROM Threshold WHERE userId = $userId',
+        'sql2': 'DELETE FROM Founding WHERE userId = $userId',
+        'sql3': 'DELETE FROM Effort WHERE userId = $userId',
+        'sql4': 'DELETE FROM Users WHERE userId = $userId',
+      });
+
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
+      snackBar(context, 'User deleted successfully');
+    } else {
+      Navigator.pop(context);
+      snackBar(context, 'Wrong Password!!', duration: 1);
+    }
+
+    setState(() => isDeleteLoading = false);
   }
 
   void loadUnits() async {
@@ -90,15 +105,16 @@ class _AddUserState extends State<AddUser> {
             alignment: Alignment.center,
             child: Row(
               children: [
-                widget.user.userId != -1
+                widget.user.userId != -1 && widget.user.capital == 0
                     ? IconButton(
                         onPressed: () => createDialog(
                             context,
-                            delteConfirmation(context,
-                                'Are you sure you want to delete this user, once deleted all related information will be deleted as well',
-                                () {
-                              deleteUser(widget.user.userId);
-                            }),
+                            delteConfirmation(
+                              context,
+                              'Are you sure you want to delete this user, once deleted all related information will be deleted as well',
+                              () => deleteUser(widget.user.userId),
+                              onChanged: (text) => deletePassword = text,
+                            ),
                             true),
                         icon: const Icon(
                           Icons.delete_forever,
@@ -116,9 +132,7 @@ class _AddUserState extends State<AddUser> {
                   ),
                 ),
                 IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => Navigator.pop(context),
                     icon: const Icon(
                       Icons.close,
                       color: Colors.white,
@@ -142,7 +156,7 @@ class _AddUserState extends State<AddUser> {
                     bottomLeft: Radius.circular(20.0),
                   )),
               child: isloading
-                  ? myPogress()
+                  ? myProgress()
                   : Column(
                       children: [
                         Row(
@@ -371,13 +385,12 @@ class _AddUserState extends State<AddUser> {
                                               delteConfirmation(
                                                 context,
                                                 'Are you sure you want to delete this element',
-                                                () {
-                                                  setState(() {
-                                                    thresholdsHasChanged = true;
-                                                    thresholds.remove(e);
-                                                    Navigator.of(context).pop();
-                                                  });
-                                                },
+                                                () => setState(() {
+                                                  thresholdsHasChanged = true;
+                                                  thresholds.remove(e);
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                authontication: false,
                                               ),
                                               true,
                                             );
@@ -481,13 +494,12 @@ class _AddUserState extends State<AddUser> {
                                               delteConfirmation(
                                                 context,
                                                 'Are you sure you want to delete this element',
-                                                () {
-                                                  setState(() {
-                                                    foundingssHasChanged = true;
-                                                    foundings.remove(e);
-                                                    Navigator.of(context).pop();
-                                                  });
-                                                },
+                                                () => setState(() {
+                                                  foundingssHasChanged = true;
+                                                  foundings.remove(e);
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                authontication: false,
                                               ),
                                               true,
                                             );
@@ -599,13 +611,12 @@ class _AddUserState extends State<AddUser> {
                                             delteConfirmation(
                                               context,
                                               'Are you sure you want to delete this element',
-                                              () {
-                                                setState(() {
-                                                  effortssHasChanged = true;
-                                                  efforts.remove(e);
-                                                  Navigator.of(context).pop();
-                                                });
-                                              },
+                                              () => setState(() {
+                                                effortssHasChanged = true;
+                                                efforts.remove(e);
+                                                Navigator.of(context).pop();
+                                              }),
+                                              authontication: false,
                                             ),
                                             true,
                                           );
@@ -809,9 +820,7 @@ class _AddUserState extends State<AddUser> {
                       break;
                   }
 
-                  setState(() {
-                    Navigator.of(context).pop();
-                  });
+                  setState(() => Navigator.of(context).pop());
                 } else {
                   snackBar(
                     context,
@@ -900,7 +909,7 @@ class _AddUserState extends State<AddUser> {
 
         await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
 
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
         snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');
       } else {
         snackBar(context, 'Name can not be empty!!!', duration: 5);

@@ -5,7 +5,6 @@ class UnitHistory {
   double reserve;
   double donation;
   double netProfit;
-  double thresholdFounding;
   double threshold;
   double founding;
   double effort;
@@ -20,7 +19,6 @@ class UnitHistory {
     required this.reserve,
     required this.donation,
     required this.netProfit,
-    required this.thresholdFounding,
     required this.threshold,
     required this.founding,
     required this.effort,

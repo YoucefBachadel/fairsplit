@@ -1,6 +1,9 @@
+import 'package:fairsplit/providers/transactions_filter.dart';
 import 'package:fairsplit/screens/add_transaction.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../main.dart';
 import '../models/other_user.dart';
 import '../screens/add_other_user.dart';
 import '../shared/lists.dart';
@@ -108,7 +111,14 @@ class _OtherUsersState extends State<OtherUsers> {
 
     List<DataRow> rows = users
         .map((user) => DataRow(
-              onSelectChanged: (value) async => await createDialog(
+              onSelectChanged: (value) {
+                context.read<TransactionsFilter>().change(
+                      transactionCategory: '${user.type}s',
+                      search: user.name,
+                    );
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
+              },
+              onLongPress: () async => await createDialog(
                 context,
                 AddTransaction(
                   sourceTab: 'ou',
@@ -170,7 +180,7 @@ class _OtherUsersState extends State<OtherUsers> {
               const SizedBox(width: double.minPositive, height: 8.0),
               Expanded(
                 child: isloading
-                    ? myPogress()
+                    ? myProgress()
                     : users.isEmpty
                         ? SizedBox(width: getWidth(context, .45), child: emptyList())
                         : users.isEmpty
@@ -179,6 +189,7 @@ class _OtherUsersState extends State<OtherUsers> {
                                 child: dataTable(
                                   isAscending: _isAscending,
                                   sortColumnIndex: _sortColumnIndex,
+                                  columnSpacing: 30,
                                   columns: columns,
                                   rows: rows,
                                 ),

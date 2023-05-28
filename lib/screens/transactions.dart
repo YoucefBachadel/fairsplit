@@ -1,7 +1,9 @@
 import 'dart:collection';
 
 import 'package:fairsplit/models/transactio_others.dart';
+import 'package:fairsplit/providers/transactions_filter.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../shared/lists.dart';
 import '../models/transaction.dart';
@@ -30,9 +32,9 @@ class _TransactionsState extends State<Transactions> {
   var years = <String>{'1900'};
 
   bool isloading = true;
-  String transactionCategory = 'caisse';
+  String transactionCategory = 'caisse'; //caisse users loans deposits specials
+  String _compt = 'tout'; // caisse reserve donation zakat
   String _search = ''; //search by user name
-  String _compt = 'tout'; // caisse reserve ...
   String _year = 'tout';
   String _type = 'tout'; // entrie sortie
 
@@ -100,19 +102,17 @@ class _TransactionsState extends State<Transactions> {
         note: ele['note'],
       ));
 
-      if (ele['category'] == 'caisse') {
-        allCaisseTransactions.add(Transaction(
-          transactionId: int.parse(ele['transactionId']),
-          userName: getText('caisse'),
-          source: 'caisse',
-          year: int.parse(ele['year']),
-          date: DateTime.parse(ele['date']),
-          type: ele['type'],
-          amount: double.parse(ele['amount']),
-          soldeCaisse: double.parse(ele['solde']),
-          note: ele['note'],
-        ));
-      }
+      allCaisseTransactions.add(Transaction(
+        transactionId: int.parse(ele['transactionId']),
+        userName: getText(ele['category']),
+        source: ele['category'],
+        year: int.parse(ele['year']),
+        date: DateTime.parse(ele['date']),
+        type: ele['type'],
+        amount: double.parse(ele['amount']),
+        soldeCaisse: double.parse(ele['soldeCaisse']),
+        note: ele['note'],
+      ));
 
       years.add(ele['year']);
     }
@@ -126,6 +126,7 @@ class _TransactionsState extends State<Transactions> {
         date: DateTime.parse(ele['date']),
         type: ele['type'],
         amount: double.parse(ele['amount']),
+        soldeUser: double.parse(ele['soldeUser']),
         soldeCaisse: double.parse(ele['soldeCaisse']),
         note: ele['note'],
       );
@@ -382,6 +383,9 @@ class _TransactionsState extends State<Transactions> {
 
   @override
   Widget build(BuildContext context) {
+    transactionCategory = context.watch<TransactionsFilter>().transactionCategory;
+    _compt = context.watch<TransactionsFilter>().compt;
+    _search = context.watch<TransactionsFilter>().search;
     totalIn = 0;
     totalOut = 0;
     if (transactionCategory == 'caisse') {
@@ -463,7 +467,6 @@ class _TransactionsState extends State<Transactions> {
                 _isAscendingTrans = ascending;
               })),
       dataColumn(context, getText('soldeUser')),
-      dataColumn(context, getText('soldeCaisse')),
       dataColumn(context, getText('note')),
     ];
     List<DataColumn> columnsTransSP = [
@@ -525,7 +528,7 @@ class _TransactionsState extends State<Transactions> {
                 _sortColumnIndexTransLoan = columnIndex;
                 _isAscendingTransLoan = ascending;
               })),
-      dataColumn(context, getText('soldeCaisse')),
+      dataColumn(context, getText('soldeUser')),
       dataColumn(context, getText('note')),
     ];
     List<DataColumn> columnsTransDeposit = [
@@ -559,7 +562,7 @@ class _TransactionsState extends State<Transactions> {
                 _sortColumnIndexTransDeposit = columnIndex;
                 _isAscendingTransDeposit = ascending;
               })),
-      dataColumn(context, getText('soldeCaisse')),
+      dataColumn(context, getText('soldeUser')),
       dataColumn(context, getText('note')),
     ];
 
@@ -625,7 +628,6 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
                     textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
                 dataCell(context, myCurrency.format(transaction.soldeUser), textAlign: TextAlign.end),
-                dataCell(context, myCurrency.format(transaction.soldeCaisse), textAlign: TextAlign.end),
                 transaction.note.length < 40
                     ? dataCell(context, transaction.note)
                     : DataCell(
@@ -697,7 +699,7 @@ class _TransactionsState extends State<Transactions> {
                     textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
                 dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
                     textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.soldeCaisse), textAlign: TextAlign.end),
+                dataCell(context, myCurrency.format(transaction.soldeUser), textAlign: TextAlign.end),
                 transaction.note.length < 40
                     ? dataCell(context, transaction.note)
                     : DataCell(
@@ -734,7 +736,7 @@ class _TransactionsState extends State<Transactions> {
                     textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
                 dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
                     textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.soldeCaisse), textAlign: TextAlign.end),
+                dataCell(context, myCurrency.format(transaction.soldeUser), textAlign: TextAlign.end),
                 transaction.note.length < 40
                     ? dataCell(context, transaction.note)
                     : DataCell(
@@ -789,7 +791,7 @@ class _TransactionsState extends State<Transactions> {
               const SizedBox(width: double.minPositive, height: 8.0),
               Expanded(
                   child: isloading
-                      ? myPogress()
+                      ? myProgress()
                       : SingleChildScrollView(
                           child: Column(
                             children: [
@@ -875,10 +877,9 @@ class _TransactionsState extends State<Transactions> {
             );
           }).toList(),
           onChanged: (value) => setState(() {
-            transactionCategory = value.toString();
-            _search = '';
+            context.read<TransactionsFilter>().change(transactionCategory: value.toString());
+            context.read<TransactionsFilter>().resetFilter();
             _controller.clear();
-            _compt = 'tout';
             _type = 'tout';
             _year = 'tout';
             _fromDate = DateTime(int.parse(years.last));
@@ -911,7 +912,7 @@ class _TransactionsState extends State<Transactions> {
                   );
                 }).toList(),
                 onChanged: (value) => setState(() {
-                  _compt = value.toString();
+                  context.read<TransactionsFilter>().change(compt: value.toString());
                 }),
               ),
             ],
@@ -1152,9 +1153,8 @@ class _TransactionsState extends State<Transactions> {
                 _toDate != today.add(const Duration(seconds: 86399)))
             ? IconButton(
                 onPressed: () => setState(() {
-                  _search = '';
+                  context.read<TransactionsFilter>().resetFilter();
                   _controller.clear();
-                  _compt = 'tout';
                   _type = 'tout';
                   _year = 'tout';
                   _fromDate = DateTime(int.parse(years.last));
@@ -1224,7 +1224,7 @@ class _TransactionsState extends State<Transactions> {
                               onPressed: () {
                                 setState(() {
                                   textEditingController.clear();
-                                  _search = '';
+                                  context.read<TransactionsFilter>().resetFilter();
                                 });
                               },
                               icon: const Icon(

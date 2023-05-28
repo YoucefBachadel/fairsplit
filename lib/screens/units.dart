@@ -1,4 +1,4 @@
-import 'package:fairsplit/screens/new_calculation.dart';
+import 'package:fairsplit/screens/calculation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/unit.dart';
@@ -34,11 +34,11 @@ class _UnitsState extends State<Units> {
         name: ele['name'],
         type: ele['type'],
         capital: double.parse(ele['capital']),
+        profit: double.parse(ele['profit']),
         reservePerc: double.parse(ele['reservePerc']),
         donationPerc: double.parse(ele['donationPerc']),
         moneyPerc: double.parse(ele['moneyPerc']),
         effortPerc: double.parse(ele['effortPerc']),
-        thresholdFoundingPerc: double.parse(ele['thresholdFoundingPerc']),
         thresholdPerc: double.parse(ele['thresholdPerc']),
         foundingPerc: double.parse(ele['foundingPerc']),
         calculated: ele['calculated'] == '1',
@@ -76,24 +76,22 @@ class _UnitsState extends State<Units> {
         units.sort((a, b) => _isAscending ? a.capital.compareTo(b.capital) : b.capital.compareTo(a.capital));
         break;
       case 4:
+        units.sort((a, b) => _isAscending ? a.profit.compareTo(b.profit) : b.profit.compareTo(a.profit));
+        break;
+      case 5:
         units.sort(
             (a, b) => _isAscending ? a.reservePerc.compareTo(b.reservePerc) : b.reservePerc.compareTo(a.reservePerc));
         break;
-      case 5:
+      case 6:
         units.sort((a, b) =>
             _isAscending ? a.donationPerc.compareTo(b.donationPerc) : b.donationPerc.compareTo(a.donationPerc));
         break;
-      case 6:
+      case 7:
         units.sort((a, b) => _isAscending ? a.moneyPerc.compareTo(b.moneyPerc) : b.moneyPerc.compareTo(a.moneyPerc));
         break;
-      case 7:
+      case 8:
         units
             .sort((a, b) => _isAscending ? a.effortPerc.compareTo(b.effortPerc) : b.effortPerc.compareTo(a.effortPerc));
-        break;
-      case 8:
-        units.sort((a, b) => _isAscending
-            ? a.thresholdFoundingPerc.compareTo(b.thresholdFoundingPerc)
-            : b.thresholdFoundingPerc.compareTo(a.thresholdFoundingPerc));
         break;
       case 9:
         units.sort((a, b) =>
@@ -115,17 +113,18 @@ class _UnitsState extends State<Units> {
   @override
   Widget build(BuildContext context) {
     onSort();
+
     List<DataColumn> columns = [
       ...[
         getText('name'),
         getText('type'),
         getText('capital'),
         '${getText('capital')} %',
+        getText('profit'),
         '${getText('reserve')} %',
         '${getText('donation')} %',
         '${getText('money')} %',
         '${getText('effort')} %',
-        '${getText('thresholdFounding')} %',
         '${getText('threshold')} %',
         '${getText('founding')} %',
       ]
@@ -146,14 +145,14 @@ class _UnitsState extends State<Units> {
         .map((unit) => DataRow(onSelectChanged: ((value) => _newUnit(context, unit)), cells: [
               dataCell(context, unit.name, textAlign: TextAlign.start),
               dataCell(context, getText(unit.type), textAlign: TextAlign.start),
+              dataCell(context, myCurrency.format(unit.capital), textAlign: TextAlign.end),
+              dataCell(context, (unit.capital * 100 / totalCapital).toStringAsFixed(2)),
+              dataCell(context, myCurrency.format(unit.profit), textAlign: TextAlign.end),
               ...[
-                myCurrency.format(unit.capital),
-                (unit.capital * 100 / totalCapital).toStringAsFixed(2),
                 unit.reservePerc,
                 unit.donationPerc,
                 unit.moneyPerc,
                 unit.effortPerc,
-                unit.thresholdFoundingPerc,
                 unit.thresholdPerc,
                 unit.foundingPerc,
                 unit.type == 'extern' ? '/' : monthsOfYear[unit.currentMonth - 1],
@@ -162,7 +161,7 @@ class _UnitsState extends State<Units> {
                 unit.calculated
                     ? const Center(child: Icon(Icons.done))
                     : IconButton(
-                        onPressed: () => createDialog(context, NewCalculation(unit: unit), false),
+                        onPressed: () => createDialog(context, Calculation(unit: unit), false),
                         hoverColor: Colors.transparent,
                         icon: Icon(Icons.play_arrow, color: secondaryColor)),
               ),
@@ -178,8 +177,8 @@ class _UnitsState extends State<Units> {
         child: const Icon(Icons.add),
       ),
       body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Spacer(),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16.0),
             padding: const EdgeInsets.all(16.0),
@@ -195,23 +194,25 @@ class _UnitsState extends State<Units> {
             child: Column(
               children: [
                 Expanded(
-                  flex: 5,
                   child: isLoadingUnits
-                      ? myPogress()
-                      : SingleChildScrollView(
-                          child: units.isEmpty
-                              ? emptyList()
-                              : dataTable(
+                      ? myProgress()
+                      : units.isEmpty
+                          ? emptyList()
+                          : SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: SingleChildScrollView(
+                                child: dataTable(
                                   isAscending: _isAscending,
                                   sortColumnIndex: _sortColumnIndex,
                                   columns: columns,
                                   rows: rows,
                                 ),
-                        ),
+                              ),
+                            ),
                 ),
-                const SizedBox(height: 8.0),
+                mySizedBox(context),
                 SizedBox(width: getWidth(context, .52), child: const Divider()),
-                const SizedBox(height: 8.0),
+                mySizedBox(context),
                 Column(
                   children: [
                     Row(
@@ -220,7 +221,7 @@ class _UnitsState extends State<Units> {
                           children: [
                             myText(getText('intern')),
                             const SizedBox(width: 40, child: Divider()),
-                            const SizedBox(height: 8.0),
+                            mySizedBox(context),
                             totalItem(getText('count'), internCount.toString()),
                             totalItem(
                                 getText('percentage'), '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
@@ -232,7 +233,7 @@ class _UnitsState extends State<Units> {
                           children: [
                             myText(getText('extern')),
                             const SizedBox(width: 40, child: Divider()),
-                            const SizedBox(height: 8.0),
+                            mySizedBox(context),
                             totalItem(getText('count'), externCount.toString()),
                             totalItem(
                                 getText('percentage'), '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
@@ -241,16 +242,15 @@ class _UnitsState extends State<Units> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8.0),
+                    mySizedBox(context),
                     SizedBox(width: getWidth(context, .4), child: const Divider()),
                     myText('${getText('totalCapital')}            :            ${myCurrency.format(totalCapital)}'),
-                    const SizedBox(height: 8.0),
+                    mySizedBox(context),
                   ],
                 )
               ],
             ),
           ),
-          const Spacer(),
         ],
       ),
     );
@@ -261,8 +261,8 @@ class _UnitsState extends State<Units> {
       width: getWidth(context, .2),
       child: Row(
         children: [
-          Expanded(child: myText(title)),
-          Expanded(flex: 2, child: myText(':            $value')),
+          Expanded(flex: 2, child: myText(title)),
+          Expanded(flex: 3, child: myText(':    $value')),
         ],
       ),
     );

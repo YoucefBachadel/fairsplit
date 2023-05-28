@@ -32,12 +32,13 @@ class AddTransaction extends StatefulWidget {
 }
 
 class _AddTransactionState extends State<AddTransaction> {
-  late String selectedName = '', category = 'caisse', type = 'in', amount = '0', note = '';
-  late double caisse, reserve, donation, zakat, rest = 0;
-  DateTime date = DateTime.now();
-  bool isLoading = false;
+  late String selectedName = '', category = 'caisse', type = 'in', amount = '0', note = '', appBarTitle = '';
+  late double caisse, reserve, donation, zakat, rest = 0, selectedUserCapital = 0; //used to show user capital
+  // DateTime date = DateTime.now();
+  bool isLoading = true;
   bool isTransactionTypeSelected = true;
   int selectedTransactionType = 0;
+  String _password = ''; // used for all users Transaction;
 
   List<User> users = [];
   List<OtherUser> loanUsers = [], depositUsers = [];
@@ -87,6 +88,7 @@ class _AddTransactionState extends State<AddTransaction> {
       rest = widget.rest;
       if (widget.sourceTab == 'us') {
         selectedUser = User(userId: widget.userId, name: selectedName, capital: widget.userCapital);
+        selectedUserCapital = widget.userCapital;
       } else {
         selectedOtherUser = OtherUser(
           userId: widget.userId,
@@ -104,9 +106,227 @@ class _AddTransactionState extends State<AddTransaction> {
     });
   }
 
+  void save() async {
+    bool _testsChecked = true; //used to test if rest is >= 0 and prevent navigation to main screen
+    double _amount = double.parse(amount);
+    double _soldeCaisse = 0;
+
+    if (type == 'out') _amount = _amount * -1;
+    _soldeCaisse = caisse + _amount;
+
+    if (_soldeCaisse < 0) {
+      _testsChecked = false;
+      snackBar(context, 'Solde Caisse must be >= 0');
+    } else {
+      if (selectedTransactionType == 0) {
+        //special trnasaction
+        double _solde = 0;
+
+        switch (category) {
+          case 'caisse':
+            _solde = caisse + _amount;
+            break;
+          case 'reserve':
+            _solde = reserve + _amount;
+            break;
+          case 'donation':
+            _solde = donation + _amount;
+            break;
+          case 'zakat':
+            _solde = zakat + _amount;
+            break;
+        }
+        if (_solde < 0) {
+          _testsChecked = false;
+          snackBar(context, 'Solde must be >= 0');
+        } else {
+          //insert the special transaction
+          //update the setting category
+          //update the setting caisse
+          await sqlQuery(insertUrl, {
+            'sql1':
+                '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,soldeCaisse,note) VALUES ($currentYear , '$category' , '${DateTime.now()}' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note' );''',
+            'sql2': '''UPDATE Settings SET $category = $_solde;''',
+            'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse;''',
+          });
+        }
+      } else if (selectedTransactionType == 4) {
+        //all Users transaction
+
+        _soldeCaisse = caisse; // reset the solde caisse
+
+        List<User> moneyUsers = [];
+        double _totalUsersCapital = 0, _userAmount = 0, _soldeUser = 0;
+        String usersSQL = 'INSERT INTO Users(userId, capital) VALUES ';
+        String transactionsSQL =
+            'INSERT INTO Transaction (userId,userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ';
+
+        //get money users
+        for (var user in users) {
+          if (['money', 'both'].contains(user.type) && user.capital != 0) {
+            moneyUsers.add(user);
+            _totalUsersCapital += user.capital;
+          }
+        }
+
+        //calculate the amount for each user
+        for (var user in moneyUsers) {
+          _userAmount = (user.capital * 100 / _totalUsersCapital) * _amount / 100;
+          _soldeCaisse += _userAmount;
+          _soldeUser = user.capital + _userAmount;
+
+          usersSQL += '(${user.userId}, $_soldeUser),';
+          transactionsSQL +=
+              '''(${user.userId},'${user.name}',$currentYear , '${DateTime.now()}' , '$type' ,${_userAmount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' ),''';
+        }
+
+        usersSQL = usersSQL.substring(0, usersSQL.length - 1);
+        usersSQL += ' ON DUPLICATE KEY UPDATE capital = VALUES(capital);';
+        transactionsSQL = transactionsSQL.substring(0, transactionsSQL.length - 1);
+        transactionsSQL += ';';
+
+        _soldeCaisse = caisse + _amount; // recalculate solde caisse
+
+        //insert the transactions
+        //update the Users capitals
+        //update the setting caisse
+        await sqlQuery(insertUrl, {
+          'sql1': transactionsSQL,
+          'sql2': usersSQL,
+          'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse ;''',
+        });
+      } else {
+        //other type of transaction that must check the name first
+        bool nameWrite = false;
+        //check if the name is write
+        if (selectedTransactionType == 1) {
+          for (var user in users) {
+            if (user.name == selectedName) {
+              nameWrite = true;
+              selectedUser = user;
+              break;
+            }
+          }
+        } else if (selectedTransactionType == 2) {
+          for (var user in loanUsers) {
+            if (user.name == selectedName) {
+              nameWrite = true;
+              selectedOtherUser = user;
+              break;
+            }
+          }
+        } else {
+          for (var user in depositUsers) {
+            if (user.name == selectedName) {
+              nameWrite = true;
+              selectedOtherUser = user;
+              break;
+            }
+          }
+        }
+
+        if (selectedTransactionType == 1) {
+          //user transaction
+          //test if name is not empty and name is write or users list is empty in case the user is selected from users tab
+          if (selectedName.isNotEmpty && (users.isEmpty || nameWrite)) {
+            double _soldeUser = selectedUser.capital + _amount;
+
+            if (_soldeUser < 0) {
+              _testsChecked = false;
+              snackBar(context, 'Capital must be >= 0');
+            } else {
+              //insert the transaction
+              //update the User capital
+              //update the setting caisse
+              await sqlQuery(insertUrl, {
+                'sql1':
+                    '''INSERT INTO Transaction (userId,userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES (${selectedUser.userId},'${selectedUser.name}',$currentYear , '${DateTime.now()}' , '$type' ,${_amount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' );''',
+                'sql2': '''UPDATE Users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};''',
+                'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse ;'''
+              });
+            }
+          } else {
+            _testsChecked = false;
+            snackBar(context, 'Check The Name');
+          }
+        } else if (selectedTransactionType == 2) {
+          //locan transaction
+          if (selectedName.isNotEmpty && (loanUsers.isEmpty || nameWrite)) {
+            double _userAmount = selectedOtherUser.amount;
+            if (type == 'out') _userAmount -= _amount;
+
+            double _userRest = selectedOtherUser.rest - _amount;
+
+            if (_userRest < 0) {
+              _testsChecked = false;
+              snackBar(context, 'Rest must be >= 0');
+            } else {
+              //insert the transaction
+              //update the User capital
+              //update the setting caisse
+              await sqlQuery(insertUrl, {
+                'sql1':
+                    '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${selectedOtherUser.name}', 'loan', $currentYear , '${DateTime.now()}' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' );''',
+                'sql2':
+                    '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
+                'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse;'''
+              });
+            }
+          } else {
+            _testsChecked = false;
+            snackBar(context, 'Check The Name');
+          }
+        } else if (selectedTransactionType == 3) {
+          //deposit transaction
+          if (selectedName.isNotEmpty && (depositUsers.isEmpty || nameWrite)) {
+            double _userAmount = selectedOtherUser.amount;
+            if (type == 'in') {
+              _userAmount += _amount;
+            }
+            double _userRest = selectedOtherUser.rest + _amount;
+
+            if (_userRest < 0) {
+              _testsChecked = false;
+              snackBar(context, 'Rest must be >= 0');
+            } else {
+              //insert the transaction
+              //update the User capital
+              //update the setting caisse
+              await sqlQuery(insertUrl, {
+                'sql1':
+                    '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${selectedOtherUser.name}','deposit',$currentYear , '${DateTime.now()}' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' );''',
+                'sql2':
+                    '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
+                'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse;''',
+              });
+            }
+          } else {
+            _testsChecked = false;
+            snackBar(context, 'Check The Name');
+          }
+        }
+      }
+    }
+    if (_testsChecked) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp(index: widget.sourceTab)));
+      snackBar(context, 'Transaction added successfully');
+    } else {
+      setState(() => isLoading = false);
+    }
+  }
+
   @override
   void initState() {
     if (widget.sourceTab == 'tr') isTransactionTypeSelected = false;
+    appBarTitle = widget.sourceTab == 'tr'
+        ? getText('transaction')
+        : widget.selectedTransactionType == 0
+            ? getText('special')
+            : widget.selectedTransactionType == 1
+                ? getText('user')
+                : widget.selectedTransactionType == 2
+                    ? getText('loan')
+                    : getText('deposit');
     loadData();
     super.initState();
   }
@@ -114,7 +334,7 @@ class _AddTransactionState extends State<AddTransaction> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .62),
+      height: getHeight(context, .58),
       width: getWidth(context, .39),
       child: Column(children: [
         Container(
@@ -123,7 +343,7 @@ class _AddTransactionState extends State<AddTransaction> {
             children: [
               Expanded(
                 child: Text(
-                  getText('transaction'),
+                  appBarTitle,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
@@ -132,9 +352,7 @@ class _AddTransactionState extends State<AddTransaction> {
                 ),
               ),
               IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context),
                   icon: const Icon(
                     Icons.close,
                     color: Colors.white,
@@ -159,7 +377,7 @@ class _AddTransactionState extends State<AddTransaction> {
                   bottomLeft: Radius.circular(20.0),
                 )),
             child: isLoading
-                ? myPogress()
+                ? myProgress()
                 : !isTransactionTypeSelected
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -178,6 +396,15 @@ class _AddTransactionState extends State<AddTransaction> {
                                         onTap: () => setState(() {
                                           isTransactionTypeSelected = true;
                                           selectedTransactionType = selectTransactionType.indexOf(e);
+                                          appBarTitle = selectedTransactionType == 0
+                                              ? getText('special')
+                                              : selectedTransactionType == 1
+                                                  ? getText('user')
+                                                  : selectedTransactionType == 2
+                                                      ? getText('loan')
+                                                      : selectedTransactionType == 3
+                                                          ? getText('deposit')
+                                                          : getText('allUsers');
                                           if (selectedTransactionType == 3) type = 'out';
                                         }),
                                       ),
@@ -223,7 +450,12 @@ class _AddTransactionState extends State<AddTransaction> {
                                   flex: 4,
                                   child: Autocomplete<User>(
                                     displayStringForOption: (user) => user.name,
-                                    onSelected: (user) => selectedName = user.name,
+                                    onSelected: (user) {
+                                      setState(() {
+                                        selectedName = user.name;
+                                        selectedUserCapital = user.capital;
+                                      });
+                                    },
                                     optionsBuilder: (textEditingValue) => users.where(
                                       (user) => user.name.toLowerCase().contains(textEditingValue.text.toLowerCase()),
                                     ),
@@ -306,6 +538,8 @@ class _AddTransactionState extends State<AddTransaction> {
                                 ),
                               ],
                             )
+                          else if (selectedTransactionType == 4) // allUsers Transaction
+                            const SizedBox()
                           else // loan and deposit transaction
                             Row(
                               children: [
@@ -361,10 +595,7 @@ class _AddTransactionState extends State<AddTransaction> {
                                                             textEditingController.clear();
                                                             selectedName = '';
                                                           }),
-                                                      icon: const Icon(
-                                                        Icons.clear,
-                                                        size: 20.0,
-                                                      )),
+                                                      icon: const Icon(Icons.clear, size: 20.0)),
                                             ),
                                           ));
                                     },
@@ -408,6 +639,37 @@ class _AddTransactionState extends State<AddTransaction> {
                           mySizedBox(context),
                           Row(
                             children: [
+                              Expanded(child: myText(getText('type'))),
+                              Expanded(
+                                flex: 4,
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      alignment: Alignment.centerLeft,
+                                      child: myDropDown(
+                                        context,
+                                        value: type,
+                                        width: getWidth(context, .13),
+                                        items: transactionsTypes.entries.map((item) {
+                                          return DropdownMenuItem(
+                                            value: getKeyFromValue(item.value),
+                                            alignment: AlignmentDirectional.center,
+                                            child: Text(item.value),
+                                          );
+                                        }).toList(),
+                                        onChanged: (value) => setState(() => type = value.toString()),
+                                      ),
+                                    ),
+                                    mySizedBox(context),
+                                    myText('${getText('caisse')} :   ${myCurrency.format(caisse)}'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          mySizedBox(context),
+                          Row(
+                            children: [
                               Expanded(child: myText(getText('amount'))),
                               Expanded(
                                   flex: 4,
@@ -419,84 +681,113 @@ class _AddTransactionState extends State<AddTransaction> {
                                         isNumberOnly: true,
                                         autoFocus: widget.sourceTab != 'tr',
                                         onChanged: (value) => amount = value,
+                                        hint: myCurrency.format(double.parse(amount)),
                                       ),
                                       mySizedBox(context),
-                                      (selectedTransactionType == 2 || selectedTransactionType == 3)
-                                          ? myText('${getText('rest')} :   ${myCurrency.format(rest)}')
-                                          : const SizedBox()
+                                      InkWell(
+                                        onTap: () => setState(() {
+                                          switch (selectedTransactionType) {
+                                            case 0:
+                                              setState(() {
+                                                amount = category == 'caisse'
+                                                    ? caisse.toString()
+                                                    : category == 'reserve'
+                                                        ? reserve.toString()
+                                                        : category == 'donation'
+                                                            ? donation.toString()
+                                                            : zakat.toString();
+                                              });
+                                              break;
+                                            case 1:
+                                              setState(() => amount = selectedUserCapital.toString());
+                                              break;
+                                            case 2:
+                                              setState(() => amount = rest.toString());
+                                              break;
+                                            case 3:
+                                              setState(() => amount = rest.toString());
+                                              break;
+                                          }
+                                        }),
+                                        child: (selectedTransactionType == 0)
+                                            ? myText(
+                                                '${getText('solde')} :   ${myCurrency.format(category == 'caisse' ? caisse : category == 'reserve' ? reserve : category == 'donation' ? donation : zakat)}')
+                                            : (selectedTransactionType == 1)
+                                                ? myText(
+                                                    '${getText('capital')} :   ${myCurrency.format(selectedUserCapital)}')
+                                                : (selectedTransactionType == 4)
+                                                    ? const SizedBox()
+                                                    : myText('${getText('rest')} :   ${myCurrency.format(rest)}'),
+                                      )
                                     ],
                                   )),
                             ],
                           ),
-                          mySizedBox(context),
-                          Row(
-                            children: [
-                              Expanded(child: myText(getText('type'))),
-                              Expanded(
-                                flex: 4,
-                                child: Container(
-                                  alignment: Alignment.centerLeft,
-                                  child: myDropDown(
-                                    context,
-                                    value: type,
-                                    width: getWidth(context, .13),
-                                    items: transactionsTypes.entries.map((item) {
-                                      return DropdownMenuItem(
-                                        value: getKeyFromValue(item.value),
-                                        alignment: AlignmentDirectional.center,
-                                        child: Text(item.value),
-                                      );
-                                    }).toList(),
-                                    onChanged: (value) => setState(() => type = value.toString()),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          mySizedBox(context),
-                          Row(
-                            children: [
-                              Expanded(child: myText(getText('date'))),
-                              Expanded(
-                                flex: 4,
-                                child: Row(
-                                  children: [
-                                    myTextField(
-                                      context,
-                                      hint: myDateFormate.format(date),
-                                      width: getWidth(context, .10),
-                                      enabled: false,
-                                      onChanged: ((text) {}),
-                                    ),
-                                    mySizedBox(context),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.calendar_month,
-                                        color: primaryColor,
-                                      ),
-                                      onPressed: () async {
-                                        final DateTime? selected = await showDatePicker(
-                                          context: context,
-                                          initialDate: date,
-                                          firstDate: DateTime(1900, 01, 01, 00, 00, 00),
-                                          lastDate: DateTime.now(),
-                                        );
-                                        if (selected != null && selected != date) {
-                                          setState(() => date = selected);
-                                        }
-                                      },
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          mySizedBox(context),
+
+                          // mySizedBox(context),
+                          // Row(
+                          //   children: [
+                          //     Expanded(child: myText(getText('date'))),
+                          //     Expanded(
+                          //       flex: 4,
+                          //       child: Row(
+                          //         children: [
+                          //           myTextField(
+                          //             context,
+                          //             hint: myDateFormate.format(date),
+                          //             width: getWidth(context, .10),
+                          //             enabled: false,
+                          //             onChanged: ((text) {}),
+                          //           ),
+                          //           mySizedBox(context),
+                          //           IconButton(
+                          //             icon: Icon(
+                          //               Icons.calendar_month,
+                          //               color: primaryColor,
+                          //             ),
+                          //             onPressed: () async {
+                          //               final DateTime? selected = await showDatePicker(
+                          //                 context: context,
+                          //                 initialDate: date,
+                          //                 firstDate: DateTime(1900, 01, 01, 00, 00, 00),
+                          //                 lastDate: DateTime.now(),
+                          //               );
+                          //               if (selected != null && selected != date) {
+                          //                 setState(() => date = selected);
+                          //               }
+                          //             },
+                          //           )
+                          //         ],
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
+
+                          if (selectedTransactionType == 4) mySizedBox(context),
+                          if (selectedTransactionType == 4)
+                            Row(
+                              children: [
+                                Expanded(child: myText(getText('password'))),
+                                Expanded(
+                                    flex: 4,
+                                    child: Row(
+                                      children: [
+                                        myTextField(
+                                          context,
+                                          width: getWidth(context, .13),
+                                          onChanged: (text) => _password = text,
+                                          isPassword: true,
+                                        ),
+                                      ],
+                                    )),
+                              ],
+                            ),
+                          const Spacer(),
                           Row(children: [
                             Expanded(child: myText(getText('note'))),
                             const Expanded(flex: 4, child: SizedBox())
                           ]),
-                          const Spacer(),
+                          mySizedBox(context),
                           Container(
                             alignment: Alignment.centerLeft,
                             child: Container(
@@ -521,169 +812,35 @@ class _AddTransactionState extends State<AddTransaction> {
                               ),
                             ),
                           ),
-                          mySizedBox(context),
-                          saveButton(),
+                          const Spacer(),
+                          myButton(context, onTap: () async {
+                            if (amount.isEmpty || amount == '0') {
+                              snackBar(context, 'Amount can not be zero!!!', duration: 5);
+                            } else {
+                              setState(() => isLoading = true);
+                              if (selectedTransactionType == 4) {
+                                var res = await sqlQuery(selectUrl, {
+                                  'sql1':
+                                      '''SELECT CASE WHEN admin = '$_password' THEN 1 ELSE 0 END AS password FROM settings;''',
+                                });
+
+                                if (res[0][0]['password'] == '1') {
+                                  save();
+                                } else {
+                                  setState(() => isLoading = false);
+                                  snackBar(context, 'Wrong Password!!', duration: 1);
+                                }
+                              } else {
+                                save();
+                              }
+                            }
+                          }),
+                          const Spacer(),
                         ],
                       ),
           ),
         ),
       ]),
-    );
-  }
-
-  Widget saveButton() {
-    return myButton(
-      context,
-      onTap: () async {
-        if (amount.isNotEmpty && amount != '0') {
-          setState(() => isLoading = true);
-          bool _testsChecked = true; //used to test if rest is >= 0 and prevent navigation to main screen
-          double _amount = double.parse(amount);
-          double _solde = 0;
-
-          if (type == 'out') {
-            _amount = _amount * -1;
-          }
-
-          switch (category) {
-            case 'caisse':
-              _solde = caisse + _amount;
-              break;
-            case 'reserve':
-              _solde = reserve + _amount;
-              break;
-            case 'donation':
-              _solde = donation + _amount;
-              break;
-            case 'zakat':
-              _solde = zakat + _amount;
-              break;
-          }
-
-          if (selectedTransactionType == 0) {
-            //insert the special transaction
-            //update the setting category
-            await sqlQuery(insertUrl, {
-              'sql1':
-                  '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,note) VALUES ($currentYear , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
-              'sql2': '''UPDATE Settings SET $category = $_solde WHERE 1;'''
-            });
-          } else {
-            bool nameWrite = false;
-            //check if the name is write
-            if (selectedTransactionType == 1) {
-              for (var user in users) {
-                if (user.name == selectedName) {
-                  nameWrite = true;
-                  selectedUser = user;
-                  break;
-                }
-              }
-            } else if (selectedTransactionType == 2) {
-              for (var user in loanUsers) {
-                if (user.name == selectedName) {
-                  nameWrite = true;
-                  selectedOtherUser = user;
-                  break;
-                }
-              }
-            } else {
-              for (var user in depositUsers) {
-                if (user.name == selectedName) {
-                  nameWrite = true;
-                  selectedOtherUser = user;
-                  break;
-                }
-              }
-            }
-
-            if (selectedTransactionType == 1) {
-              //test if name is not empty and name is write or users list is empty in case the user is selected from users tab
-              if (selectedName.isNotEmpty && (users.isEmpty || nameWrite)) {
-                double _soldeUser = selectedUser.capital + _amount;
-
-                //insert the transaction
-                //update the User capital
-                //update the setting caisse
-                await sqlQuery(insertUrl, {
-                  'sql1':
-                      '''INSERT INTO Transaction (userId,userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES (${selectedUser.userId},'${selectedUser.name}',$currentYear , '$date' , '$type' ,${_amount.abs()} ,$_soldeUser, $_solde , '$note' );''',
-                  'sql2': '''UPDATE Users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};''',
-                  'sql3': '''UPDATE Settings SET caisse = $_solde WHERE 1;'''
-                });
-              } else {
-                snackBar(context, 'Check The Name');
-              }
-            } else if (selectedTransactionType == 2) {
-              if (selectedName.isNotEmpty && (loanUsers.isEmpty || nameWrite)) {
-                double _userAmount = selectedOtherUser.amount;
-                if (type == 'out') {
-                  _userAmount -= _amount;
-                }
-                double _userRest = selectedOtherUser.rest - _amount;
-
-                if (_userRest >= 0) {
-                  //insert the transaction
-                  //update the User capital
-                  //update the setting caisse
-                  await sqlQuery(insertUrl, {
-                    'sql1':
-                        '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeCaisse,note) VALUES ('${selectedOtherUser.name}', 'loan', $currentYear , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
-                    'sql2':
-                        '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
-                    'sql3': '''UPDATE Settings SET caisse = $_solde WHERE 1;'''
-                  });
-                } else {
-                  setState(() {
-                    _testsChecked = false;
-                    isLoading = false;
-                  });
-                  snackBar(context, 'Rest must be >= 0');
-                }
-              } else {
-                snackBar(context, 'Check The Name');
-              }
-            } else {
-              if (selectedName.isNotEmpty && (depositUsers.isEmpty || nameWrite)) {
-                double _userAmount = selectedOtherUser.amount;
-                if (type == 'in') {
-                  _userAmount += _amount;
-                }
-                double _userRest = selectedOtherUser.rest + _amount;
-
-                if (_userRest >= 0) {
-                  //insert the transaction
-                  //update the User capital
-                  //update the setting caisse
-                  await sqlQuery(insertUrl, {
-                    'sql1':
-                        '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeCaisse,note) VALUES ('${selectedOtherUser.name}','deposit',$currentYear , '$date' , '$type' ,${_amount.abs()} , $_solde , '$note' );''',
-                    'sql2':
-                        '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
-                    'sql3': '''UPDATE Settings SET caisse = $_solde WHERE 1;''',
-                  });
-                } else {
-                  setState(() {
-                    _testsChecked = false;
-                    isLoading = false;
-                  });
-                  snackBar(context, 'Rest must be >= 0');
-                }
-              } else {
-                snackBar(context, 'Check The Name');
-              }
-            }
-          }
-          if (_testsChecked) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => MyApp(index: widget.sourceTab)),
-            );
-            snackBar(context, 'Transaction added successfully');
-          }
-        } else {
-          snackBar(context, 'Amount can not be zero!!!', duration: 5);
-        }
-      },
     );
   }
 }

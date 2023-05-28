@@ -5,9 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pdf;
 import 'package:http/http.dart' as http;
 
-String password = '';
 int currentYear = 2023;
-bool namesHidden = true;
+bool namesHidden = false;
 DateTime startDate = DateTime.now();
 DateTime endDate = DateTime.now();
 
@@ -20,9 +19,12 @@ Color scaffoldColor = const Color(0xFFf0f2f5); //0XFF99bcc4
 List<pdf.Font> fonts = [];
 double textFeildHeight = .05;
 
-Uri insertUrl = Uri.parse('http://localhost/wintest/insert.php');
-Uri insertSPUrl = Uri.parse('http://localhost/wintest/insertSP.php');
-Uri selectUrl = Uri.parse('http://localhost/wintest/select.php');
+// String host = 'http://localhost/fairsplit';
+String host = 'http://fairsplit.assala.com';
+
+Uri insertUrl = Uri.parse('$host/php/insert.php');
+Uri insertSPUrl = Uri.parse('$host/php/insertSP.php');
+Uri selectUrl = Uri.parse('$host/php/select.php');
 
 dynamic sqlQuery(Uri uri, dynamic params) async {
   Map<String, dynamic> globalParams = {

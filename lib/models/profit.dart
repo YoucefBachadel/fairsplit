@@ -1,6 +1,7 @@
 class Profit {
   int profitId;
   String name;
+  String type; //intern/extern
   int year;
   int month;
   double profit;
@@ -13,6 +14,7 @@ class Profit {
   Profit({
     this.profitId = 0,
     this.name = '',
+    this.type = '',
     this.year = 0,
     this.month = 0,
     this.profit = 0,
@@ -22,5 +24,7 @@ class Profit {
     this.effort = 0,
     this.threshold = 0,
     this.founding = 0,
-  });
+  }) {
+    type = month == 0 ? 'extern' : 'intern';
+  }
 }

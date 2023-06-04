@@ -22,7 +22,8 @@ class _ProfitHistoryState extends State<ProfitHistory> {
   String _name = 'tout';
   String _year = 'tout';
   String _month = 'tout';
-  int? _sortColumnIndex = 2;
+  String _type = 'tout';
+  int? _sortColumnIndex = 3;
   bool _isAscending = false;
 
   void loadData() async {
@@ -58,6 +59,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
     profitsHistory.clear();
     for (var profit in allProfitsHistroy) {
       if ((_name == 'tout' || profit.name == _name) &&
+          (_type == 'tout' || profit.type == _type) &&
           (_year == 'tout' || profit.year.toString() == _year) &&
           (_month == 'tout' || profit.month == monthsOfYear.indexOf(_month) + 1)) {
         profitsHistory.add(profit);
@@ -71,40 +73,38 @@ class _ProfitHistoryState extends State<ProfitHistory> {
       case 1:
         profitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.name.compareTo(tr1.name) : tr1.name.compareTo(tr2.name));
         break;
-      case 2:
+      case 3:
         profitsHistory.sort((tr1, tr2) {
           int yearComp = !_isAscending ? tr2.year.compareTo(tr1.year) : tr1.year.compareTo(tr2.year);
-          if (yearComp == 0) {
-            return tr1.month.compareTo(tr2.month);
-          }
+          if (yearComp == 0) return !_isAscending ? tr2.month.compareTo(tr1.month) : tr1.month.compareTo(tr2.month);
           return yearComp;
         });
         break;
-      case 4:
+      case 5:
         profitsHistory
             .sort((tr1, tr2) => !_isAscending ? tr2.profit.compareTo(tr1.profit) : tr1.profit.compareTo(tr2.profit));
         break;
-      case 5:
+      case 6:
         profitsHistory.sort(
             (tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
         break;
-      case 6:
+      case 7:
         profitsHistory.sort(
             (tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
         break;
-      case 7:
+      case 8:
         profitsHistory
             .sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
         break;
-      case 8:
+      case 9:
         profitsHistory
             .sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
         break;
-      case 9:
+      case 10:
         profitsHistory.sort((tr1, tr2) =>
             !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold));
         break;
-      case 10:
+      case 11:
         profitsHistory.sort(
             (tr1, tr2) => !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding));
         break;
@@ -123,19 +123,23 @@ class _ProfitHistoryState extends State<ProfitHistory> {
 
     List<DataColumn> columns = [
       dataColumn(context, ''),
-      ...[
+      sortableDataColumn(
+        context,
         getText('name'),
+        (columnIndex, ascending) => setState(() {
+          _sortColumnIndex = columnIndex;
+          _isAscending = ascending;
+        }),
+      ),
+      dataColumn(context, getText('type')),
+      sortableDataColumn(
+        context,
         getText('year'),
-      ]
-          .map((e) => sortableDataColumn(
-                context,
-                e,
-                (columnIndex, ascending) => setState(() {
-                  _sortColumnIndex = columnIndex;
-                  _isAscending = ascending;
-                }),
-              ))
-          .toList(),
+        (columnIndex, ascending) => setState(() {
+          _sortColumnIndex = columnIndex;
+          _isAscending = ascending;
+        }),
+      ),
       dataColumn(context, getText('month')),
       ...[
         getText('profit'),
@@ -163,6 +167,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
             cells: [
               dataCell(context, (profitsHistory.indexOf(profit) + 1).toString()),
               dataCell(context, profit.name, textAlign: TextAlign.start),
+              dataCell(context, getText(profit.type)),
               dataCell(context, profit.year.toString()),
               dataCell(
                 context,
@@ -256,10 +261,34 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                   child: Text(item),
                 );
               }).toList(),
-              onChanged: (value) => setState(() {
-                _name = value.toString();
-              }),
+              onChanged: (value) => setState(() => _name = value.toString()),
             )
+          ],
+        ),
+        mySizedBox(context),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                getText('type'),
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+            myDropDown(
+              context,
+              value: _type,
+              color: _type == 'tout' ? Colors.grey : primaryColor,
+              items: unitsTypesSearch.entries.map((item) {
+                return DropdownMenuItem(
+                  value: getKeyFromValue(item.value),
+                  alignment: AlignmentDirectional.center,
+                  child: Text(item.value),
+                );
+              }).toList(),
+              onChanged: (value) => setState(() => _type = value.toString()),
+            ),
           ],
         ),
         mySizedBox(context),
@@ -284,9 +313,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                   child: Text(item),
                 );
               }).toList(),
-              onChanged: (value) => setState(() {
-                _year = value.toString();
-              }),
+              onChanged: (value) => setState(() => _year = value.toString()),
             )
           ],
         ),
@@ -312,19 +339,18 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                   child: Text(item),
                 );
               }).toList(),
-              onChanged: (value) => setState(() {
-                _month = value.toString();
-              }),
+              onChanged: (value) => setState(() => _month = value.toString()),
             )
           ],
         ),
         mySizedBox(context),
-        (_name != 'tout' || _year != 'tout' || _month != 'tout')
+        (_name != 'tout' || _year != 'tout' || _month != 'tout' || _type != 'tout')
             ? IconButton(
                 onPressed: () => setState(() {
                   _name = 'tout';
                   _year = 'tout';
                   _month = 'tout';
+                  _type = 'tout';
                 }),
                 icon: Icon(
                   Icons.update,

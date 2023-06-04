@@ -911,16 +911,16 @@ class _TransactionsState extends State<Transactions> {
                     child: Text(item.value),
                   );
                 }).toList(),
-                onChanged: (value) => setState(() {
-                  context.read<TransactionsFilter>().change(compt: value.toString());
-                }),
+                onChanged: (value) =>
+                    setState(() => context.read<TransactionsFilter>().change(compt: value.toString())),
               ),
             ],
           ),
         transactionCategory == 'users'
             ? autoComplete(
-                onSeleted: (item) =>
-                    setState(() => _search = namesHidden ? userNames.elementAt(int.parse(item)) : item),
+                onSeleted: (item) => setState(() => context
+                    .read<TransactionsFilter>()
+                    .change(search: namesHidden ? userNames.elementAt(int.parse(item)) : item)),
                 optionsBuilder: (textEditingValue) {
                   if (namesHidden) {
                     Set<String> indexes = {};
@@ -938,8 +938,9 @@ class _TransactionsState extends State<Transactions> {
             : const SizedBox(),
         transactionCategory == 'loans'
             ? autoComplete(
-                onSeleted: (item) =>
-                    setState(() => _search = namesHidden ? loanNames.elementAt(int.parse(item)) : item),
+                onSeleted: (item) => setState(() => context
+                    .read<TransactionsFilter>()
+                    .change(search: namesHidden ? loanNames.elementAt(int.parse(item)) : item)),
                 optionsBuilder: (textEditingValue) {
                   if (namesHidden) {
                     Set<String> indexes = {};
@@ -957,8 +958,9 @@ class _TransactionsState extends State<Transactions> {
             : const SizedBox(),
         transactionCategory == 'deposits'
             ? autoComplete(
-                onSeleted: (item) =>
-                    setState(() => _search = namesHidden ? depositNames.elementAt(int.parse(item)) : item),
+                onSeleted: (item) => setState(() => context
+                    .read<TransactionsFilter>()
+                    .change(search: namesHidden ? depositNames.elementAt(int.parse(item)) : item)),
                 optionsBuilder: (textEditingValue) {
                   if (namesHidden) {
                     Set<String> indexes = {};
@@ -1195,6 +1197,7 @@ class _TransactionsState extends State<Transactions> {
               onFieldSubmitted,
             ) {
               _controller = textEditingController;
+              _controller.text = _search;
               return Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(

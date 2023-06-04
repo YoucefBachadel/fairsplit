@@ -57,7 +57,10 @@ Map<String, String> constans = {
   'rawProfit': 'Raw Profit',
   'netProfit': 'Net Profit',
   'profitability': 'Profitability',
+  'unitProfitability': 'Unit Profitability',
   'startCapital': 'Start Capital',
+  'initialCapital': 'Initial Capital',
+  'workingCapital': 'Working Capital',
   'total': 'Total',
   'totalIn': 'Total Entrie',
   'totalOut': 'Total Sortie',
@@ -145,6 +148,12 @@ Map<String, String> transactionsTypesSearch = {
   'tout': getText('tout'),
   'in': getText('in'),
   'out': getText('out'),
+};
+
+Map<String, String> unitsTypesSearch = {
+  'tout': getText('tout'),
+  'intern': getText('intern'),
+  'extern': getText('extern'),
 };
 
 List<String> selectTransactionType = [

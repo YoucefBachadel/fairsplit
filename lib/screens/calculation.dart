@@ -24,14 +24,18 @@ class _CalculationState extends State<Calculation> {
   List<User> moneyUsers = [], globalEffortUsers = [], unitEffortUsers = [], thresholdUsers = [], foundingUsers = [];
   List<Transaction> transactions = [];
   var transactionsDays = <DateTime>{}; //list of days that containe transactions
-  late double reserve, donation, reserveProfit;
+  late double reserve;
   double unitProfitValue = 0, unitProfitHint = 0;
   // bool reserveIsMoneyPartner = false;
   bool isloading = true, iscalculated = false;
   int bottemNavigationSelectedInex = 0;
   int daysInMonth = 0;
+
+  double workingProfitability =
+      0; //used to calculate the working capital for each money user = day profit / total day capital
   double totalMoneyCapital = 0;
   double caReserve = 0,
+      caReserveMoneyProfit = 0,
       caDonation = 0,
       caNetProfit = 0,
       caMoney = 0,
@@ -43,7 +47,7 @@ class _CalculationState extends State<Calculation> {
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT reserve, donation,reserveProfit FROM Settings;''',
+      'sql1': '''SELECT reserve FROM Settings;''',
       'sql2': '''SELECT userId, name, capital FROM Users WHERE type IN ('money','both');''',
       'sql3':
           '''SELECT e.userId, u.name, e.effortPerc,  u.months FROM Effort e, Users u WHERE e.unitId = -1 AND e.userId = u.userId;''',
@@ -53,15 +57,15 @@ class _CalculationState extends State<Calculation> {
           '''SELECT t.userId,u.name, t.thresholdPerc FROM Threshold t, Users u WHERE t.unitId = ${widget.unit.unitId} AND t.userId = u.userId;''',
       'sql6':
           '''SELECT f.userId,u.name, f.foundingPerc FROM Founding f, Users u WHERE f.unitId = ${widget.unit.unitId} AND f.userId = u.userId;''',
-      'sql7':
-          '''SELECT transactionId,userId,userName,date,type,amount FROM Transaction WHERE ${widget.unit.type == 'extern' ? '' : 'Month(date) = ${widget.unit.currentMonth} and '}Year(date) = $currentYear;''',
-      'sql8':
-          '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Month(date) = ${widget.unit.currentMonth} and Year(date) = $currentYear;''',
+      'sql7': widget.unit.type == 'intern'
+          ? '''SELECT transactionId,userId,userName,date,type,amount FROM Transaction WHERE Month(date) = ${widget.unit.currentMonthOrYear} AND Year(date) = $currentYear;'''
+          : '''SELECT transactionId,userId,userName,date,type,amount FROM Transaction WHERE Year(date) >= ${widget.unit.currentMonthOrYear};''',
+      'sql8': widget.unit.type == 'intern'
+          ? '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Month(date) = ${widget.unit.currentMonthOrYear} AND Year(date) = $currentYear;'''
+          : '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Year(date) >= ${widget.unit.currentMonthOrYear};''',
     });
 
     reserve = double.parse(res[0][0]['reserve']);
-    donation = double.parse(res[0][0]['donation']);
-    reserveProfit = double.parse(res[0][0]['reserveProfit']);
 
     for (var ele in res[1]) {
       moneyUsers.add(User(userId: int.parse(ele['userId']), name: ele['name'], capital: double.parse(ele['capital'])));
@@ -75,7 +79,7 @@ class _CalculationState extends State<Calculation> {
     totalMoneyCapital += reserve;
 
     for (var ele in res[2]) {
-      if (ele['months'][widget.unit.currentMonth - 1] == '1') {
+      if (widget.unit.type == 'intern' && ele['months'][widget.unit.currentMonthOrYear - 1] == '1') {
         globalEffortUsers.add(
             User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
       }
@@ -84,7 +88,7 @@ class _CalculationState extends State<Calculation> {
     globalEffortUsers.sort((a, b) => a.name.compareTo(b.name));
 
     for (var ele in res[3]) {
-      if (ele['months'][widget.unit.currentMonth - 1] == '1') {
+      if (widget.unit.type == 'intern' && ele['months'][widget.unit.currentMonthOrYear - 1] == '1') {
         unitEffortUsers.add(
             User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
       }
@@ -116,7 +120,11 @@ class _CalculationState extends State<Calculation> {
         amount: double.parse(ele['amount']),
       );
       transactions.add(transaction);
-      transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
+
+      if (widget.unit.type == 'intern' || transaction.date.year == widget.unit.currentMonthOrYear) {
+        // we add the transaction day if it's  unit type is intern or (extern and trasaction year = unit currentMonthOrYear )
+        transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
+      }
     }
 
     for (var ele in res[7]) {
@@ -129,27 +137,46 @@ class _CalculationState extends State<Calculation> {
         amount: double.parse(ele['amount']),
       );
       transactions.add(transaction);
-      transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
+      if (widget.unit.type == 'intern' ||
+          (widget.unit.type == 'extern' && transaction.date.year == widget.unit.currentMonthOrYear)) {
+        // we add the transaction day if it's  unit type is intern or (extern and trasaction year = unit currentMonthOrYear )
+        transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
+      }
     }
 
     //  if extern unit we use 365 else we calculate number of days in current month
     daysInMonth = widget.unit.type == 'extern'
-        ? DateTime(currentYear + 1).difference(DateTime(currentYear)).inDays
-        : DateUtils.getDaysInMonth(currentYear, widget.unit.currentMonth);
+        ? DateTime(widget.unit.currentMonthOrYear + 1).difference(DateTime(widget.unit.currentMonthOrYear)).inDays
+        : DateUtils.getDaysInMonth(currentYear, widget.unit.currentMonthOrYear);
 
     //if is intern unit we add the first day of the current month and next month
     //if is extern unit we add the first dat of janury of the current year and next year
     transactionsDays.addAll({
-      DateTime(currentYear, widget.unit.type == 'extern' ? 1 : widget.unit.currentMonth, 1),
       DateTime(
-        widget.unit.type == 'extern' ? currentYear + 1 : currentYear,
-        widget.unit.type == 'extern' ? 1 : widget.unit.currentMonth + 1,
+        widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : currentYear,
+        widget.unit.type == 'extern' ? 1 : widget.unit.currentMonthOrYear,
+        1,
+      ),
+      DateTime(
+        widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear + 1 : currentYear,
+        widget.unit.type == 'extern' ? 1 : widget.unit.currentMonthOrYear + 1,
         1,
       ),
     });
 
     transactionsDays = SplayTreeSet.from(transactionsDays);
     transactions.sort((tr1, tr2) => tr1.date.compareTo(tr2.date));
+
+    //reset the users capital to its value in the first day of the month
+    for (var user in moneyUsers) {
+      for (var trans in transactions) {
+        if (trans.userId == user.userId) {
+          trans.type == 'in' ? user.capital -= trans.amount : user.capital += trans.amount;
+        }
+      }
+      //set initial capital of user
+      user.initialCapital = user.capital;
+    }
 
     setState(() => isloading = false);
   }
@@ -192,19 +219,15 @@ class _CalculationState extends State<Calculation> {
       user.effort = caEffortGlobal * user.effortPerc / 100;
     }
 
-    //reset the users capital to its value in the first day of the month
-    for (var user in moneyUsers) {
-      for (var trans in transactions) {
-        if (trans.userId == user.userId) {
-          trans.type == 'in' ? user.capital -= trans.amount : user.capital += trans.amount;
-        }
-      }
-    }
+    //calculated money profit / number of days in month
+    double caMoneyProfitPerDay = caMoney / daysInMonth;
 
     // loop the list of days that has transactions
     for (var i = 0; i < transactionsDays.length - 1; i++) {
       //loop the list of transactions in the selected day
-      for (var caTrans in transactions) {
+      //for the transactions list we loop all the list if unit type is intern else we loop only the transactions of currentMonthOrYear
+      for (var caTrans in transactions
+          .where((element) => (widget.unit.type == 'intern' || element.date.year == widget.unit.currentMonthOrYear))) {
         if (DateTime(caTrans.date.year, caTrans.date.month, caTrans.date.day) == transactionsDays.elementAt(i)) {
           // get the user of the transaction
           User caTransUser = moneyUsers.firstWhere((user) => user.userId == caTrans.userId);
@@ -220,12 +243,12 @@ class _CalculationState extends State<Calculation> {
         totalUsersCapital += user.capital;
       }
 
-      //calculated money profit / number of days in month
-      double caMoneyProfitPerDay = caMoney / daysInMonth;
-
       // count number of days till the next day that has transaction
       int daysCountToNextTransaction =
           transactionsDays.elementAt(i + 1).difference(transactionsDays.elementAt(i)).inDays;
+
+      // calculate the working profitability
+      workingProfitability += caMoneyProfitPerDay / totalUsersCapital * daysCountToNextTransaction;
 
       for (var user in moneyUsers) {
         // percentage of user capital compare to tho total users capital
@@ -246,10 +269,7 @@ class _CalculationState extends State<Calculation> {
     String effortUnitSQL = 'INSERT INTO Users(userId, effort) VALUES ';
     String effortGlobalSQL = 'INSERT INTO Users(userId, effort) VALUES ';
 
-    //add careserve,cadonation and reserve money profit to total reserve profit
-    reserve += caReserve;
-    donation += caDonation;
-    reserveProfit += moneyUsers[0].money;
+    caReserveMoneyProfit = moneyUsers[0].money;
     moneyUsers.removeAt(0);
 
     for (var user in moneyUsers) {
@@ -284,13 +304,13 @@ class _CalculationState extends State<Calculation> {
     effortUnitSQL += ' ON DUPLICATE KEY UPDATE effort = effort + VALUES(effort);';
     effortGlobalSQL += ' ON DUPLICATE KEY UPDATE effort = effort + VALUES(effort);';
 
-    int nextMonth = widget.unit.type == 'extern'
-        ? 1
-        : widget.unit.currentMonth == 12
+    int nextMonthOrYear = widget.unit.type == 'extern'
+        ? widget.unit.currentMonthOrYear + 1
+        : widget.unit.currentMonthOrYear == 12
             ? 1
-            : widget.unit.currentMonth + 1;
+            : widget.unit.currentMonthOrYear + 1;
 
-    int calculated = nextMonth == 1 ? 1 : 0;
+    int calculated = widget.unit.type == 'extern' || nextMonthOrYear == 1 ? 1 : 0;
 
     await sqlQuery(insertUrl, {
       'sql1': moneySQL,
@@ -299,10 +319,11 @@ class _CalculationState extends State<Calculation> {
       'sql4': effortUnitSQL,
       'sql5': effortGlobalSQL,
       'sql6':
-          ''' UPDATE Units SET profit = profit + $unitProfitValue, calculated = $calculated, currentMonth = $nextMonth  WHERE unitId = ${widget.unit.unitId}; ''',
+          ''' UPDATE Units SET profit = profit + $unitProfitValue, calculated = $calculated, currentMonthOrYear = $nextMonthOrYear  WHERE unitId = ${widget.unit.unitId}; ''',
       'sql7':
-          '''INSERT INTO ProfitHistory(name, year, month, profit, reserve, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',$currentYear,${widget.unit.type == 'extern' ? 0 : widget.unit.currentMonth},$unitProfitValue,${caReserve.toStringAsFixed(2)},${caDonation.toStringAsFixed(2)},${caMoney.toStringAsFixed(2)},${caEffort.toStringAsFixed(2)},${caThreshold.toStringAsFixed(2)},${caFounding.toStringAsFixed(2)});''',
-      'sql8': 'UPDATE settings SET reserve = $reserve , donation = $donation , reserveProfit = $reserveProfit'
+          '''INSERT INTO ProfitHistory(name, year, month, profit, reserve, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : currentYear},${widget.unit.type == 'extern' ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,${caReserve.toStringAsFixed(2)},${caDonation.toStringAsFixed(2)},${caMoney.toStringAsFixed(2)},${caEffort.toStringAsFixed(2)},${caThreshold.toStringAsFixed(2)},${caFounding.toStringAsFixed(2)});''',
+      'sql8':
+          'UPDATE settings SET reserveProfit = reserveProfit + $caReserve + $caReserveMoneyProfit , donationProfit = donationProfit + $caDonation '
     });
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
@@ -412,12 +433,12 @@ class _CalculationState extends State<Calculation> {
                       mySizedBox(context),
                       if (bottemNavigationSelectedInex == 0)
                         Expanded(child: Center(child: SingleChildScrollView(child: information()))),
-                      // if (bottemNavigationSelectedInex == 1) tabScreen(transaction()),
-                      if (bottemNavigationSelectedInex == 1) tabScreen(money()),
-                      if (bottemNavigationSelectedInex == 2) tabScreen(threshold()),
-                      if (bottemNavigationSelectedInex == 3) tabScreen(founding()),
-                      if (bottemNavigationSelectedInex == 4) tabScreen(effort()),
-                      if (bottemNavigationSelectedInex == 5) tabScreen(global()),
+                      if (bottemNavigationSelectedInex == 1) tabScreen(transaction()),
+                      if (bottemNavigationSelectedInex == 2) tabScreen(money()),
+                      if (bottemNavigationSelectedInex == 3) tabScreen(threshold()),
+                      if (bottemNavigationSelectedInex == 4) tabScreen(founding()),
+                      if (bottemNavigationSelectedInex == 5) tabScreen(effort()),
+                      if (bottemNavigationSelectedInex == 6) tabScreen(global()),
                       mySizedBox(context),
                       SizedBox(width: getWidth(context, 1), child: const Divider()),
                       SizedBox(
@@ -425,7 +446,7 @@ class _CalculationState extends State<Calculation> {
                           type: BottomNavigationBarType.fixed,
                           items: <BottomNavigationBarItem>[
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('info')),
-                            // BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('transaction')),
+                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('transaction')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('money')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('threshold')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('founding')),
@@ -463,9 +484,13 @@ class _CalculationState extends State<Calculation> {
             {'key': getText('unit'), 'val': widget.unit.name},
             {'key': getText('capital'), 'val': myCurrency.format(widget.unit.capital)},
             {
-              'key': getText('month'),
-              'val': widget.unit.type == "extern" ? '/' : monthsOfYear[widget.unit.currentMonth - 1]
+              'key': widget.unit.type == "extern" ? getText('year') : getText('month'),
+              'val': widget.unit.type == "extern"
+                  ? widget.unit.currentMonthOrYear.toString()
+                  : monthsOfYear[widget.unit.currentMonthOrYear - 1]
             },
+            {'key': '${getText('unitProfitability')} %', 'val': (caMoney / widget.unit.capital).toStringAsFixed(2)},
+            {'key': '${getText('profitability')} %', 'val': (workingProfitability * 100).toStringAsFixed(2)},
             {'key': '${getText('reserve')} %', 'val': widget.unit.reservePerc.toString()},
             {'key': '${getText('donation')} %', 'val': widget.unit.donationPerc.toString()},
             {'key': '', 'val': ''},
@@ -482,6 +507,11 @@ class _CalculationState extends State<Calculation> {
             {'key': '', 'val': ''},
             {'key': '', 'val': ''},
             {'key': '', 'val': ''},
+            {'key': '', 'val': ''},
+            {
+              'key': getText('capital'),
+              'val': myCurrency.format(workingProfitability == 0 ? 0 : caMoney / workingProfitability)
+            },
             {'key': getText('reserve'), 'val': myCurrency.format(caReserve)},
             {'key': getText('donation'), 'val': myCurrency.format(caDonation)},
             {'key': 'Net Profit', 'val': myCurrency.format(caNetProfit)},
@@ -522,6 +552,7 @@ class _CalculationState extends State<Calculation> {
       getText('out'),
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = transactions
+        .where((element) => (widget.unit.type == 'intern' || element.date.year == widget.unit.currentMonthOrYear))
         .map(
           (transaction) => DataRow(cells: [
             dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
@@ -536,20 +567,25 @@ class _CalculationState extends State<Calculation> {
           ]),
         )
         .toList();
-    return transactions.isEmpty ? emptyList() : dataTable(columns: column, rows: rows);
+    return transactions.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30);
   }
 
   Widget money() {
-    List<DataColumn> column = ['', getText('name'), getText('capital'), '${getText('capital')} %', getText('profit')]
-        .map((e) => dataColumn(context, e))
-        .toList();
+    List<DataColumn> column = [
+      '',
+      getText('name'),
+      getText('initialCapital'),
+      getText('workingCapital'),
+      getText('profit')
+    ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = moneyUsers
         .map(
           (user) => DataRow(cells: [
             dataCell(context, (moneyUsers.indexOf(user) + 1).toString()),
             dataCell(context, user.name, textAlign: TextAlign.start),
-            dataCell(context, myCurrency.format(user.capital)),
-            dataCell(context, (user.capital * 100 / totalMoneyCapital).toStringAsFixed(2)),
+            dataCell(context, myCurrency.format(user.initialCapital), textAlign: TextAlign.end),
+            dataCell(context, myCurrency.format(workingProfitability == 0 ? 0 : user.money / workingProfitability),
+                textAlign: TextAlign.end),
             dataCell(context, myCurrency.format(user.money), textAlign: TextAlign.end),
           ]),
         )
@@ -558,7 +594,7 @@ class _CalculationState extends State<Calculation> {
       children: [
         myText('${getText('money')}  :  ${myCurrency.format(caMoney)} '),
         mySizedBox(context),
-        moneyUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows),
+        moneyUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
       ],
     );
   }
@@ -584,7 +620,7 @@ class _CalculationState extends State<Calculation> {
       children: [
         myText('${getText('threshold')}  :  ${myCurrency.format(caThreshold)} '),
         mySizedBox(context),
-        thresholdUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows),
+        thresholdUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
       ],
     );
   }
@@ -610,7 +646,7 @@ class _CalculationState extends State<Calculation> {
       children: [
         myText('${getText('founding')}  :  ${myCurrency.format(caFounding)} '),
         mySizedBox(context),
-        foundingUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows),
+        foundingUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
       ],
     );
   }
@@ -636,7 +672,7 @@ class _CalculationState extends State<Calculation> {
       children: [
         myText('${getText('effort')}  :  ${myCurrency.format(caEffort)} '),
         mySizedBox(context),
-        unitEffortUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows),
+        unitEffortUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
       ],
     );
   }
@@ -662,7 +698,7 @@ class _CalculationState extends State<Calculation> {
       children: [
         myText('${getText('effortGlobal')}  :  ${myCurrency.format(caEffortGlobal)} '),
         mySizedBox(context),
-        globalEffortUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows),
+        globalEffortUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
       ],
     );
   }

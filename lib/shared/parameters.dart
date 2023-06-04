@@ -27,15 +27,7 @@ Uri insertSPUrl = Uri.parse('$host/php/insertSP.php');
 Uri selectUrl = Uri.parse('$host/php/select.php');
 
 dynamic sqlQuery(Uri uri, dynamic params) async {
-  Map<String, dynamic> globalParams = {
-    'host': 'localhost',
-    'user': 'root',
-    'pass': '',
-    'db': 'fairsplit',
-  };
-
-  globalParams.addAll(params);
-  var res = await http.post(uri, body: jsonEncode(globalParams));
+  var res = await http.post(uri, body: jsonEncode(params));
   return jsonDecode(res.body);
 }
 

@@ -22,6 +22,9 @@ class User {
   double effortPerc; // used in users filter for sort
   double evaluation; // used in users filter for sort
 
+  double workingCapital; //used in calculation
+  double initialCapital; //used in calculation
+
   User({
     this.userId = -1,
     this.name = '',
@@ -41,6 +44,8 @@ class User {
     this.foundingPerc = 0,
     this.effortPerc = 0,
     this.evaluation = 0,
+    this.workingCapital = 0,
+    this.initialCapital = 0,
   })  : joinDate = joinDate ?? DateTime.now(),
         thresholds = thresholds ?? [],
         foundings = foundings ?? [],

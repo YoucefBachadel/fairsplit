@@ -42,7 +42,7 @@ class _UnitsState extends State<Units> {
         thresholdPerc: double.parse(ele['thresholdPerc']),
         foundingPerc: double.parse(ele['foundingPerc']),
         calculated: ele['calculated'] == '1',
-        currentMonth: int.parse(ele['currentMonth']),
+        currentMonthOrYear: int.parse(ele['currentMonthOrYear']),
       ));
       totalCapital += double.parse(ele['capital']);
       if (ele['type'] == 'intern') {
@@ -155,7 +155,7 @@ class _UnitsState extends State<Units> {
                 unit.effortPerc,
                 unit.thresholdPerc,
                 unit.foundingPerc,
-                unit.type == 'extern' ? '/' : monthsOfYear[unit.currentMonth - 1],
+                unit.type == 'extern' ? unit.currentMonthOrYear : monthsOfYear[unit.currentMonthOrYear - 1],
               ].map((e) => dataCell(context, e.toString())).toList(),
               DataCell(
                 unit.calculated

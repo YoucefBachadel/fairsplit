@@ -109,10 +109,10 @@ class _AddTransactionState extends State<AddTransaction> {
   void save() async {
     bool _testsChecked = true; //used to test if rest is >= 0 and prevent navigation to main screen
     double _amount = double.parse(amount);
-    double _soldeCaisse = 0;
+    double _soldeCaisse = caisse;
 
     if (type == 'out') _amount = _amount * -1;
-    _soldeCaisse = caisse + _amount;
+    if (selectedTransactionType != 4) _soldeCaisse += _amount;
 
     if (_soldeCaisse < 0) {
       _testsChecked = false;
@@ -153,8 +153,6 @@ class _AddTransactionState extends State<AddTransaction> {
       } else if (selectedTransactionType == 4) {
         //all Users transaction
 
-        _soldeCaisse = caisse; // reset the solde caisse
-
         List<User> moneyUsers = [];
         double _totalUsersCapital = 0, _userAmount = 0, _soldeUser = 0;
         String usersSQL = 'INSERT INTO Users(userId, capital) VALUES ';
@@ -169,32 +167,37 @@ class _AddTransactionState extends State<AddTransaction> {
           }
         }
 
-        //calculate the amount for each user
-        for (var user in moneyUsers) {
-          _userAmount = (user.capital * 100 / _totalUsersCapital) * _amount / 100;
-          _soldeCaisse += _userAmount;
-          _soldeUser = user.capital + _userAmount;
+        if (type == 'out' && _amount.abs() > _totalUsersCapital) {
+          _testsChecked = false;
+          snackBar(context, 'amount > total users capitals');
+        } else {
+          //calculate the amount for each user
+          for (var user in moneyUsers) {
+            _userAmount = (user.capital * 100 / _totalUsersCapital) * _amount / 100;
+            // _soldeCaisse += _userAmount;
+            _soldeUser = user.capital + _userAmount;
 
-          usersSQL += '(${user.userId}, $_soldeUser),';
-          transactionsSQL +=
-              '''(${user.userId},'${user.name}',$currentYear , '${DateTime.now()}' , '$type' ,${_userAmount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' ),''';
+            usersSQL += '(${user.userId}, $_soldeUser),';
+            transactionsSQL +=
+                '''(${user.userId},'${user.name}',$currentYear , '${DateTime.now()}' , '$type' ,${_userAmount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' ),''';
+          }
+
+          usersSQL = usersSQL.substring(0, usersSQL.length - 1);
+          usersSQL += ' ON DUPLICATE KEY UPDATE capital = VALUES(capital);';
+          transactionsSQL = transactionsSQL.substring(0, transactionsSQL.length - 1);
+          transactionsSQL += ';';
+
+          // _soldeCaisse = caisse + _amount; // recalculate solde caisse
+
+          //insert the transactions
+          //update the Users capitals
+          //update the setting caisse
+          await sqlQuery(insertUrl, {
+            'sql1': transactionsSQL,
+            'sql2': usersSQL,
+            // 'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse ;''',
+          });
         }
-
-        usersSQL = usersSQL.substring(0, usersSQL.length - 1);
-        usersSQL += ' ON DUPLICATE KEY UPDATE capital = VALUES(capital);';
-        transactionsSQL = transactionsSQL.substring(0, transactionsSQL.length - 1);
-        transactionsSQL += ';';
-
-        _soldeCaisse = caisse + _amount; // recalculate solde caisse
-
-        //insert the transactions
-        //update the Users capitals
-        //update the setting caisse
-        await sqlQuery(insertUrl, {
-          'sql1': transactionsSQL,
-          'sql2': usersSQL,
-          'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse ;''',
-        });
       } else {
         //other type of transaction that must check the name first
         bool nameWrite = false;

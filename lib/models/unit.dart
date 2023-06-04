@@ -12,7 +12,7 @@ class Unit {
   double effortPerc;
   double moneyPerc;
   bool calculated;
-  int currentMonth;
+  int currentMonthOrYear;
 
   Unit({
     this.unitId = -1,
@@ -28,7 +28,7 @@ class Unit {
     this.effortPerc = 0,
     this.moneyPerc = 0,
     this.calculated = false,
-    this.currentMonth = 1,
+    this.currentMonthOrYear = 1,
   });
 }
 

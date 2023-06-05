@@ -25,10 +25,10 @@ class _AddUserState extends State<AddUser> {
   late List<Founding> foundings;
   late List<Effort> efforts;
   late DateTime joinDate;
-  bool isloading = true, isDeleteLoading = false;
+  bool isLoading = true;
   bool isMoney = false;
   bool isEffort = false;
-  String deletePassword = '';
+  String password = '';
 
   // this to check if has been changed, it will be modified on conferm or delete item
   bool thresholdsHasChanged = false;
@@ -37,10 +37,10 @@ class _AddUserState extends State<AddUser> {
   bool typeHasChanged = false;
 
   void deleteUser(int userId) async {
-    setState(() => isDeleteLoading = true);
-
+    setState(() => isLoading = true);
+    Navigator.pop(context);
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT CASE WHEN admin = '$deletePassword' THEN 1 ELSE 0 END AS password FROM settings;''',
+      'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
     });
 
     if (res[0][0]['password'] == '1') {
@@ -54,11 +54,10 @@ class _AddUserState extends State<AddUser> {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
       snackBar(context, 'User deleted successfully');
     } else {
-      Navigator.pop(context);
       snackBar(context, 'Wrong Password!!', duration: 1);
     }
 
-    setState(() => isDeleteLoading = false);
+    setState(() => isLoading = false);
   }
 
   void loadUnits() async {
@@ -67,9 +66,103 @@ class _AddUserState extends State<AddUser> {
     for (var element in data) {
       allUnits.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
     }
-    setState(() {
-      isloading = false;
-    });
+    setState(() => isLoading = false);
+  }
+
+  void save() async {
+    if (name == '') {
+      snackBar(context, 'Name can not be empty!!!', duration: 5);
+    } else {
+      setState(() => isLoading = true);
+
+      var res = await sqlQuery(selectUrl, {
+        'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+      });
+
+      if (res[0][0]['password'] == '1') {
+        bool isNew = widget.user.userId == -1;
+
+        //chack if the nae exist befor
+        bool nameExist = false;
+        if (isNew || name != widget.user.name) {
+          var res =
+              await sqlQuery(selectUrl, {'sql1': '''SELECT COUNT(*) AS count FROM users WHERE name = '$name';'''});
+          nameExist = res[0][0]['count'] != '0';
+        }
+
+        if (nameExist) {
+          setState(() => isLoading = false);
+          snackBar(context, 'Name already exist!!!');
+        } else {
+          int _userId = widget.user.userId;
+          List<String> sqls = [];
+          if (isNew) {
+            // sending a post request to the url and get the inserted id
+            _userId = await sqlQuery(insertSPUrl, {
+              'sql':
+                  '''INSERT INTO Users (name,phone,joinDate,type,capital,money,moneyExtern,threshold,founding,effort,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , '$months');''',
+            });
+            // _userId = data;
+          } else {
+            sqls.add(
+              '''UPDATE Users SET name = '$name' ,phone = '$phone'  ,joinDate = '$joinDate' ,type = '$type' ,months = '$months' Where userId = $_userId;''',
+            );
+          }
+
+          //now we insert the threshold / founding / effort  but first we check if they been changed
+
+          String sql = '';
+
+          if (!isNew) {
+            //if the type or the list has changed we delete all existing items of the user and we insert it again
+            if (typeHasChanged || thresholdsHasChanged) sqls.add('DELETE FROM Threshold WHERE userId = $_userId');
+
+            if (typeHasChanged || foundingssHasChanged) sqls.add('DELETE FROM Founding WHERE userId = $_userId');
+
+            if (typeHasChanged || effortssHasChanged) sqls.add('DELETE FROM Effort WHERE userId = $_userId');
+          }
+
+          if (isMoney && thresholds.isNotEmpty && (typeHasChanged || thresholdsHasChanged)) {
+            sql = 'INSERT INTO Threshold(userId, unitId, thresholdPerc) VALUES ';
+            for (var element in thresholds) {
+              sql += '($_userId , ${element.unitId} , ${element.thresholdPerc}),';
+            }
+            sql = sql.substring(0, sql.length - 1);
+            sql += ';';
+
+            sqls.add(sql);
+          }
+          if (isMoney && foundings.isNotEmpty && (typeHasChanged || foundingssHasChanged)) {
+            sql = 'INSERT INTO Founding(userId, unitId, foundingPerc) VALUES ';
+            for (var element in foundings) {
+              sql += '($_userId , ${element.unitId} , ${element.foundingPerc}),';
+            }
+            sql = sql.substring(0, sql.length - 1);
+            sql += ';';
+
+            sqls.add(sql);
+          }
+          if (isEffort && efforts.isNotEmpty && (typeHasChanged || effortssHasChanged)) {
+            sql = 'INSERT INTO Effort(userId, unitId, effortPerc, evaluation) VALUES ';
+            for (var element in efforts) {
+              sql += '($_userId , ${element.unitId} , ${element.effortPerc} , ${element.evaluation}),';
+            }
+            sql = sql.substring(0, sql.length - 1);
+            sql += ';';
+
+            sqls.add(sql);
+          }
+
+          // await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
+
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
+          snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');
+        }
+      } else {
+        snackBar(context, 'Wrong Password!!', duration: 1);
+      }
+      setState(() => isLoading = false);
+    }
   }
 
   @override
@@ -113,7 +206,7 @@ class _AddUserState extends State<AddUser> {
                               context,
                               'Are you sure you want to delete this user, once deleted all related information will be deleted as well',
                               () => deleteUser(widget.user.userId),
-                              onChanged: (text) => deletePassword = text,
+                              onChanged: (text) => password = text,
                             ),
                             true),
                         icon: const Icon(
@@ -155,7 +248,7 @@ class _AddUserState extends State<AddUser> {
                     bottomRight: Radius.circular(20.0),
                     bottomLeft: Radius.circular(20.0),
                   )),
-              child: isloading
+              child: isLoading
                   ? myProgress()
                   : Column(
                       children: [
@@ -179,7 +272,7 @@ class _AddUserState extends State<AddUser> {
                           ],
                         ),
                         const SizedBox(height: 16.0),
-                        saveButton(),
+                        myButton(context, onTap: () => save()),
                       ],
                     ),
             ),
@@ -208,7 +301,7 @@ class _AddUserState extends State<AddUser> {
             ),
           ],
         ),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         Row(
           children: [
             Expanded(child: myText(getText('type'))),
@@ -240,7 +333,7 @@ class _AddUserState extends State<AddUser> {
             ),
           ],
         ),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         Row(
           children: [
             Expanded(child: myText(getText('joinDate'))),
@@ -280,7 +373,7 @@ class _AddUserState extends State<AddUser> {
             ),
           ],
         ),
-        const SizedBox(height: 8.0),
+        mySizedBox(context),
         Row(
           children: [
             Expanded(child: myText(getText('phone'))),
@@ -296,6 +389,24 @@ class _AddUserState extends State<AddUser> {
                 isNumberOnly: true,
               ),
             ),
+          ],
+        ),
+        mySizedBox(context),
+        Row(
+          children: [
+            Expanded(child: myText(getText('password'))),
+            Expanded(
+                flex: 4,
+                child: Row(
+                  children: [
+                    myTextField(
+                      context,
+                      width: getWidth(context, .13),
+                      onChanged: (text) => password = text,
+                      isPassword: true,
+                    ),
+                  ],
+                )),
           ],
         ),
       ],
@@ -731,7 +842,7 @@ class _AddUserState extends State<AddUser> {
                   )),
             ],
           ),
-          const SizedBox(height: 8.0),
+          mySizedBox(context),
           Row(
             children: [
               Expanded(child: myText(getText('percentage'))),
@@ -748,7 +859,7 @@ class _AddUserState extends State<AddUser> {
               ),
             ],
           ),
-          const SizedBox(height: 8.0),
+          mySizedBox(context),
           type == 1
               ? Row(
                   children: [
@@ -837,83 +948,5 @@ class _AddUserState extends State<AddUser> {
         ],
       ),
     );
-  }
-
-  Widget saveButton() {
-    return myButton(context, onTap: () async {
-      if (name != '') {
-        setState(() {
-          isloading = true;
-        });
-
-        bool isNew = widget.user.userId == -1;
-        int _userId = widget.user.userId;
-        List<String> sqls = [];
-        if (isNew) {
-          // sending a post request to the url and get the inserted id
-          _userId = await sqlQuery(insertSPUrl, {
-            'sql':
-                '''INSERT INTO Users (name,phone,joinDate,type,capital,money,threshold,founding,effort,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , '$months');''',
-          });
-          // _userId = data;
-        } else {
-          // sending a post request to the url
-          sqls.add(
-            '''UPDATE Users SET name = '$name' ,phone = '$phone'  ,joinDate = '$joinDate' ,type = '$type' ,months = '$months' Where userId = $_userId;''',
-          );
-        }
-
-        //now we insert the threshold / founding / effort  but first we check if they been changed
-
-        String sql = '';
-
-        if (!isNew) {
-          //if the type or the list has changed we delete all existing items of the user and we insert it again
-          if (typeHasChanged || thresholdsHasChanged) sqls.add('DELETE FROM Threshold WHERE userId = $_userId');
-
-          if (typeHasChanged || foundingssHasChanged) sqls.add('DELETE FROM Founding WHERE userId = $_userId');
-
-          if (typeHasChanged || effortssHasChanged) sqls.add('DELETE FROM Effort WHERE userId = $_userId');
-        }
-
-        if (isMoney && thresholds.isNotEmpty && (typeHasChanged || thresholdsHasChanged)) {
-          sql = 'INSERT INTO Threshold(userId, unitId, thresholdPerc) VALUES ';
-          for (var element in thresholds) {
-            sql += '($_userId , ${element.unitId} , ${element.thresholdPerc}),';
-          }
-          sql = sql.substring(0, sql.length - 1);
-          sql += ';';
-
-          sqls.add(sql);
-        }
-        if (isMoney && foundings.isNotEmpty && (typeHasChanged || foundingssHasChanged)) {
-          sql = 'INSERT INTO Founding(userId, unitId, foundingPerc) VALUES ';
-          for (var element in foundings) {
-            sql += '($_userId , ${element.unitId} , ${element.foundingPerc}),';
-          }
-          sql = sql.substring(0, sql.length - 1);
-          sql += ';';
-
-          sqls.add(sql);
-        }
-        if (isEffort && efforts.isNotEmpty && (typeHasChanged || effortssHasChanged)) {
-          sql = 'INSERT INTO Effort(userId, unitId, effortPerc, evaluation) VALUES ';
-          for (var element in efforts) {
-            sql += '($_userId , ${element.unitId} , ${element.effortPerc} , ${element.evaluation}),';
-          }
-          sql = sql.substring(0, sql.length - 1);
-          sql += ';';
-
-          sqls.add(sql);
-        }
-
-        await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
-
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
-        snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');
-      } else {
-        snackBar(context, 'Name can not be empty!!!', duration: 5);
-      }
-    });
   }
 }

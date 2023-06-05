@@ -78,29 +78,29 @@ class _UnitsState extends State<Units> {
       case 4:
         units.sort((a, b) => _isAscending ? a.profit.compareTo(b.profit) : b.profit.compareTo(a.profit));
         break;
-      case 5:
-        units.sort(
-            (a, b) => _isAscending ? a.reservePerc.compareTo(b.reservePerc) : b.reservePerc.compareTo(a.reservePerc));
-        break;
-      case 6:
-        units.sort((a, b) =>
-            _isAscending ? a.donationPerc.compareTo(b.donationPerc) : b.donationPerc.compareTo(a.donationPerc));
-        break;
-      case 7:
-        units.sort((a, b) => _isAscending ? a.moneyPerc.compareTo(b.moneyPerc) : b.moneyPerc.compareTo(a.moneyPerc));
-        break;
-      case 8:
-        units
-            .sort((a, b) => _isAscending ? a.effortPerc.compareTo(b.effortPerc) : b.effortPerc.compareTo(a.effortPerc));
-        break;
-      case 9:
-        units.sort((a, b) =>
-            _isAscending ? a.thresholdPerc.compareTo(b.thresholdPerc) : b.thresholdPerc.compareTo(a.thresholdPerc));
-        break;
-      case 10:
-        units.sort((a, b) =>
-            _isAscending ? a.foundingPerc.compareTo(b.foundingPerc) : b.foundingPerc.compareTo(a.foundingPerc));
-        break;
+      // case 5:
+      //   units.sort(
+      //       (a, b) => _isAscending ? a.reservePerc.compareTo(b.reservePerc) : b.reservePerc.compareTo(a.reservePerc));
+      //   break;
+      // case 6:
+      //   units.sort((a, b) =>
+      //       _isAscending ? a.donationPerc.compareTo(b.donationPerc) : b.donationPerc.compareTo(a.donationPerc));
+      //   break;
+      // case 7:
+      //   units.sort((a, b) => _isAscending ? a.moneyPerc.compareTo(b.moneyPerc) : b.moneyPerc.compareTo(a.moneyPerc));
+      //   break;
+      // case 8:
+      //   units
+      //       .sort((a, b) => _isAscending ? a.effortPerc.compareTo(b.effortPerc) : b.effortPerc.compareTo(a.effortPerc));
+      //   break;
+      // case 9:
+      //   units.sort((a, b) =>
+      //       _isAscending ? a.thresholdPerc.compareTo(b.thresholdPerc) : b.thresholdPerc.compareTo(a.thresholdPerc));
+      //   break;
+      // case 10:
+      //   units.sort((a, b) =>
+      //       _isAscending ? a.foundingPerc.compareTo(b.foundingPerc) : b.foundingPerc.compareTo(a.foundingPerc));
+      //   break;
     }
   }
 
@@ -121,12 +121,12 @@ class _UnitsState extends State<Units> {
         getText('capital'),
         '${getText('capital')} %',
         getText('profit'),
-        '${getText('reserve')} %',
-        '${getText('donation')} %',
-        '${getText('money')} %',
-        '${getText('effort')} %',
-        '${getText('threshold')} %',
-        '${getText('founding')} %',
+        // '${getText('reserve')} %',
+        // '${getText('donation')} %',
+        // '${getText('money')} %',
+        // '${getText('effort')} %',
+        // '${getText('threshold')} %',
+        // '${getText('founding')} %',
       ]
           .map((e) => sortableDataColumn(
                 context,
@@ -149,12 +149,12 @@ class _UnitsState extends State<Units> {
               dataCell(context, (unit.capital * 100 / totalCapital).toStringAsFixed(2)),
               dataCell(context, myCurrency.format(unit.profit), textAlign: TextAlign.end),
               ...[
-                unit.reservePerc,
-                unit.donationPerc,
-                unit.moneyPerc,
-                unit.effortPerc,
-                unit.thresholdPerc,
-                unit.foundingPerc,
+                // unit.reservePerc,
+                // unit.donationPerc,
+                // unit.moneyPerc,
+                // unit.effortPerc,
+                // unit.thresholdPerc,
+                // unit.foundingPerc,
                 unit.type == 'extern' ? unit.currentMonthOrYear : monthsOfYear[unit.currentMonthOrYear - 1],
               ].map((e) => dataCell(context, e.toString())).toList(),
               DataCell(
@@ -206,6 +206,7 @@ class _UnitsState extends State<Units> {
                                   sortColumnIndex: _sortColumnIndex,
                                   columns: columns,
                                   rows: rows,
+                                  columnSpacing: 50,
                                 ),
                               ),
                             ),

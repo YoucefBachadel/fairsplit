@@ -34,7 +34,7 @@ class AddTransaction extends StatefulWidget {
 class _AddTransactionState extends State<AddTransaction> {
   late String selectedName = '', category = 'caisse', type = 'in', amount = '0', note = '', appBarTitle = '';
   late double caisse, reserve, donation, zakat, rest = 0, selectedUserCapital = 0; //used to show user capital
-  // DateTime date = DateTime.now();
+  DateTime date = DateTime.now();
   bool isLoading = true;
   bool isTransactionTypeSelected = true;
   int selectedTransactionType = 0;
@@ -726,46 +726,44 @@ class _AddTransactionState extends State<AddTransaction> {
                                   )),
                             ],
                           ),
-
-                          // mySizedBox(context),
-                          // Row(
-                          //   children: [
-                          //     Expanded(child: myText(getText('date'))),
-                          //     Expanded(
-                          //       flex: 4,
-                          //       child: Row(
-                          //         children: [
-                          //           myTextField(
-                          //             context,
-                          //             hint: myDateFormate.format(date),
-                          //             width: getWidth(context, .10),
-                          //             enabled: false,
-                          //             onChanged: ((text) {}),
-                          //           ),
-                          //           mySizedBox(context),
-                          //           IconButton(
-                          //             icon: Icon(
-                          //               Icons.calendar_month,
-                          //               color: primaryColor,
-                          //             ),
-                          //             onPressed: () async {
-                          //               final DateTime? selected = await showDatePicker(
-                          //                 context: context,
-                          //                 initialDate: date,
-                          //                 firstDate: DateTime(1900, 01, 01, 00, 00, 00),
-                          //                 lastDate: DateTime.now(),
-                          //               );
-                          //               if (selected != null && selected != date) {
-                          //                 setState(() => date = selected);
-                          //               }
-                          //             },
-                          //           )
-                          //         ],
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
-
+                          mySizedBox(context),
+                          Row(
+                            children: [
+                              Expanded(child: myText(getText('date'))),
+                              Expanded(
+                                flex: 4,
+                                child: Row(
+                                  children: [
+                                    myTextField(
+                                      context,
+                                      hint: myDateFormate.format(date),
+                                      width: getWidth(context, .10),
+                                      enabled: false,
+                                      onChanged: ((text) {}),
+                                    ),
+                                    mySizedBox(context),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.calendar_month,
+                                        color: primaryColor,
+                                      ),
+                                      onPressed: () async {
+                                        final DateTime? selected = await showDatePicker(
+                                          context: context,
+                                          initialDate: date,
+                                          firstDate: DateTime(1900, 01, 01, 00, 00, 00),
+                                          lastDate: DateTime.now(),
+                                        );
+                                        if (selected != null && selected != date) {
+                                          setState(() => date = selected);
+                                        }
+                                      },
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                           if (selectedTransactionType == 4) mySizedBox(context),
                           if (selectedTransactionType == 4)
                             Row(

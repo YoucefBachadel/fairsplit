@@ -68,10 +68,10 @@ class _OtherUsersState extends State<OtherUsers> {
       case 1:
         users.sort((a, b) => _isAscending ? a.name.compareTo(b.name) : b.name.compareTo(a.name));
         break;
-      case 5:
+      case 3:
         users.sort((a, b) => _isAscending ? a.amount.compareTo(b.amount) : b.amount.compareTo(a.amount));
         break;
-      case 6:
+      case 4:
         users.sort((a, b) => _isAscending ? a.rest.compareTo(b.rest) : b.rest.compareTo(a.rest));
         break;
     }
@@ -97,7 +97,11 @@ class _OtherUsersState extends State<OtherUsers> {
           _isAscending = ascending;
         }),
       ),
-      ...[getText('joinDate'), getText('phone'), getText('type')].map((e) => dataColumn(context, e)),
+      ...[
+        // getText('joinDate'),
+        // getText('phone'),
+        getText('type'),
+      ].map((e) => dataColumn(context, e)),
       ...[getText('amount'), getText('rest')].map((e) => sortableDataColumn(
             context,
             e,
@@ -135,8 +139,8 @@ class _OtherUsersState extends State<OtherUsers> {
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, namesHidden ? user.userId.toString() : user.name,
                     textAlign: namesHidden ? TextAlign.center : TextAlign.start),
-                dataCell(context, myDateFormate.format(user.joinDate)),
-                dataCell(context, user.phone),
+                // dataCell(context, myDateFormate.format(user.joinDate)),
+                // dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
                 dataCell(context, myCurrency.format(user.amount), textAlign: TextAlign.end),
                 dataCell(context, myCurrency.format(user.rest), textAlign: TextAlign.end),

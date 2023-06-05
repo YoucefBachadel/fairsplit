@@ -31,9 +31,10 @@ class _CalculationState extends State<Calculation> {
   int bottemNavigationSelectedInex = 0;
   int daysInMonth = 0;
 
-  double workingProfitability =
-      0; //used to calculate the working capital for each money user = day profit / total day capital
-  double totalMoneyCapital = 0;
+  double caMoneyProfitPerDay = 0; //caMoney / days in month
+  //weightedProfitability used to calculate the weighted capital for each money user = day profit / total day capital
+  double weightedProfitability = 0;
+
   double caReserve = 0,
       caReserveMoneyProfit = 0,
       caDonation = 0,
@@ -69,14 +70,12 @@ class _CalculationState extends State<Calculation> {
 
     for (var ele in res[1]) {
       moneyUsers.add(User(userId: int.parse(ele['userId']), name: ele['name'], capital: double.parse(ele['capital'])));
-      totalMoneyCapital += double.parse(ele['capital']);
     }
 
     moneyUsers.sort((a, b) => a.name.compareTo(b.name));
 
     //add reserve to money users list
     moneyUsers.insert(0, User(userId: 0, name: getText('reserve'), capital: reserve));
-    totalMoneyCapital += reserve;
 
     for (var ele in res[2]) {
       if (widget.unit.type == 'intern' && ele['months'][widget.unit.currentMonthOrYear - 1] == '1') {
@@ -220,7 +219,7 @@ class _CalculationState extends State<Calculation> {
     }
 
     //calculated money profit / number of days in month
-    double caMoneyProfitPerDay = caMoney / daysInMonth;
+    caMoneyProfitPerDay = caMoney / daysInMonth;
 
     // loop the list of days that has transactions
     for (var i = 0; i < transactionsDays.length - 1; i++) {
@@ -238,7 +237,7 @@ class _CalculationState extends State<Calculation> {
       }
 
       // calculate the total of all users capitals
-      double totalUsersCapital = 0;
+      double totalUsersCapital = 0; // the sum of all users capital including reserve
       for (var user in moneyUsers) {
         totalUsersCapital += user.capital;
       }
@@ -247,8 +246,8 @@ class _CalculationState extends State<Calculation> {
       int daysCountToNextTransaction =
           transactionsDays.elementAt(i + 1).difference(transactionsDays.elementAt(i)).inDays;
 
-      // calculate the working profitability
-      workingProfitability += caMoneyProfitPerDay / totalUsersCapital * daysCountToNextTransaction;
+      // calculate the weighted profitability
+      weightedProfitability += caMoneyProfitPerDay / totalUsersCapital * daysCountToNextTransaction;
 
       for (var user in moneyUsers) {
         // percentage of user capital compare to tho total users capital
@@ -490,7 +489,7 @@ class _CalculationState extends State<Calculation> {
                   : monthsOfYear[widget.unit.currentMonthOrYear - 1]
             },
             {'key': '${getText('unitProfitability')} %', 'val': (caMoney / widget.unit.capital).toStringAsFixed(2)},
-            {'key': '${getText('profitability')} %', 'val': (workingProfitability * 100).toStringAsFixed(2)},
+            {'key': '${getText('profitability')} %', 'val': (weightedProfitability * 100).toStringAsFixed(2)},
             {'key': '${getText('reserve')} %', 'val': widget.unit.reservePerc.toString()},
             {'key': '${getText('donation')} %', 'val': widget.unit.donationPerc.toString()},
             {'key': '', 'val': ''},
@@ -509,8 +508,8 @@ class _CalculationState extends State<Calculation> {
             {'key': '', 'val': ''},
             {'key': '', 'val': ''},
             {
-              'key': getText('capital'),
-              'val': myCurrency.format(workingProfitability == 0 ? 0 : caMoney / workingProfitability)
+              'key': getText('weightedCapital'),
+              'val': myCurrency.format(weightedProfitability == 0 ? 0 : caMoney / weightedProfitability)
             },
             {'key': getText('reserve'), 'val': myCurrency.format(caReserve)},
             {'key': getText('donation'), 'val': myCurrency.format(caDonation)},
@@ -575,7 +574,7 @@ class _CalculationState extends State<Calculation> {
       '',
       getText('name'),
       getText('initialCapital'),
-      getText('workingCapital'),
+      getText('weightedCapital'),
       getText('profit')
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = moneyUsers
@@ -584,7 +583,7 @@ class _CalculationState extends State<Calculation> {
             dataCell(context, (moneyUsers.indexOf(user) + 1).toString()),
             dataCell(context, user.name, textAlign: TextAlign.start),
             dataCell(context, myCurrency.format(user.initialCapital), textAlign: TextAlign.end),
-            dataCell(context, myCurrency.format(workingProfitability == 0 ? 0 : user.money / workingProfitability),
+            dataCell(context, myCurrency.format(weightedProfitability == 0 ? 0 : user.money / weightedProfitability),
                 textAlign: TextAlign.end),
             dataCell(context, myCurrency.format(user.money), textAlign: TextAlign.end),
           ]),

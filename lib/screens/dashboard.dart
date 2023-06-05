@@ -17,7 +17,16 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   bool isLoadingData = true;
-  var data = {};
+  double caisse = 0,
+      reserve = 0,
+      donation = 0,
+      zakat = 0,
+      totalIn = 0,
+      totalOut = 0,
+      totalLoan = 0,
+      totalDeposit = 0,
+      totalProfit = 0,
+      reserveProfit = 0;
 
   void locadData() async {
     var res = await sqlQuery(selectUrl, {
@@ -30,8 +39,19 @@ class _DashboardState extends State<Dashboard> {
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
           s.caisse, s.reserve, s.donation, s.zakat,s.reserveProfit, s.currentYear FROM Settings s;'''
     });
-    data = res[0][0];
+    var data = res[0][0];
     currentYear = int.parse(data['currentYear']);
+    caisse = double.parse(data['caisse'] ?? '0');
+    reserve = double.parse(data['reserve'] ?? '0');
+    donation = double.parse(data['donation'] ?? '0');
+    zakat = double.parse(data['zakat'] ?? '0');
+    totalIn = double.parse(data['totalIn'] ?? '0');
+    totalOut = double.parse(data['totalOut'] ?? '0');
+    totalLoan = double.parse(data['totalLoan'] ?? '0');
+    totalDeposit = double.parse(data['totalDeposit'] ?? '0');
+    totalProfit = double.parse(data['totalProfit'] ?? '0');
+    reserveProfit = double.parse(data['reserveProfit'] ?? '0');
+
     setState(() => isLoadingData = false);
   }
 
@@ -51,11 +71,11 @@ class _DashboardState extends State<Dashboard> {
               children: [
                 Row(
                   children: [
-                    [getText('caisse'), data['caisse'], const Color(0xbbb19c97), true, 'caisse'],
-                    [getText('reserve'), data['reserve'], const Color(0xbbffbf62), true, 'reserve'],
-                    [getText('donation'), data['donation'], const Color(0xbbD3A4F8), true, 'donation'],
-                    [getText('zakat'), data['zakat'], const Color(0xbba1fcf5), true, 'zakat'],
-                  ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3], compt: e[4])).toList(),
+                    [getText('caisse'), caisse, 'caisse'],
+                    [getText('reserve'), reserve, 'reserve'],
+                    [getText('donation'), donation, 'donation'],
+                    [getText('zakat'), zakat, 'zakat'],
+                  ].map((e) => boxCard(e[0] as String, e[1] as double, true, compt: e[2] as String)).toList(),
                 ),
                 Expanded(
                   child: Row(
@@ -75,13 +95,13 @@ class _DashboardState extends State<Dashboard> {
                       Expanded(
                         child: Column(
                           children: [
-                            [getText('totalProfit'), data['totalProfit'], const Color(0xbb0e737e), false],
-                            [getText('totalIn'), data['totalIn'], const Color(0xbbc4a471), false],
-                            [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
-                            [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
-                            [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
-                            [getText('reserveProfit'), data['reserveProfit'], const Color(0xbb0e737e), false],
-                          ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
+                            [getText('totalProfit'), totalProfit],
+                            [getText('totalIn'), totalIn],
+                            [getText('totalOut'), totalOut],
+                            [getText('totalLoan'), totalLoan],
+                            [getText('totalDeposit'), totalDeposit],
+                            [getText('reserveProfit'), reserveProfit],
+                          ].map((e) => boxCard(e[0] as String, e[1] as double, false)).toList(),
                         ),
                       ),
                     ],
@@ -92,7 +112,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget boxCard(String title, double amount, Color color, {bool clicable = false, String compt = ''}) {
+  Widget boxCard(String title, double amount, bool clicable, {String compt = ''}) {
     var column = Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,

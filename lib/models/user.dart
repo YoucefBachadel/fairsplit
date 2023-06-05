@@ -9,7 +9,10 @@ class User {
   DateTime joinDate;
   String type;
   double capital;
+  double weightedCapital;
+  double initialCapital; //used in calculation
   double money;
+  double moneyExtern;
   double threshold;
   double founding;
   double effort;
@@ -22,9 +25,6 @@ class User {
   double effortPerc; // used in users filter for sort
   double evaluation; // used in users filter for sort
 
-  double workingCapital; //used in calculation
-  double initialCapital; //used in calculation
-
   User({
     this.userId = -1,
     this.name = '',
@@ -32,7 +32,9 @@ class User {
     DateTime? joinDate,
     this.type = 'money',
     this.capital = 0,
+    this.weightedCapital = 0,
     this.money = 0,
+    this.moneyExtern = 0,
     this.threshold = 0,
     this.founding = 0,
     this.effort = 0,
@@ -44,7 +46,6 @@ class User {
     this.foundingPerc = 0,
     this.effortPerc = 0,
     this.evaluation = 0,
-    this.workingCapital = 0,
     this.initialCapital = 0,
   })  : joinDate = joinDate ?? DateTime.now(),
         thresholds = thresholds ?? [],
@@ -68,7 +69,9 @@ List<User> toUsers(
       joinDate: DateTime.parse(element['joinDate']),
       type: element['type'],
       capital: double.parse(element['capital']),
+      weightedCapital: 0,
       money: double.parse(element['money']),
+      moneyExtern: double.parse(element['moneyExtern']),
       threshold: double.parse(element['threshold']),
       founding: double.parse(element['founding']),
       effort: double.parse(element['effort']),

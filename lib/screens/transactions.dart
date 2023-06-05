@@ -154,9 +154,11 @@ class _TransactionsState extends State<Transactions> {
       years.add(other.year.toString());
     }
 
-    userNames = SplayTreeSet.from(userNames);
-    loanNames = SplayTreeSet.from(loanNames);
-    depositNames = SplayTreeSet.from(depositNames);
+    if (years.isEmpty) years.add(currentYear.toString());
+
+    if (userNames.isNotEmpty) userNames = SplayTreeSet.from(userNames);
+    if (loanNames.isNotEmpty) loanNames = SplayTreeSet.from(loanNames);
+    if (depositNames.isNotEmpty) depositNames = SplayTreeSet.from(depositNames);
     years = SplayTreeSet.from(years, (a, b) => b.compareTo(a));
 
     _fromDate = DateTime(int.parse(years.last));
@@ -386,6 +388,7 @@ class _TransactionsState extends State<Transactions> {
     transactionCategory = context.watch<TransactionsFilter>().transactionCategory;
     _compt = context.watch<TransactionsFilter>().compt;
     _search = context.watch<TransactionsFilter>().search;
+
     totalIn = 0;
     totalOut = 0;
     if (transactionCategory == 'caisse') {
@@ -1197,7 +1200,17 @@ class _TransactionsState extends State<Transactions> {
               onFieldSubmitted,
             ) {
               _controller = textEditingController;
-              _controller.text = _search;
+              var list = transactionCategory == 'users'
+                  ? userNames
+                  : transactionCategory == 'loans'
+                      ? loanNames
+                      : depositNames;
+              _controller.text = !namesHidden
+                  ? _search
+                  : _search.isEmpty
+                      ? ''
+                      : list.toList().indexOf(_search).toString();
+
               return Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(

@@ -133,14 +133,28 @@ class _UsersState extends State<Users> {
           return !_isAscending ? tr2.name.compareTo(tr1.name) : tr1.name.compareTo(tr2.name);
         });
         break;
-      case 5:
+      case 3:
         users.sort((tr1, tr2) {
           return !_isAscending ? tr2.capital.compareTo(tr1.capital) : tr1.capital.compareTo(tr2.capital);
         });
         break;
-      case 6:
+      case 4:
+        users.sort((tr1, tr2) {
+          return !_isAscending
+              ? tr2.weightedCapital.compareTo(tr1.weightedCapital)
+              : tr1.weightedCapital.compareTo(tr2.weightedCapital);
+        });
+        break;
+      case 5:
         users.sort((tr1, tr2) {
           return !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money);
+        });
+        break;
+      case 6:
+        users.sort((tr1, tr2) {
+          return !_isAscending
+              ? tr2.moneyExtern.compareTo(tr1.moneyExtern)
+              : tr1.moneyExtern.compareTo(tr2.moneyExtern);
         });
         break;
       case 7:
@@ -232,13 +246,15 @@ class _UsersState extends State<Users> {
         }),
       ),
       ...[
-        getText('joinDate'),
-        getText('phone'),
+        // getText('joinDate'),
+        // getText('phone'),
         getText('type'),
       ].map((e) => dataColumn(context, e)),
       ...[
         getText('capital'),
+        getText('weightedCapital'),
         getText('money'),
+        getText('moneyExtern'),
         getText('threshold'),
         getText('founding'),
         getText('effort'),
@@ -282,8 +298,8 @@ class _UsersState extends State<Users> {
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, namesHidden ? user.userId.toString() : user.name,
                     textAlign: namesHidden ? TextAlign.center : TextAlign.start),
-                dataCell(context, myDateFormate.format(user.joinDate)),
-                dataCell(context, user.phone),
+                // dataCell(context, myDateFormate.format(user.joinDate)),
+                // dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
                 dataCell(
                   context,
@@ -292,7 +308,17 @@ class _UsersState extends State<Users> {
                 ),
                 dataCell(
                   context,
+                  user.type == 'effort' ? '/' : myCurrency.format(user.weightedCapital),
+                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                ),
+                dataCell(
+                  context,
                   user.type == 'effort' ? '/' : myCurrency.format(user.money),
+                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                ),
+                dataCell(
+                  context,
+                  user.type == 'effort' ? '/' : myCurrency.format(user.moneyExtern),
                   textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
                 ),
                 dataCell(

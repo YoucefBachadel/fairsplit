@@ -17,14 +17,14 @@ class AddOtherUser extends StatefulWidget {
 class _AddOtherUserState extends State<AddOtherUser> {
   late String name, phone;
   late DateTime joinDate;
-  bool isLoading = false, isDeposit = false, isDeleteLoading = false;
-  String deletePassword = '';
+  bool isLoading = false, isDeposit = false;
+  String password = '';
 
   void deleteUser(int userId) async {
-    setState(() => isDeleteLoading = true);
-
+    setState(() => isLoading = true);
+    Navigator.pop(context);
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT CASE WHEN admin = '$deletePassword' THEN 1 ELSE 0 END AS password FROM settings;''',
+      'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
     });
 
     if (res[0][0]['password'] == '1') {
@@ -36,7 +36,50 @@ class _AddOtherUserState extends State<AddOtherUser> {
       snackBar(context, 'Wrong Password!!', duration: 1);
     }
 
-    setState(() => isDeleteLoading = false);
+    setState(() => isLoading = false);
+  }
+
+  void save() async {
+    if (name == '') {
+      snackBar(context, 'Name can not be empty!!!', duration: 5);
+    } else {
+      setState(() => isLoading = true);
+
+      var res = await sqlQuery(selectUrl, {
+        'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+      });
+
+      if (res[0][0]['password'] == '1') {
+        bool isNew = widget.user.userId == -1;
+        String _type = isDeposit ? 'deposit' : 'loan';
+
+        //chack if the nae exist befor
+        bool nameExist = false;
+        if (isNew || name != widget.user.name) {
+          var res = await sqlQuery(selectUrl,
+              {'sql1': '''SELECT COUNT(*) AS count FROM otherusers WHERE name = '$name' AND type = '$_type';'''});
+          nameExist = res[0][0]['count'] != '0';
+        }
+
+        if (nameExist) {
+          setState(() => isLoading = false);
+          snackBar(context, 'Name already exist!!!');
+        } else {
+          await sqlQuery(insertUrl, {
+            'sql1': isNew
+                ? '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);'''
+                : '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};'''
+          });
+
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+          snackBar(context, widget.user.userId == -1 ? 'User added successfully' : 'User updated successfully');
+        }
+      } else {
+        snackBar(context, 'Wrong Password!!', duration: 1);
+      }
+
+      setState(() => isLoading = false);
+    }
   }
 
   @override
@@ -68,7 +111,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                 context,
                                 'Are you sure you want to delete this user!!',
                                 () => deleteUser(widget.user.userId),
-                                onChanged: (text) => deletePassword = text,
+                                onChanged: (text) => password = text,
                               ),
                               true,
                             ),
@@ -105,17 +148,17 @@ class _AddOtherUserState extends State<AddOtherUser> {
                 )),
           ),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  color: scaffoldColor,
-                  borderRadius: const BorderRadius.only(
-                    bottomRight: Radius.circular(20.0),
-                    bottomLeft: Radius.circular(20.0),
-                  )),
-              child: isLoading
-                  ? myProgress()
-                  : Column(
+            child: isLoading
+                ? myProgress()
+                : Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                        color: scaffoldColor,
+                        borderRadius: const BorderRadius.only(
+                          bottomRight: Radius.circular(20.0),
+                          bottomLeft: Radius.circular(20.0),
+                        )),
+                    child: Column(
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -223,34 +266,33 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             ),
                           ],
                         ),
+                        mySizedBox(context),
+                        Row(
+                          children: [
+                            Expanded(child: myText(getText('password'))),
+                            Expanded(
+                                flex: 4,
+                                child: Row(
+                                  children: [
+                                    myTextField(
+                                      context,
+                                      width: getWidth(context, .13),
+                                      onChanged: (text) => password = text,
+                                      isPassword: true,
+                                    ),
+                                  ],
+                                )),
+                          ],
+                        ),
                         const Spacer(),
-                        saveButton(),
+                        myButton(context, onTap: () => save()),
                         const Spacer(),
                       ],
                     ),
-            ),
+                  ),
           )
         ],
       ),
     );
-  }
-
-  Widget saveButton() {
-    return myButton(context, onTap: () async {
-      if (name != '') {
-        String _type = isDeposit ? 'deposit' : 'loan';
-
-        await sqlQuery(insertUrl, {
-          'sql1': widget.user.userId == -1
-              ? '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);'''
-              : '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};'''
-        });
-
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-        snackBar(context, widget.user.userId == -1 ? 'User added successfully' : 'User updated successfully');
-      } else {
-        snackBar(context, 'Name can not be empty!!!', duration: 5);
-      }
-    });
   }
 }

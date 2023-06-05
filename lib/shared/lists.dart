@@ -60,7 +60,7 @@ Map<String, String> constans = {
   'unitProfitability': 'Unit Profitability',
   'startCapital': 'Start Capital',
   'initialCapital': 'Initial Capital',
-  'workingCapital': 'Working Capital',
+  'weightedCapital': 'Weighted Capital',
   'total': 'Total',
   'totalIn': 'Total Entrie',
   'totalOut': 'Total Sortie',
@@ -94,6 +94,7 @@ Map<String, String> constans = {
   'true': 'True',
   'false': 'False',
   'allUsers': 'All Users',
+  'moneyExtern': 'Money Extern',
 };
 
 Map<String, String> messages = {};

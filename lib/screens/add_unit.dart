@@ -17,14 +17,14 @@ class AddUnit extends StatefulWidget {
 class _AddUnitState extends State<AddUnit> {
   late String name, capital, reserve, donation, money, effort, threshold, founding;
   late bool isExtern;
-  bool isLoading = false, isDeleteLoading = false;
-  String deletePassword = '';
+  bool isLoading = false;
+  String password = '';
 
   void deleteUnit(int unitId) async {
-    setState(() => isDeleteLoading = true);
-
+    setState(() => isLoading = true);
+    Navigator.pop(context);
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT CASE WHEN admin = '$deletePassword' THEN 1 ELSE 0 END AS password FROM settings;''',
+      'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
     });
 
     if (res[0][0]['password'] == '1') {
@@ -38,11 +38,52 @@ class _AddUnitState extends State<AddUnit> {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
       snackBar(context, 'Unit deleted successfully');
     } else {
-      Navigator.pop(context);
       snackBar(context, 'Wrong Password!!', duration: 1);
     }
 
-    setState(() => isDeleteLoading = false);
+    setState(() => isLoading = false);
+  }
+
+  void save() async {
+    if (name == '') {
+      snackBar(context, 'Name can not be empty!!!', duration: 5);
+    } else {
+      setState(() => isLoading = true);
+
+      var res = await sqlQuery(selectUrl, {
+        'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+      });
+
+      if (res[0][0]['password'] == '1') {
+        try {
+          int _unitId = widget.unit.unitId;
+          String _type = isExtern ? 'extern' : 'intern';
+          double _capital = double.parse(capital);
+          double _reserve = double.parse(reserve);
+          double _donation = double.parse(donation);
+          double _money = double.parse(money);
+          double _effort = double.parse(effort);
+          double _threshold = double.parse(threshold);
+          double _founding = double.parse(founding);
+
+          // sending a post request to the url
+          await sqlQuery(insertUrl, {
+            'sql1': _unitId == -1
+                ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated,currentMonthOrYear) VALUES ('$name' ,'$_type',$_capital,0, $_reserve , $_donation  ,$_threshold , $_founding , $_effort , $_money , 0, ${_type == 'intern' ? 1 : currentYear});'''
+                : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
+          });
+
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+          snackBar(context, widget.unit.unitId == -1 ? 'Unit added successfully' : 'Unit updated successfully');
+        } catch (e) {
+          snackBar(context, 'Check Your Data!!!', duration: 5);
+        }
+      } else {
+        snackBar(context, 'Wrong Password!!', duration: 1);
+      }
+
+      setState(() => isLoading = false);
+    }
   }
 
   @override
@@ -78,8 +119,8 @@ class _AddUnitState extends State<AddUnit> {
                               context,
                               'Are you sure you want to delete this unit, once deleted all related information will be deleted as well',
                               () => deleteUnit(widget.unit.unitId),
-                              onChanged: (text) => deletePassword = text,
-                              isLoading: isDeleteLoading,
+                              onChanged: (text) => password = text,
+                              isLoading: isLoading,
                             ),
                             true),
                         icon: const Icon(
@@ -127,7 +168,19 @@ class _AddUnitState extends State<AddUnit> {
                       children: [
                         information(),
                         const Spacer(),
-                        saveButton(),
+                        SizedBox(
+                          width: getWidth(context, .2),
+                          child: myTextField(
+                            context,
+                            width: getWidth(context, .13),
+                            onChanged: (text) => password = text,
+                            isPassword: true,
+                            isCenter: true,
+                            hint: getText('password'),
+                          ),
+                        ),
+                        const Spacer(),
+                        myButton(context, onTap: () => save()),
                         const Spacer(),
                       ],
                     ),
@@ -292,37 +345,5 @@ class _AddUnitState extends State<AddUnit> {
         mySizedBox(context),
       ],
     );
-  }
-
-  Widget saveButton() {
-    return myButton(context, onTap: () async {
-      if (name != '') {
-        try {
-          int _unitId = widget.unit.unitId;
-          String _type = isExtern ? 'extern' : 'intern';
-          double _capital = double.parse(capital);
-          double _reserve = double.parse(reserve);
-          double _donation = double.parse(donation);
-          double _money = double.parse(money);
-          double _effort = double.parse(effort);
-          double _threshold = double.parse(threshold);
-          double _founding = double.parse(founding);
-
-          // sending a post request to the url
-          await sqlQuery(insertUrl, {
-            'sql1': _unitId == -1
-                ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated,currentMonth) VALUES ('$name' ,'$_type',$_capital,0, $_reserve , $_donation  ,$_threshold , $_founding , $_effort , $_money , 0,1);'''
-                : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
-          });
-
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-          snackBar(context, widget.unit.unitId == -1 ? 'Unit added successfully' : 'Unit updated successfully');
-        } catch (e) {
-          snackBar(context, 'Check Your Data!!!', duration: 5);
-        }
-      } else {
-        snackBar(context, 'Name can not be empty!!!', duration: 5);
-      }
-    });
   }
 }

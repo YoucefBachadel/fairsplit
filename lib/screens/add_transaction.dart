@@ -145,7 +145,7 @@ class _AddTransactionState extends State<AddTransaction> {
           //update the setting caisse
           await sqlQuery(insertUrl, {
             'sql1':
-                '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,soldeCaisse,note) VALUES ($currentYear , '$category' , '${DateTime.now()}' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note' );''',
+                '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,soldeCaisse,note) VALUES ($currentYear , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note' );''',
             'sql2': '''UPDATE Settings SET $category = $_solde;''',
             'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse;''',
           });
@@ -179,7 +179,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             usersSQL += '(${user.userId}, $_soldeUser),';
             transactionsSQL +=
-                '''(${user.userId},'${user.name}',$currentYear , '${DateTime.now()}' , '$type' ,${_userAmount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' ),''';
+                '''(${user.userId},'${user.name}',$currentYear , '$date' , '$type' ,${_userAmount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' ),''';
           }
 
           usersSQL = usersSQL.substring(0, usersSQL.length - 1);
@@ -243,7 +243,7 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO Transaction (userId,userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES (${selectedUser.userId},'${selectedUser.name}',$currentYear , '${DateTime.now()}' , '$type' ,${_amount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' );''',
+                    '''INSERT INTO Transaction (userId,userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES (${selectedUser.userId},'${selectedUser.name}',$currentYear , '$date' , '$type' ,${_amount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' );''',
                 'sql2': '''UPDATE Users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};''',
                 'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse ;'''
               });
@@ -269,7 +269,7 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${selectedOtherUser.name}', 'loan', $currentYear , '${DateTime.now()}' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' );''',
+                    '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${selectedOtherUser.name}', 'loan', $currentYear , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' );''',
                 'sql2':
                     '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
                 'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse;'''
@@ -297,7 +297,7 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${selectedOtherUser.name}','deposit',$currentYear , '${DateTime.now()}' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' );''',
+                    '''INSERT INTO TransactionOthers (userName,category,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${selectedOtherUser.name}','deposit',$currentYear , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' );''',
                 'sql2':
                     '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
                 'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse;''',

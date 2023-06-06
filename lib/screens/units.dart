@@ -35,6 +35,7 @@ class _UnitsState extends State<Units> {
         type: ele['type'],
         capital: double.parse(ele['capital']),
         profit: double.parse(ele['profit']),
+        profitability: double.parse(ele['profitability']),
         reservePerc: double.parse(ele['reservePerc']),
         donationPerc: double.parse(ele['donationPerc']),
         moneyPerc: double.parse(ele['moneyPerc']),
@@ -77,6 +78,10 @@ class _UnitsState extends State<Units> {
         break;
       case 4:
         units.sort((a, b) => _isAscending ? a.profit.compareTo(b.profit) : b.profit.compareTo(a.profit));
+        break;
+      case 5:
+        units.sort((a, b) =>
+            _isAscending ? a.profitability.compareTo(b.profitability) : b.profitability.compareTo(a.profitability));
         break;
       // case 5:
       //   units.sort(
@@ -121,6 +126,7 @@ class _UnitsState extends State<Units> {
         getText('capital'),
         '${getText('capital')} %',
         getText('profit'),
+        '${getText('profitability')} %',
         // '${getText('reserve')} %',
         // '${getText('donation')} %',
         // '${getText('money')} %',
@@ -148,6 +154,7 @@ class _UnitsState extends State<Units> {
               dataCell(context, myCurrency.format(unit.capital), textAlign: TextAlign.end),
               dataCell(context, (unit.capital * 100 / totalCapital).toStringAsFixed(2)),
               dataCell(context, myCurrency.format(unit.profit), textAlign: TextAlign.end),
+              dataCell(context, (unit.profitability * 100).toStringAsFixed(2)),
               ...[
                 // unit.reservePerc,
                 // unit.donationPerc,

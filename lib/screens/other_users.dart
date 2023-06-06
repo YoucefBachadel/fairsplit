@@ -19,6 +19,7 @@ class OtherUsers extends StatefulWidget {
 
 class _OtherUsersState extends State<OtherUsers> {
   List<OtherUser> allUsers = [], users = [];
+  List<String> usersWithCapital = []; //list of users with capital != 0
   var userNames = <String>{};
   bool isloading = true;
   String _search = '';
@@ -31,11 +32,17 @@ class _OtherUsersState extends State<OtherUsers> {
       await createDialog(context, AddOtherUser(user: user), false);
 
   void loadData() async {
-    var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM OtherUsers;'});
-    var dataUsers = res[0];
+    var res = await sqlQuery(selectUrl, {
+      'sql1': 'SELECT name FROM users WHERE capital != 0;',
+      'sql2': 'SELECT * FROM OtherUsers;',
+    });
 
-    for (var ele in dataUsers) {
-      allUsers.add(OtherUser(
+    for (var ele in res[0]) {
+      usersWithCapital.add(ele['name']);
+    }
+
+    for (var ele in res[1]) {
+      OtherUser user = OtherUser(
         userId: int.parse(ele['userId']),
         name: ele['name'],
         type: ele['type'],
@@ -43,7 +50,9 @@ class _OtherUsersState extends State<OtherUsers> {
         phone: ele['phone'],
         amount: double.parse(ele['amount']),
         rest: double.parse(ele['rest']),
-      ));
+      );
+      user.isUserWithCapital = user.type == 'loan' && user.rest != 0 && usersWithCapital.contains(user.name);
+      allUsers.add(user);
 
       userNames.add(namesHidden ? ele['userId'] : ele['name']);
     }
@@ -115,6 +124,7 @@ class _OtherUsersState extends State<OtherUsers> {
 
     List<DataRow> rows = users
         .map((user) => DataRow(
+              color: user.isUserWithCapital ? MaterialStatePropertyAll(Colors.red[100]) : null,
               onSelectChanged: (value) {
                 context.read<TransactionsFilter>().change(
                       transactionCategory: '${user.type}s',

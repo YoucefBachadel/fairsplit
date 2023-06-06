@@ -31,10 +31,15 @@ class _DashboardState extends State<Dashboard> {
   void locadData() async {
     var res = await sqlQuery(selectUrl, {
       'sql1':
+          // '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,
+          // (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
+          // (SELECT SUM(amount) FROM Transaction WHERE type = 'in' AND year = s.currentYear) as totalIn,
+          // (SELECT SUM(amount) FROM Transaction WHERE type = 'out' AND year = s.currentYear) as totalOut,
+          // (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
+          // (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
+          // s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;'''
           '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,
           (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
-          (SELECT SUM(amount) FROM Transaction WHERE type = 'in' AND year = s.currentYear) as totalIn,
-          (SELECT SUM(amount) FROM Transaction WHERE type = 'out' AND year = s.currentYear) as totalOut,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
           s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;'''
@@ -46,8 +51,8 @@ class _DashboardState extends State<Dashboard> {
     reserve = double.parse(data['reserve']);
     donation = double.parse(data['donation']);
     zakat = double.parse(data['zakat']);
-    totalIn = double.parse(data['totalIn'] ?? '0');
-    totalOut = double.parse(data['totalOut'] ?? '0');
+    // totalIn = double.parse(data['totalIn'] ?? '0');
+    // totalOut = double.parse(data['totalOut'] ?? '0');
     totalLoan = double.parse(data['totalLoan'] ?? '0');
     totalDeposit = double.parse(data['totalDeposit'] ?? '0');
     totalProfit = double.parse(data['totalProfit'] ?? '0');
@@ -72,11 +77,11 @@ class _DashboardState extends State<Dashboard> {
               children: [
                 Row(
                   children: [
-                    [getText('caisse'), caisse, 'caisse'],
-                    [getText('reserve'), reserve, 'reserve'],
-                    [getText('donation'), donation, 'donation'],
-                    [getText('zakat'), zakat, 'zakat'],
-                  ].map((e) => boxCard(e[0] as String, e[1] as double, true, compt: e[2] as String)).toList(),
+                    [getText('caisse'), myCurrency.format(caisse), 'caisse'],
+                    [getText('reserve'), myCurrency.format(reserve), 'reserve'],
+                    [getText('donation'), myCurrency.format(donation), 'donation'],
+                    [getText('zakat'), myCurrency.format(zakat), 'zakat'],
+                  ].map((e) => boxCard(e[0], e[1], true, compt: e[2])).toList(),
                 ),
                 Expanded(
                   child: Row(
@@ -96,13 +101,14 @@ class _DashboardState extends State<Dashboard> {
                       Expanded(
                         child: Column(
                           children: [
-                            [getText('totalProfit'), totalProfit],
-                            [getText('totalIn'), totalIn],
-                            [getText('totalOut'), totalOut],
-                            [getText('totalLoan'), totalLoan],
-                            [getText('totalDeposit'), totalDeposit],
-                            [getText('reserveProfit'), reserveProfit],
-                          ].map((e) => boxCard(e[0] as String, e[1] as double, false)).toList(),
+                            [getText('profitability'), (profitability * 100).toStringAsFixed(2)],
+                            [getText('totalProfit'), myCurrency.format(totalProfit)],
+                            // [getText('totalIn'), myCurrency.format(totalIn)],
+                            // [getText('totalOut'), myCurrency.format(totalOut)],
+                            [getText('totalLoan'), myCurrency.format(totalLoan)],
+                            [getText('totalDeposit'), myCurrency.format(totalDeposit)],
+                            [getText('reserveProfit'), myCurrency.format(reserveProfit)],
+                          ].map((e) => boxCard(e[0], e[1], false)).toList(),
                         ),
                       ),
                     ],
@@ -113,7 +119,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget boxCard(String title, double amount, bool clicable, {String compt = ''}) {
+  Widget boxCard(String title, String amount, bool clicable, {String compt = ''}) {
     var column = Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +128,7 @@ class _DashboardState extends State<Dashboard> {
         Container(
           padding: const EdgeInsets.all(8.0),
           alignment: Alignment.center,
-          child: myText(myCurrency.format(amount), size: 28),
+          child: myText(amount, size: 28),
         ),
       ],
     );

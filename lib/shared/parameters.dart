@@ -29,14 +29,18 @@ dynamic sqlQuery(Uri uri, dynamic params) async {
   return jsonDecode(res.body);
 }
 
-NumberFormat myCurrency = NumberFormat.currency(symbol: '', customPattern: '#,##0.00', locale: 'fr_FR');
+NumberFormat myCurrency = NumberFormat.currency(
+    symbol: '', customPattern: '#,##0.00', locale: 'fr_FR');
 
 DateFormat myDateFormate = DateFormat('dd-MM-yyyy');
 DateFormat myDateFormate2 = DateFormat('dd MMM yyyy');
 DateFormat myDateFormate3 = DateFormat('dd MMMM yyyy');
 
-double getWidth(BuildContext context, double size) => MediaQuery.of(context).size.width * size;
+double getWidth(BuildContext context, double size) =>
+    MediaQuery.of(context).size.width * size;
 
-double getHeight(BuildContext context, double size) => MediaQuery.of(context).size.height * size;
+double getHeight(BuildContext context, double size) =>
+    MediaQuery.of(context).size.height * size;
 
-Widget mySizedBox(BuildContext context) => SizedBox(height: getHeight(context, .01), width: getWidth(context, .005));
+Widget mySizedBox(BuildContext context) =>
+    SizedBox(height: getHeight(context, .01), width: getWidth(context, .005));

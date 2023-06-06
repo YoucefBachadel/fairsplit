@@ -15,7 +15,14 @@ class AddUnit extends StatefulWidget {
 }
 
 class _AddUnitState extends State<AddUnit> {
-  late String name, capital, reserve, donation, money, effort, threshold, founding;
+  late String name,
+      capital,
+      reserve,
+      donation,
+      money,
+      effort,
+      threshold,
+      founding;
   late bool isExtern;
   bool isLoading = false;
   String password = '';
@@ -24,7 +31,8 @@ class _AddUnitState extends State<AddUnit> {
     setState(() => isLoading = true);
     Navigator.pop(context);
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+      'sql1':
+          '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
     });
 
     if (res[0][0]['password'] == '1') {
@@ -35,7 +43,8 @@ class _AddUnitState extends State<AddUnit> {
         'sql4': 'DELETE FROM Units WHERE unitId = $unitId',
       });
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
       snackBar(context, 'Unit deleted successfully');
     } else {
       snackBar(context, 'Wrong Password!!', duration: 1);
@@ -51,7 +60,8 @@ class _AddUnitState extends State<AddUnit> {
       setState(() => isLoading = true);
 
       var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+        'sql1':
+            '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
       });
 
       if (res[0][0]['password'] == '1') {
@@ -73,8 +83,15 @@ class _AddUnitState extends State<AddUnit> {
                 : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
           });
 
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-          snackBar(context, widget.unit.unitId == -1 ? 'Unit added successfully' : 'Unit updated successfully');
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const MyApp(index: 'un')));
+          snackBar(
+              context,
+              widget.unit.unitId == -1
+                  ? 'Unit added successfully'
+                  : 'Unit updated successfully');
         } catch (e) {
           snackBar(context, 'Check Your Data!!!', duration: 5);
         }
@@ -242,6 +259,10 @@ class _AddUnitState extends State<AddUnit> {
                     : setState(
                         () {
                           isExtern = value;
+                          if (isExtern) {
+                            threshold = '0';
+                            founding = '0';
+                          }
                         },
                       ),
                 thumbColor: MaterialStateProperty.all(Colors.white),
@@ -325,6 +346,7 @@ class _AddUnitState extends State<AddUnit> {
                   threshold = text;
                 }),
                 isNumberOnly: true,
+                enabled: !isExtern,
               ),
             ),
             Expanded(child: myText('${getText('founding')} %')),
@@ -336,6 +358,7 @@ class _AddUnitState extends State<AddUnit> {
                   founding = text;
                 }),
                 isNumberOnly: true,
+                enabled: !isExtern,
               ),
             ),
           ],

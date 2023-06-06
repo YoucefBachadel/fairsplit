@@ -4,9 +4,9 @@ class Unit {
   String type;
   double capital;
   double profit;
+  double profitability;
   double reservePerc;
   double donationPerc;
-  // double thresholdFoundingPerc;
   double thresholdPerc;
   double foundingPerc;
   double effortPerc;
@@ -20,9 +20,9 @@ class Unit {
     this.type = 'intern',
     this.capital = 0,
     this.profit = 0,
+    this.profitability = 0,
     this.reservePerc = 0,
     this.donationPerc = 0,
-    // this.thresholdFoundingPerc = 0,
     this.thresholdPerc = 0,
     this.foundingPerc = 0,
     this.effortPerc = 0,

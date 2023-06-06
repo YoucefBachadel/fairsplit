@@ -37,6 +37,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
         year: int.parse(ele['year']),
         month: int.parse(ele['month']),
         profit: double.parse(ele['profit']),
+        profitability: double.parse(ele['profitability']),
         reserve: double.parse(ele['reserve']),
         donation: double.parse(ele['donation']),
         threshold: double.parse(ele['threshold']),
@@ -85,26 +86,31 @@ class _ProfitHistoryState extends State<ProfitHistory> {
             .sort((tr1, tr2) => !_isAscending ? tr2.profit.compareTo(tr1.profit) : tr1.profit.compareTo(tr2.profit));
         break;
       case 6:
-        profitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
+        profitsHistory.sort((tr1, tr2) => !_isAscending
+            ? tr2.profitability.compareTo(tr1.profitability)
+            : tr1.profitability.compareTo(tr2.profitability));
         break;
       case 7:
         profitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
+            (tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
         break;
       case 8:
-        profitsHistory
-            .sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
+        profitsHistory.sort(
+            (tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
         break;
       case 9:
         profitsHistory
-            .sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
+            .sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
         break;
       case 10:
+        profitsHistory
+            .sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
+        break;
+      case 11:
         profitsHistory.sort((tr1, tr2) =>
             !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold));
         break;
-      case 11:
+      case 12:
         profitsHistory.sort(
             (tr1, tr2) => !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding));
         break;
@@ -143,6 +149,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
       dataColumn(context, getText('month')),
       ...[
         getText('profit'),
+        '${getText('profitability')} %',
         getText('reserve'),
         getText('donation'),
         getText('money'),
@@ -173,8 +180,9 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                 context,
                 profit.month == 0 ? '/' : monthsOfYear.elementAt(profit.month - 1),
               ),
+              dataCell(context, myCurrency.format(profit.profit), textAlign: TextAlign.end),
+              dataCell(context, (profit.profitability * 100).toStringAsFixed(2)),
               ...[
-                myCurrency.format(profit.profit),
                 myCurrency.format(profit.reserve),
                 myCurrency.format(profit.donation),
                 myCurrency.format(profit.money),

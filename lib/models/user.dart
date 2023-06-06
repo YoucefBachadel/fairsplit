@@ -18,6 +18,7 @@ class User {
   double threshold;
   double founding;
   double effort;
+  double effortExtern;
   String months;
   List<Threshold> thresholds;
   List<Founding> foundings;
@@ -39,6 +40,7 @@ class User {
     this.threshold = 0,
     this.founding = 0,
     this.effort = 0,
+    this.effortExtern = 0,
     this.months = '111111111111',
     List<Threshold>? thresholds,
     List<Founding>? foundings,
@@ -76,6 +78,7 @@ List<User> toUsers(
       threshold: double.parse(element['threshold']),
       founding: double.parse(element['founding']),
       effort: double.parse(element['effort']),
+      effortExtern: double.parse(element['effortExtern']),
       months: element['months'],
       thresholds: allThresholds.where((ele) => ele.userId == int.parse(element['userId'])).toList(),
       foundings: allFoundings.where((ele) => ele.userId == int.parse(element['userId'])).toList(),

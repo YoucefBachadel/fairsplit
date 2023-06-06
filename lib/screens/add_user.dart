@@ -100,7 +100,7 @@ class _AddUserState extends State<AddUser> {
             // sending a post request to the url and get the inserted id
             _userId = await sqlQuery(insertSPUrl, {
               'sql':
-                  '''INSERT INTO Users (name,phone,joinDate,type,capital,money,moneyExtern,threshold,founding,effort,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , '$months');''',
+                  '''INSERT INTO Users (name,phone,joinDate,type,capital,money,moneyExtern,threshold,founding,effort,effortExtern,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , 0 , '$months');''',
             });
             // _userId = data;
           } else {
@@ -153,7 +153,7 @@ class _AddUserState extends State<AddUser> {
             sqls.add(sql);
           }
 
-          // await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
+          await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
 
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
           snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');

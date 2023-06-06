@@ -137,14 +137,14 @@ class _CalculationState extends State<Calculation> {
         amount: double.parse(ele['amount']),
       );
       transactions.add(transaction);
-      if (isIntern || (widget.unit.type == 'extern' && transaction.date.year == widget.unit.currentMonthOrYear)) {
+      if (isIntern || (!isIntern && transaction.date.year == widget.unit.currentMonthOrYear)) {
         // we add the transaction day if it's  unit type is intern or (extern and trasaction year = unit currentMonthOrYear )
         transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
       }
     }
 
     //  if extern unit we use 365 else we calculate number of days in current month
-    daysInMonth = widget.unit.type == 'extern'
+    daysInMonth = !isIntern
         ? DateTime(widget.unit.currentMonthOrYear + 1).difference(DateTime(widget.unit.currentMonthOrYear)).inDays
         : DateUtils.getDaysInMonth(currentYear, widget.unit.currentMonthOrYear);
 
@@ -152,13 +152,13 @@ class _CalculationState extends State<Calculation> {
     //if is extern unit we add the first dat of janury of the current year and next year
     transactionsDays.addAll({
       DateTime(
-        widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : currentYear,
-        widget.unit.type == 'extern' ? 1 : widget.unit.currentMonthOrYear,
+        !isIntern ? widget.unit.currentMonthOrYear : currentYear,
+        !isIntern ? 1 : widget.unit.currentMonthOrYear,
         1,
       ),
       DateTime(
-        widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear + 1 : currentYear,
-        widget.unit.type == 'extern' ? 1 : widget.unit.currentMonthOrYear + 1,
+        !isIntern ? widget.unit.currentMonthOrYear + 1 : currentYear,
+        !isIntern ? 1 : widget.unit.currentMonthOrYear + 1,
         1,
       ),
     });
@@ -299,44 +299,59 @@ class _CalculationState extends State<Calculation> {
 
     moneySQL += isIntern
         ? ' ON DUPLICATE KEY UPDATE money = money + VALUES(money);'
-        : ' ON DUPLICATE KEY UPDATE capital = capital + VALUES(money) , moneyExtern = moneymoneyExtern + VALUES(money);';
-    thresholdSQL += ' ON DUPLICATE KEY UPDATE threshold = threshold + VALUES(threshold);';
-    foundingSQL += ' ON DUPLICATE KEY UPDATE founding = founding + VALUES(founding);';
+        : ' ON DUPLICATE KEY UPDATE capital = capital + VALUES(money) , moneyExtern = moneyExtern + VALUES(money);';
     effortUnitSQL += isIntern
         ? ' ON DUPLICATE KEY UPDATE effort = effort + VALUES(effort);'
-        : ' ON DUPLICATE KEY UPDATE type = both , capital = capital + VALUES(effort) , effort = effort + VALUES(effort);';
+        : ''' ON DUPLICATE KEY UPDATE type = 'both' , capital = capital + VALUES(effort) , effortExtern = effortExtern + VALUES(effort);''';
     effortGlobalSQL += isIntern
         ? ' ON DUPLICATE KEY UPDATE effort = effort + VALUES(effort);'
-        : ' ON DUPLICATE KEY UPDATE type = both , capital = capital + VALUES(effort) , effort = effort + VALUES(effort);';
+        : ''' ON DUPLICATE KEY UPDATE type = 'both' , capital = capital + VALUES(effort) , effortExtern = effortExtern + VALUES(effort);''';
+    thresholdSQL += ' ON DUPLICATE KEY UPDATE threshold = threshold + VALUES(threshold);';
+    foundingSQL += ' ON DUPLICATE KEY UPDATE founding = founding + VALUES(founding);';
 
-    int nextMonthOrYear = widget.unit.type == 'extern'
+    int nextMonthOrYear = !isIntern
         ? widget.unit.currentMonthOrYear + 1
         : widget.unit.currentMonthOrYear == 12
             ? 1
             : widget.unit.currentMonthOrYear + 1;
 
-    int calculated = widget.unit.type == 'extern' || nextMonthOrYear == 1 ? 1 : 0;
+    int calculated = !isIntern || nextMonthOrYear == 1 ? 1 : 0;
 
-    setState(() => isloading = false);
-    print(moneySQL);
-    print(effortGlobalSQL);
-    print(effortUnitSQL);
-    // await sqlQuery(insertUrl, {
-    //   'sql1': moneySQL,
-    //   'sql2': thresholdSQL,
-    //   'sql3': foundingSQL,
-    //   'sql4': effortUnitSQL,
-    //   'sql5': effortGlobalSQL,
-    //   'sql6':
-    //       ''' UPDATE Units SET profit = profit + $unitProfitValue, calculated = $calculated, currentMonthOrYear = $nextMonthOrYear  WHERE unitId = ${widget.unit.unitId}; ''',
-    //   'sql7':
-    //       '''INSERT INTO ProfitHistory(name, year, month, profit, reserve, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : currentYear},${widget.unit.type == 'extern' ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,${caReserve.toStringAsFixed(2)},${caDonation.toStringAsFixed(2)},${caMoney.toStringAsFixed(2)},${caEffort.toStringAsFixed(2)},${caThreshold.toStringAsFixed(2)},${caFounding.toStringAsFixed(2)});''',
-    //   'sql8':
-    //       'UPDATE settings SET profitability = profitability + $profitability , reserveProfit = reserveProfit + $caReserve + $caReserveMoneyProfit , donationProfit = donationProfit + $caDonation '
-    // });
+    int counter = 1;
+    Map<String, String> params = {};
+    if (moneyUsers.isNotEmpty) {
+      params['sql$counter'] = moneySQL;
+      counter++;
+    }
+    if (unitEffortUsers.isNotEmpty) {
+      params['sql$counter'] = effortUnitSQL;
+      counter++;
+    }
+    if (globalEffortUsers.isNotEmpty) {
+      params['sql$counter'] = effortGlobalSQL;
+      counter++;
+    }
+    if (thresholdUsers.isNotEmpty) {
+      params['sql$counter'] = thresholdSQL;
+      counter++;
+    }
+    if (foundingUsers.isNotEmpty) {
+      params['sql$counter'] = foundingSQL;
+      counter++;
+    }
+    params['sql$counter'] =
+        ''' UPDATE Units SET profit = profit + $unitProfitValue, profitability = profitability + $profitability,  calculated = $calculated, currentMonthOrYear = $nextMonthOrYear  WHERE unitId = ${widget.unit.unitId}; ''';
+    counter++;
+    params['sql$counter'] =
+        '''INSERT INTO ProfitHistory(name, year, month, profit,profitability, reserve, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',${!isIntern ? widget.unit.currentMonthOrYear : currentYear},${!isIntern ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,$profitability,${caReserve.toStringAsFixed(2)},${caDonation.toStringAsFixed(2)},${caMoney.toStringAsFixed(2)},${caEffort.toStringAsFixed(2)},${caThreshold.toStringAsFixed(2)},${caFounding.toStringAsFixed(2)});''';
+    counter++;
+    params['sql$counter'] =
+        'UPDATE settings SET profitability = profitability + $profitability , reserveProfit = reserveProfit + $caReserve + $caReserveMoneyProfit , donationProfit = donationProfit + $caDonation;';
 
-    // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-    // snackBar(context, 'Calculation done successfully');
+    await sqlQuery(insertUrl, params);
+
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+    snackBar(context, 'Calculation done successfully');
   }
 
   @override

@@ -164,7 +164,9 @@ class _UsersState extends State<Users> {
         break;
       case 8:
         users.sort((tr1, tr2) {
-          return !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort);
+          return !_isAscending
+              ? (tr2.effort + tr2.effortExtern).compareTo(tr1.effort + tr1.effortExtern)
+              : (tr1.effort + tr1.effortExtern).compareTo(tr2.effort + tr2.effortExtern);
         });
         break;
       case 9:
@@ -270,14 +272,14 @@ class _UsersState extends State<Users> {
 
     List<DataRow> rows = users
         .map((user) => DataRow(
-              onSelectChanged: (value) {
+              onLongPress: () {
                 context.read<TransactionsFilter>().change(
                       transactionCategory: 'users',
                       search: user.name,
                     );
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
               },
-              onLongPress: () async => await createDialog(
+              onSelectChanged: (value) async => await createDialog(
                 context,
                 AddTransaction(
                   sourceTab: 'us',
@@ -322,7 +324,7 @@ class _UsersState extends State<Users> {
                 ),
                 dataCell(
                   context,
-                  user.type == 'money' ? '/' : myCurrency.format(user.effort),
+                  user.type == 'money' ? '/' : myCurrency.format(user.effort + user.effortExtern),
                   textAlign: user.type == 'money' ? TextAlign.center : TextAlign.end,
                 ),
                 if (_thresholdUnitFilter != -2)

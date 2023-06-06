@@ -148,7 +148,7 @@ class _PdfGeneratorState extends State<PdfGenerator> {
                 ),
                 pdfTableRow(text: ele['trType']),
                 pdfTableRow(
-                  text: currencyFormate(ele['trSomme']),
+                  text: myCurrency.format(ele['trSomme']),
                   alignment: pw.Alignment.centerRight,
                 ),
               ]),

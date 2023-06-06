@@ -1,3 +1,5 @@
+import 'package:fairsplit/shared/parameters.dart';
+
 import '../models/effort.dart';
 import '../models/founding.dart';
 import '../models/threshold.dart';
@@ -32,7 +34,6 @@ class User {
     DateTime? joinDate,
     this.type = 'money',
     this.capital = 0,
-    this.weightedCapital = 0,
     this.money = 0,
     this.moneyExtern = 0,
     this.threshold = 0,
@@ -50,7 +51,8 @@ class User {
   })  : joinDate = joinDate ?? DateTime.now(),
         thresholds = thresholds ?? [],
         foundings = foundings ?? [],
-        efforts = efforts ?? [];
+        efforts = efforts ?? [],
+        weightedCapital = profitability == 0 ? 0 : (money + moneyExtern) / profitability;
 }
 
 List<User> toUsers(
@@ -69,7 +71,6 @@ List<User> toUsers(
       joinDate: DateTime.parse(element['joinDate']),
       type: element['type'],
       capital: double.parse(element['capital']),
-      weightedCapital: 0,
       money: double.parse(element['money']),
       moneyExtern: double.parse(element['moneyExtern']),
       threshold: double.parse(element['threshold']),

@@ -37,14 +37,15 @@ class _DashboardState extends State<Dashboard> {
           (SELECT SUM(amount) FROM Transaction WHERE type = 'out' AND year = s.currentYear) as totalOut,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
-          s.caisse, s.reserve, s.donation, s.zakat,s.reserveProfit, s.currentYear FROM Settings s;'''
+          s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;'''
     });
     var data = res[0][0];
     currentYear = int.parse(data['currentYear']);
-    caisse = double.parse(data['caisse'] ?? '0');
-    reserve = double.parse(data['reserve'] ?? '0');
-    donation = double.parse(data['donation'] ?? '0');
-    zakat = double.parse(data['zakat'] ?? '0');
+    profitability = double.parse(data['profitability']);
+    caisse = double.parse(data['caisse']);
+    reserve = double.parse(data['reserve']);
+    donation = double.parse(data['donation']);
+    zakat = double.parse(data['zakat']);
     totalIn = double.parse(data['totalIn'] ?? '0');
     totalOut = double.parse(data['totalOut'] ?? '0');
     totalLoan = double.parse(data['totalLoan'] ?? '0');

@@ -306,8 +306,6 @@ DataTable dataTable({
   );
 }
 
-String currencyFormate(double currency) => NumberFormat('#,##0.00', 'fr_FR').format(currency);
-
 class DecimalTextInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {

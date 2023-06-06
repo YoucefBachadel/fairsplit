@@ -147,32 +147,27 @@ class _UsersState extends State<Users> {
         break;
       case 5:
         users.sort((tr1, tr2) {
-          return !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money);
+          return !_isAscending
+              ? (tr2.money + tr2.moneyExtern).compareTo(tr1.money + tr1.moneyExtern)
+              : (tr1.money + tr1.moneyExtern).compareTo(tr2.money + tr2.moneyExtern);
         });
         break;
       case 6:
         users.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.moneyExtern.compareTo(tr1.moneyExtern)
-              : tr1.moneyExtern.compareTo(tr2.moneyExtern);
+          return !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold);
         });
         break;
       case 7:
         users.sort((tr1, tr2) {
-          return !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold);
+          return !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding);
         });
         break;
       case 8:
         users.sort((tr1, tr2) {
-          return !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding);
-        });
-        break;
-      case 9:
-        users.sort((tr1, tr2) {
           return !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort);
         });
         break;
-      case 10:
+      case 9:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2) {
             return !_isAscending
@@ -187,7 +182,7 @@ class _UsersState extends State<Users> {
           }
         });
         break;
-      case 11:
+      case 10:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2 && _foundingUnitFilter != -2) {
             return !_isAscending
@@ -201,7 +196,7 @@ class _UsersState extends State<Users> {
           }
         });
         break;
-      case 12:
+      case 11:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2 && _foundingUnitFilter != -2) {
             return !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort);
@@ -210,7 +205,7 @@ class _UsersState extends State<Users> {
           }
         });
         break;
-      case 13:
+      case 12:
         users.sort((tr1, tr2) {
           return !_isAscending ? tr2.evaluation.compareTo(tr1.evaluation) : tr1.evaluation.compareTo(tr2.evaluation);
         });
@@ -254,7 +249,6 @@ class _UsersState extends State<Users> {
         getText('capital'),
         getText('weightedCapital'),
         getText('money'),
-        getText('moneyExtern'),
         getText('threshold'),
         getText('founding'),
         getText('effort'),
@@ -313,12 +307,7 @@ class _UsersState extends State<Users> {
                 ),
                 dataCell(
                   context,
-                  user.type == 'effort' ? '/' : myCurrency.format(user.money),
-                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
-                ),
-                dataCell(
-                  context,
-                  user.type == 'effort' ? '/' : myCurrency.format(user.moneyExtern),
+                  user.type == 'effort' ? '/' : myCurrency.format(user.money + user.moneyExtern),
                   textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
                 ),
                 dataCell(
@@ -668,7 +657,7 @@ class _UsersState extends State<Users> {
                   _thresholdUnitFilter = -2;
                   _foundingUnitFilter = -2;
                   _effortUnitFilter = -2;
-                  if (_sortColumnIndex! > 9) _sortColumnIndex = 1;
+                  if (_sortColumnIndex! > 8) _sortColumnIndex = 1;
                 }),
                 icon: Icon(
                   Icons.update,

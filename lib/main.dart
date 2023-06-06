@@ -1,3 +1,4 @@
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fairsplit/providers/transactions_filter.dart';
 import 'package:fairsplit/screens/profit_history.dart';
 import 'package:flutter/material.dart';
@@ -19,35 +20,78 @@ import 'widgets/widget.dart';
 // textTheme: GoogleFonts.itimTextTheme(),
 // textTheme: GoogleFonts.comicNeueTextTheme(),
 
-void main() => runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => TransactionsFilter()),
-        ],
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'FairSplit',
-          theme: ThemeData(
-              primarySwatch: MaterialColor(
-                0XFF02333c,
-                {
-                  50: primaryColor,
-                  100: primaryColor,
-                  200: primaryColor,
-                  300: primaryColor,
-                  400: primaryColor,
-                  500: primaryColor,
-                  600: primaryColor,
-                  700: primaryColor,
-                  800: primaryColor,
-                  900: primaryColor,
-                },
-              ),
-              fontFamily: 'Gothic'),
-          home: const MyApp(index: 'first'),
-        ),
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TransactionsFilter()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'FairSplit',
+        theme: ThemeData(
+            primarySwatch: MaterialColor(
+              0XFF02333c,
+              {
+                50: primaryColor,
+                100: primaryColor,
+                200: primaryColor,
+                300: primaryColor,
+                400: primaryColor,
+                500: primaryColor,
+                600: primaryColor,
+                700: primaryColor,
+                800: primaryColor,
+                900: primaryColor,
+              },
+            ),
+            fontFamily: 'Gothic'),
+        home: const MyApp(index: 'first'),
       ),
+    ),
+  );
+
+  // Add this code below
+
+  doWhenWindowReady(() {
+    const initialSize = Size(1800, 950);
+    appWindow.minSize = initialSize;
+    appWindow.size = initialSize;
+    appWindow.alignment = Alignment.center;
+    appWindow.title = "FairSplit";
+    appWindow.maximize();
+    appWindow.show();
+  });
+}
+
+final buttonColors = WindowButtonColors(
+  iconNormal: Colors.white,
+  mouseOver: const Color(0xFFF6A00C),
+  mouseDown: const Color(0xFF805306),
+  iconMouseOver: const Color(0xFF805306),
+  iconMouseDown: const Color(0xFFFFD500),
+);
+
+final closeButtonColors = WindowButtonColors(
+  mouseOver: const Color(0xFFD32F2F),
+  mouseDown: const Color(0xFFB71C1C),
+  iconNormal: Colors.white,
+  iconMouseOver: Colors.white,
+);
+
+class WindowButtons extends StatelessWidget {
+  const WindowButtons({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        MinimizeWindowButton(colors: buttonColors),
+        MaximizeWindowButton(colors: buttonColors),
+        CloseWindowButton(colors: closeButtonColors),
+      ],
     );
+  }
+}
 
 class MyApp extends StatefulWidget {
   final String index;
@@ -102,65 +146,82 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: widget.index == 'first' ? scaffoldColor : primaryColor,
-      body: widget.index == 'first'
-          ? Center(child: passwordDialog())
-          : Row(
-              children: [
-                Container(
-                  width: getWidth(context, .1),
-                  color: primaryColor,
-                  padding: const EdgeInsets.only(left: 5),
-                  child: Column(children: [
-                    const Spacer(),
-                    ...tabs
-                        .map(
-                          (e) => InkWell(
-                            onTap: () {
-                              context.read<TransactionsFilter>().reset();
-                              setState(() => selectedTab = tabs.indexOf(e));
+      body: Column(
+        children: [
+          WindowTitleBarBox(
+            child: Container(
+              color: primaryColor,
+              child: Row(
+                children: [
+                  Expanded(child: MoveWindow(child: Center(child: myText("FairSplit", color: Colors.white, size: 22)))),
+                  const WindowButtons()
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: widget.index == 'first'
+                ? Center(child: passwordDialog())
+                : Row(
+                    children: [
+                      Container(
+                        width: getWidth(context, .1),
+                        color: primaryColor,
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Column(children: [
+                          const Spacer(),
+                          ...tabs
+                              .map(
+                                (e) => InkWell(
+                                  onTap: () {
+                                    context.read<TransactionsFilter>().reset();
+                                    setState(() => selectedTab = tabs.indexOf(e));
+                                  },
+                                  child: tabItem(e, tabs.indexOf(e) == selectedTab),
+                                ),
+                              )
+                              .toList(),
+                          const Spacer(flex: 10),
+                          InkWell(
+                            onTap: () async {
+                              if (!namesHidden) {
+                                namesHidden = true;
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => MyApp(
+                                            index: tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
+                              } else {
+                                await createDialog(context, passwordDialog(), true);
+                              }
                             },
-                            child: tabItem(e, tabs.indexOf(e) == selectedTab),
+                            child: Text(
+                              myDateFormate2.format(DateTime.now()),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
-                        )
-                        .toList(),
-                    const Spacer(flex: 10),
-                    InkWell(
-                      onTap: () async {
-                        if (!namesHidden) {
-                          namesHidden = true;
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      MyApp(index: tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
-                        } else {
-                          await createDialog(context, passwordDialog(), true);
-                        }
-                      },
-                      child: Text(
-                        myDateFormate2.format(DateTime.now()),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
+                          mySizedBox(context),
+                        ]),
+                      ),
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 8.0),
+                          decoration: BoxDecoration(
+                            color: scaffoldColor,
+                            borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          ),
+                          child: tabScreens[selectedTab],
                         ),
                       ),
-                    ),
-                    mySizedBox(context),
-                  ]),
-                ),
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 8.0),
-                    decoration: BoxDecoration(
-                      color: scaffoldColor,
-                      borderRadius: const BorderRadius.all(Radius.circular(12)),
-                    ),
-                    child: tabScreens[selectedTab],
+                    ],
                   ),
-                ),
-              ],
-            ),
+          ),
+        ],
+      ),
     );
   }
 

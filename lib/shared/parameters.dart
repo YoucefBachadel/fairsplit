@@ -5,12 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pdf;
 import 'package:http/http.dart' as http;
 
-int currentYear = 2023;
+int currentYear = 0;
+double profitability = 0;
 bool namesHidden = false;
-DateTime startDate = DateTime.now();
-DateTime endDate = DateTime.now();
-
-int destinationPageIndex = 1;
 
 Color primaryColor = const Color(0XFF02333c); //0XFF303F9F
 Color secondaryColor = const Color(0XFF08535d);
@@ -20,11 +17,12 @@ List<pdf.Font> fonts = [];
 double textFeildHeight = .05;
 
 // String host = 'http://localhost/fairsplit';
-String host = 'http://fairsplit.assala.com';
+String host = 'http://fairsplit.assala.com/php_test';
+// String host = 'http://fairsplit.assala.com/php';
 
-Uri insertUrl = Uri.parse('$host/php/insert.php');
-Uri insertSPUrl = Uri.parse('$host/php/insertSP.php');
-Uri selectUrl = Uri.parse('$host/php/select.php');
+Uri insertUrl = Uri.parse('$host/insert.php');
+Uri insertSPUrl = Uri.parse('$host/insertSP.php');
+Uri selectUrl = Uri.parse('$host/select.php');
 
 dynamic sqlQuery(Uri uri, dynamic params) async {
   var res = await http.post(uri, body: jsonEncode(params));

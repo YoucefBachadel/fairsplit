@@ -240,7 +240,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                   child: isloading
                       ? myProgress()
                       : usersHistory.isEmpty
-                          ? SizedBox(width: getWidth(context, .45), child: emptyList())
+                          ? SizedBox(width: getWidth(context, .60), child: emptyList())
                           : SingleChildScrollView(
                               child: dataTable(
                                 isAscending: _isAscending,

@@ -11,14 +11,14 @@ bool namesHidden = false;
 
 Color primaryColor = const Color(0XFF02333c); //0XFF303F9F
 Color secondaryColor = const Color(0XFF08535d);
-Color scaffoldColor = const Color(0xFFf0f2f5); //0XFF99bcc4
+Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 
 List<pdf.Font> fonts = [];
 double textFeildHeight = .05;
 
 // String host = 'http://localhost/fairsplit';
-String host = 'http://fairsplit.assala.com/php_test';
-// String host = 'http://fairsplit.assala.com/php';
+// String host = 'http://fairsplit.assala.com/php_test';
+String host = 'http://fairsplit.assala.com/php';
 
 Uri insertUrl = Uri.parse('$host/insert.php');
 Uri insertSPUrl = Uri.parse('$host/insertSP.php');
@@ -29,18 +29,14 @@ dynamic sqlQuery(Uri uri, dynamic params) async {
   return jsonDecode(res.body);
 }
 
-NumberFormat myCurrency = NumberFormat.currency(
-    symbol: '', customPattern: '#,##0.00', locale: 'fr_FR');
+NumberFormat myCurrency = NumberFormat.currency(symbol: '', customPattern: '#,##0.00', locale: 'fr_FR');
 
 DateFormat myDateFormate = DateFormat('dd-MM-yyyy');
 DateFormat myDateFormate2 = DateFormat('dd MMM yyyy');
 DateFormat myDateFormate3 = DateFormat('dd MMMM yyyy');
 
-double getWidth(BuildContext context, double size) =>
-    MediaQuery.of(context).size.width * size;
+double getWidth(BuildContext context, double size) => MediaQuery.of(context).size.width * size;
 
-double getHeight(BuildContext context, double size) =>
-    MediaQuery.of(context).size.height * size;
+double getHeight(BuildContext context, double size) => MediaQuery.of(context).size.height * size;
 
-Widget mySizedBox(BuildContext context) =>
-    SizedBox(height: getHeight(context, .01), width: getWidth(context, .005));
+Widget mySizedBox(BuildContext context) => SizedBox(height: getHeight(context, .01), width: getWidth(context, .005));

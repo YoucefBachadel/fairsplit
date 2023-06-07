@@ -204,17 +204,14 @@ class _UnitsState extends State<Units> {
                   child: isLoadingUnits
                       ? myProgress()
                       : units.isEmpty
-                          ? emptyList()
+                          ? SizedBox(width: getWidth(context, .60), child: emptyList())
                           : SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: SingleChildScrollView(
-                                child: dataTable(
-                                  isAscending: _isAscending,
-                                  sortColumnIndex: _sortColumnIndex,
-                                  columns: columns,
-                                  rows: rows,
-                                  columnSpacing: 50,
-                                ),
+                              child: dataTable(
+                                isAscending: _isAscending,
+                                sortColumnIndex: _sortColumnIndex,
+                                columns: columns,
+                                rows: rows,
+                                columnSpacing: 50,
                               ),
                             ),
                 ),

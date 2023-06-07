@@ -175,6 +175,7 @@ class _OtherUsersState extends State<OtherUsers> {
         children: [
           const Spacer(),
           Container(
+            width: getWidth(context, .60),
             margin: const EdgeInsets.symmetric(horizontal: 16.0),
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             decoration: const BoxDecoration(
@@ -196,7 +197,7 @@ class _OtherUsersState extends State<OtherUsers> {
                 child: isloading
                     ? myProgress()
                     : users.isEmpty
-                        ? SizedBox(width: getWidth(context, .45), child: emptyList())
+                        ? SizedBox(width: getWidth(context, .60), child: emptyList())
                         : users.isEmpty
                             ? emptyList()
                             : SingleChildScrollView(

@@ -164,9 +164,7 @@ class _TransactionsState extends State<Transactions> {
     _fromDate = DateTime(int.parse(years.last));
     _toDate = today.add(const Duration(seconds: 86399));
 
-    setState(() {
-      isloading = false;
-    });
+    setState(() => isloading = false);
   }
 
   void filterTransaction() {
@@ -186,18 +184,26 @@ class _TransactionsState extends State<Transactions> {
   }
 
   void filterTransactionCaisse() {
+    allCaisseTransactions.sort((a, b) => b.date.compareTo(a.date));
+    for (int i = 0; i < allCaisseTransactions.length - 1; i++) {
+      if (allCaisseTransactions[i].soldeCaisse == allCaisseTransactions[i + 1].soldeCaisse) {
+        allCaisseTransactions[i].isCaisseChanged = false;
+      }
+    }
+
     transactions.clear();
     for (var trans in allCaisseTransactions) {
       if ((_year == 'tout' || trans.year.toString() == _year) &&
           (_type == 'tout' || trans.type == _type) &&
           (trans.date.isAfter(_fromDate) || trans.date == _fromDate) &&
-          (trans.date.isBefore(_toDate) || trans.date == _toDate)) {
+          (trans.date.isBefore(_toDate) || trans.date == _toDate) &&
+          trans.isCaisseChanged) {
         transactions.add(trans);
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
       }
     }
 
-    onSortTransCaisse();
+    // onSortTransCaisse();
   }
 
   void filterTransactionSP() {
@@ -795,54 +801,67 @@ class _TransactionsState extends State<Transactions> {
               Expanded(
                   child: isloading
                       ? myProgress()
-                      : SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              if (transactionCategory == 'caisse')
-                                transactions.isEmpty
-                                    ? emptyList()
-                                    : dataTable(
-                                        isAscending: _isAscendingTransCaisse,
-                                        sortColumnIndex: _sortColumnIndexTransCaisse,
-                                        columns: columnsTransCaisse,
-                                        rows: rowsTransCaisse,
-                                      ),
-                              if (transactionCategory == 'users')
-                                transactions.isEmpty
-                                    ? emptyList()
-                                    : dataTable(
+                      : transactionCategory == 'caisse'
+                          ? transactions.isEmpty
+                              ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                              : SingleChildScrollView(
+                                  child: dataTable(
+                                    isAscending: _isAscendingTransCaisse,
+                                    sortColumnIndex: _sortColumnIndexTransCaisse,
+                                    columns: columnsTransCaisse,
+                                    rows: rowsTransCaisse,
+                                    columnSpacing: 30,
+                                  ),
+                                )
+                          : transactionCategory == 'users'
+                              ? transactions.isEmpty
+                                  ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                                  : SingleChildScrollView(
+                                      child: dataTable(
                                         isAscending: _isAscendingTrans,
                                         sortColumnIndex: _sortColumnIndexTrans,
                                         columns: columnsTrans,
                                         rows: rowsTrans,
+                                        columnSpacing: 30,
                                       ),
-                              if (transactionCategory == 'specials')
-                                transactionsSP.isEmpty
-                                    ? emptyList()
-                                    : dataTable(
-                                        isAscending: _isAscendingTransSP,
-                                        sortColumnIndex: _sortColumnIndexTransSP,
-                                        columns: columnsTransSP,
-                                        rows: rowsTransSP),
-                              if (transactionCategory == 'loans')
-                                loanTransactions.isEmpty
-                                    ? emptyList()
-                                    : dataTable(
-                                        isAscending: _isAscendingTransLoan,
-                                        sortColumnIndex: _sortColumnIndexTransLoan,
-                                        columns: columnsTransLoan,
-                                        rows: rowsTransLoan),
-                              if (transactionCategory == 'deposits')
-                                depositTransactions.isEmpty
-                                    ? emptyList()
-                                    : dataTable(
-                                        isAscending: _isAscendingTransDeposit,
-                                        sortColumnIndex: _sortColumnIndexTransDeposit,
-                                        columns: columnsTransDeposit,
-                                        rows: rowsTransDeposit),
-                            ],
-                          ),
-                        )),
+                                    )
+                              : transactionCategory == 'specials'
+                                  ? transactionsSP.isEmpty
+                                      ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                                      : SingleChildScrollView(
+                                          child: dataTable(
+                                            isAscending: _isAscendingTransSP,
+                                            sortColumnIndex: _sortColumnIndexTransSP,
+                                            columns: columnsTransSP,
+                                            rows: rowsTransSP,
+                                            columnSpacing: 30,
+                                          ),
+                                        )
+                                  : transactionCategory == 'loans'
+                                      ? loanTransactions.isEmpty
+                                          ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                                          : SingleChildScrollView(
+                                              child: dataTable(
+                                                isAscending: _isAscendingTransLoan,
+                                                sortColumnIndex: _sortColumnIndexTransLoan,
+                                                columns: columnsTransLoan,
+                                                rows: rowsTransLoan,
+                                                columnSpacing: 30,
+                                              ),
+                                            )
+                                      : transactionCategory == 'deposits'
+                                          ? depositTransactions.isEmpty
+                                              ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                                              : SingleChildScrollView(
+                                                  child: dataTable(
+                                                    isAscending: _isAscendingTransDeposit,
+                                                    sortColumnIndex: _sortColumnIndexTransDeposit,
+                                                    columns: columnsTransDeposit,
+                                                    rows: rowsTransDeposit,
+                                                    columnSpacing: 30,
+                                                  ),
+                                                )
+                                          : const SizedBox()),
               const SizedBox(height: 8.0),
               SizedBox(width: getWidth(context, .52), child: const Divider()),
               const SizedBox(height: 8.0),

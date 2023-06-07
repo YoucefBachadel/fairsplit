@@ -48,7 +48,6 @@ class _AddTransactionState extends State<AddTransaction> {
   void loadData() async {
     var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM Settings;'});
     var dataSettings = res[0][0];
-
     caisse = double.parse(dataSettings['caisse']);
     reserve = double.parse(dataSettings['reserve']);
     donation = double.parse(dataSettings['donation']);
@@ -755,7 +754,16 @@ class _AddTransactionState extends State<AddTransaction> {
                                           lastDate: DateTime.now(),
                                         );
                                         if (selected != null && selected != date) {
-                                          setState(() => date = selected);
+                                          setState(
+                                            () => date = DateTime(
+                                              selected.year,
+                                              selected.month,
+                                              selected.day,
+                                              DateTime.now().hour,
+                                              DateTime.now().minute,
+                                              DateTime.now().second,
+                                            ),
+                                          );
                                         }
                                       },
                                     )

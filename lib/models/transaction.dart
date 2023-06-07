@@ -10,6 +10,7 @@ class Transaction {
   double soldeUser;
   double soldeCaisse;
   String note;
+  bool isCaisseChanged; // used to filter the transaction that didn't change soled caisse in caisse traansactions
 
   Transaction({
     required this.transactionId,
@@ -23,5 +24,6 @@ class Transaction {
     this.soldeUser = 0,
     this.soldeCaisse = 0,
     this.note = '',
+    this.isCaisseChanged = true,
   });
 }

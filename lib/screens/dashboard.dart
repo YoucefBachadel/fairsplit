@@ -107,7 +107,7 @@ class _DashboardState extends State<Dashboard> {
                             // [getText('totalOut'), myCurrency.format(totalOut)],
                             [getText('totalLoan'), myCurrency.format(totalLoan)],
                             [getText('totalDeposit'), myCurrency.format(totalDeposit)],
-                            [getText('reserveProfit'), myCurrency.format(reserveProfit)],
+                            // [getText('reserveProfit'), myCurrency.format(reserveProfit)],
                           ].map((e) => boxCard(e[0], e[1], false)).toList(),
                         ),
                       ),

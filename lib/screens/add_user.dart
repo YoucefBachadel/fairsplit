@@ -102,7 +102,6 @@ class _AddUserState extends State<AddUser> {
               'sql':
                   '''INSERT INTO Users (name,phone,joinDate,type,capital,money,moneyExtern,threshold,founding,effort,effortExtern,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , 0 , '$months');''',
             });
-            // _userId = data;
           } else {
             sqls.add(
               '''UPDATE Users SET name = '$name' ,phone = '$phone'  ,joinDate = '$joinDate' ,type = '$type' ,months = '$months' Where userId = $_userId;''',
@@ -153,7 +152,7 @@ class _AddUserState extends State<AddUser> {
             sqls.add(sql);
           }
 
-          await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
+          if (sql.isNotEmpty) await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
 
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
           snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');

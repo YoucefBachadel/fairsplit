@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:fairsplit/models/transactio_others.dart';
-import 'package:fairsplit/providers/transactions_filter.dart';
+import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -378,7 +378,7 @@ class _TransactionsState extends State<Transactions> {
   void _newTransaction(BuildContext context) async {
     await createDialog(
       context,
-      const AddTransaction(),
+      const SelectTransactionCategoty(),
       false,
     );
   }
@@ -391,9 +391,9 @@ class _TransactionsState extends State<Transactions> {
 
   @override
   Widget build(BuildContext context) {
-    transactionCategory = context.watch<TransactionsFilter>().transactionCategory;
-    _compt = context.watch<TransactionsFilter>().compt;
-    _search = context.watch<TransactionsFilter>().search;
+    transactionCategory = context.watch<Filter>().transactionCategory;
+    _compt = context.watch<Filter>().compt;
+    _search = context.watch<Filter>().search;
 
     totalIn = 0;
     totalOut = 0;
@@ -899,8 +899,8 @@ class _TransactionsState extends State<Transactions> {
             );
           }).toList(),
           onChanged: (value) => setState(() {
-            context.read<TransactionsFilter>().change(transactionCategory: value.toString());
-            context.read<TransactionsFilter>().resetFilter();
+            context.read<Filter>().change(transactionCategory: value.toString());
+            context.read<Filter>().resetFilter();
             _controller.clear();
             _type = 'tout';
             _year = 'tout';
@@ -934,14 +934,14 @@ class _TransactionsState extends State<Transactions> {
                   );
                 }).toList(),
                 onChanged: (value) =>
-                    setState(() => context.read<TransactionsFilter>().change(compt: value.toString())),
+                    setState(() => context.read<Filter>().change(compt: value.toString())),
               ),
             ],
           ),
         transactionCategory == 'users'
             ? autoComplete(
                 onSeleted: (item) => setState(() => context
-                    .read<TransactionsFilter>()
+                    .read<Filter>()
                     .change(search: namesHidden ? userNames.elementAt(int.parse(item)) : item)),
                 optionsBuilder: (textEditingValue) {
                   if (namesHidden) {
@@ -961,7 +961,7 @@ class _TransactionsState extends State<Transactions> {
         transactionCategory == 'loans'
             ? autoComplete(
                 onSeleted: (item) => setState(() => context
-                    .read<TransactionsFilter>()
+                    .read<Filter>()
                     .change(search: namesHidden ? loanNames.elementAt(int.parse(item)) : item)),
                 optionsBuilder: (textEditingValue) {
                   if (namesHidden) {
@@ -981,7 +981,7 @@ class _TransactionsState extends State<Transactions> {
         transactionCategory == 'deposits'
             ? autoComplete(
                 onSeleted: (item) => setState(() => context
-                    .read<TransactionsFilter>()
+                    .read<Filter>()
                     .change(search: namesHidden ? depositNames.elementAt(int.parse(item)) : item)),
                 optionsBuilder: (textEditingValue) {
                   if (namesHidden) {
@@ -1177,7 +1177,7 @@ class _TransactionsState extends State<Transactions> {
                 _toDate != today.add(const Duration(seconds: 86399)))
             ? IconButton(
                 onPressed: () => setState(() {
-                  context.read<TransactionsFilter>().resetFilter();
+                  context.read<Filter>().resetFilter();
                   _controller.clear();
                   _type = 'tout';
                   _year = 'tout';
@@ -1259,7 +1259,7 @@ class _TransactionsState extends State<Transactions> {
                               onPressed: () {
                                 setState(() {
                                   textEditingController.clear();
-                                  context.read<TransactionsFilter>().resetFilter();
+                                  context.read<Filter>().resetFilter();
                                 });
                               },
                               icon: const Icon(

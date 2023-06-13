@@ -192,10 +192,7 @@ class _UnitsState extends State<Units> {
             decoration: const BoxDecoration(
               color: Colors.white,
               boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  blurRadius: 3.0,
-                ),
+                BoxShadow(color: Colors.grey, blurRadius: 3.0),
               ],
             ),
             child: Column(

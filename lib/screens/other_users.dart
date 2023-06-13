@@ -1,4 +1,4 @@
-import 'package:fairsplit/providers/transactions_filter.dart';
+import 'package:fairsplit/providers/filter.dart';
 import 'package:fairsplit/screens/add_transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -94,6 +94,7 @@ class _OtherUsersState extends State<OtherUsers> {
 
   @override
   Widget build(BuildContext context) {
+    _type = context.watch<Filter>().loanDeposit;
     filterUsers();
 
     List<DataColumn> columns = [
@@ -125,14 +126,14 @@ class _OtherUsersState extends State<OtherUsers> {
     List<DataRow> rows = users
         .map((user) => DataRow(
               color: user.isUserWithCapital ? MaterialStatePropertyAll(Colors.red[100]) : null,
-              onSelectChanged: (value) {
-                context.read<TransactionsFilter>().change(
+              onLongPress: () {
+                context.read<Filter>().change(
                       transactionCategory: '${user.type}s',
                       search: user.name,
                     );
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
               },
-              onLongPress: () async => await createDialog(
+              onSelectChanged: (value) async => await createDialog(
                 context,
                 AddTransaction(
                   sourceTab: 'ou',
@@ -302,9 +303,7 @@ class _OtherUsersState extends State<OtherUsers> {
                           itemBuilder: (BuildContext context, int index) {
                             final String option = options.elementAt(index);
                             return InkWell(
-                              onTap: () {
-                                onSelected(option);
-                              },
+                              onTap: () => onSelected(option),
                               child: Container(
                                 padding: const EdgeInsets.all(16.0),
                                 alignment: namesHidden ? Alignment.center : Alignment.centerLeft,
@@ -343,7 +342,7 @@ class _OtherUsersState extends State<OtherUsers> {
                   child: Text(item.value),
                 );
               }).toList(),
-              onChanged: (value) => setState(() => _type = value.toString()),
+              onChanged: (value) => setState(() => context.read<Filter>().change(loanDeposit: value.toString())),
             ),
           ],
         ),
@@ -353,7 +352,7 @@ class _OtherUsersState extends State<OtherUsers> {
                 onPressed: () => setState(() {
                   _search = '';
                   _controller.clear();
-                  _type = 'tout';
+                  context.read<Filter>().resetFilter();
                 }),
                 icon: Icon(
                   Icons.update,

@@ -1,4 +1,4 @@
-import 'package:fairsplit/providers/transactions_filter.dart';
+import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -79,9 +79,33 @@ class _DashboardState extends State<Dashboard> {
                   children: [
                     [getText('caisse'), myCurrency.format(caisse), 'caisse'],
                     [getText('reserve'), myCurrency.format(reserve), 'reserve'],
+                    [getText('reserveProfit'), myCurrency.format(reserveProfit), 'reserveProfit'],
                     [getText('donation'), myCurrency.format(donation), 'donation'],
                     [getText('zakat'), myCurrency.format(zakat), 'zakat'],
-                  ].map((e) => boxCard(e[0], e[1], true, compt: e[2])).toList(),
+                  ]
+                      .map((e) => boxCard(
+                            e[0],
+                            e[1],
+                            true,
+                            onTap: () async => await createDialog(
+                              context,
+                              AddTransaction(
+                                sourceTab: 'da',
+                                category: getKeyFromValue(e[0]),
+                                selectedTransactionType: 0,
+                              ),
+                              false,
+                            ),
+                            onLongPress: () {
+                              context.read<Filter>().change(
+                                    transactionCategory: e[2] == 'caisse' ? 'caisse' : 'specials',
+                                    compt: e[2] == 'caisse' ? 'tout' : e[2],
+                                  );
+                              Navigator.pushReplacement(
+                                  context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
+                            },
+                          ))
+                      .toList(),
                 ),
                 Expanded(
                   child: Row(
@@ -99,17 +123,40 @@ class _DashboardState extends State<Dashboard> {
                         ),
                       ),
                       Expanded(
-                        child: Column(
-                          children: [
+                        child: Column(children: [
+                          ...[
                             [getText('profitability'), (profitability * 100).toStringAsFixed(2)],
                             [getText('totalProfit'), myCurrency.format(totalProfit)],
                             // [getText('totalIn'), myCurrency.format(totalIn)],
                             // [getText('totalOut'), myCurrency.format(totalOut)],
-                            [getText('totalLoan'), myCurrency.format(totalLoan)],
-                            [getText('totalDeposit'), myCurrency.format(totalDeposit)],
+                            // [getText('totalLoan'), myCurrency.format(totalLoan)],
+                            // [getText('totalDeposit'), myCurrency.format(totalDeposit)],
                             // [getText('reserveProfit'), myCurrency.format(reserveProfit)],
                           ].map((e) => boxCard(e[0], e[1], false)).toList(),
-                        ),
+                          ...[
+                            [getText('totalLoan'), myCurrency.format(totalLoan), '2', 'loan'],
+                            [getText('totalDeposit'), myCurrency.format(totalDeposit), '3', 'deposit'],
+                          ]
+                              .map((e) => boxCard(
+                                    e[0],
+                                    e[1],
+                                    true,
+                                    onTap: () async => await createDialog(
+                                      context,
+                                      AddTransaction(
+                                        sourceTab: 'da',
+                                        selectedTransactionType: int.parse(e[2]),
+                                      ),
+                                      false,
+                                    ),
+                                    onLongPress: () {
+                                      context.read<Filter>().change(loanDeposit: e[3]);
+                                      Navigator.pushReplacement(
+                                          context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+                                    },
+                                  ))
+                              .toList(),
+                        ]),
                       ),
                     ],
                   ),
@@ -119,7 +166,13 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget boxCard(String title, String amount, bool clicable, {String compt = ''}) {
+  Widget boxCard(
+    String title,
+    String amount,
+    bool clicable, {
+    Function()? onTap,
+    Function()? onLongPress,
+  }) {
     var column = Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,26 +199,16 @@ class _DashboardState extends State<Dashboard> {
         child: !clicable
             ? column
             : InkWell(
-                onTap: () {
-                  context.read<TransactionsFilter>().change(
-                        transactionCategory: compt == 'caisse' ? 'caisse' : 'specials',
-                        compt: compt == 'caisse' ? 'tout' : compt,
-                      );
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
-                },
-                onLongPress: () async => await createDialog(
-                  context,
-                  AddTransaction(
-                    sourceTab: 'da',
-                    category: getKeyFromValue(title),
-                    selectedTransactionType: 0,
-                  ),
-                  false,
-                ),
+                onLongPress: onLongPress,
+                onTap: onTap,
                 child: column,
               ),
       ),
     );
+  }
+
+  Widget chart() {
+    return Container();
   }
 }
 

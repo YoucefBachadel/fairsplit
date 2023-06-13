@@ -40,7 +40,7 @@ class _AddUserState extends State<AddUser> {
     setState(() => isLoading = true);
     Navigator.pop(context);
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+      'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
     });
 
     if (res[0][0]['password'] == '1') {
@@ -52,9 +52,9 @@ class _AddUserState extends State<AddUser> {
       });
 
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
-      snackBar(context, 'User deleted successfully');
+      snackBar(context, getMessage('deleteUser'));
     } else {
-      snackBar(context, 'Wrong Password!!', duration: 1);
+      snackBar(context, getMessage('wrongPassword'), duration: 1);
     }
 
     setState(() => isLoading = false);
@@ -71,12 +71,12 @@ class _AddUserState extends State<AddUser> {
 
   void save() async {
     if (name == '') {
-      snackBar(context, 'Name can not be empty!!!', duration: 5);
+      snackBar(context, getMessage('emptyName'), duration: 5);
     } else {
       setState(() => isLoading = true);
 
       var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+        'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
       });
 
       if (res[0][0]['password'] == '1') {
@@ -92,7 +92,7 @@ class _AddUserState extends State<AddUser> {
 
         if (nameExist) {
           setState(() => isLoading = false);
-          snackBar(context, 'Name already exist!!!');
+          snackBar(context, getMessage('existName'));
         } else {
           int _userId = widget.user.userId;
           List<String> sqls = [];
@@ -155,10 +155,10 @@ class _AddUserState extends State<AddUser> {
           if (sql.isNotEmpty) await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
 
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
-          snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');
+          snackBar(context, isNew ? getMessage('addUser') : getMessage('updateUser'));
         }
       } else {
-        snackBar(context, 'Wrong Password!!', duration: 1);
+        snackBar(context, getMessage('wrongPassword'), duration: 1);
       }
       setState(() => isLoading = false);
     }
@@ -203,7 +203,7 @@ class _AddUserState extends State<AddUser> {
                             context,
                             delteConfirmation(
                               context,
-                              'Are you sure you want to delete this user, once deleted all related information will be deleted as well',
+                              getMessage('deleteUserConfirmation'),
                               () => deleteUser(widget.user.userId),
                               onChanged: (text) => password = text,
                             ),
@@ -494,7 +494,7 @@ class _AddUserState extends State<AddUser> {
                                               context,
                                               delteConfirmation(
                                                 context,
-                                                'Are you sure you want to delete this element',
+                                                getMessage('deleteItem'),
                                                 () => setState(() {
                                                   thresholdsHasChanged = true;
                                                   thresholds.remove(e);
@@ -603,7 +603,7 @@ class _AddUserState extends State<AddUser> {
                                               context,
                                               delteConfirmation(
                                                 context,
-                                                'Are you sure you want to delete this element',
+                                                getMessage('deleteItem'),
                                                 () => setState(() {
                                                   foundingssHasChanged = true;
                                                   foundings.remove(e);
@@ -720,7 +720,7 @@ class _AddUserState extends State<AddUser> {
                                             context,
                                             delteConfirmation(
                                               context,
-                                              'Are you sure you want to delete this element',
+                                              getMessage('deleteItem'),
                                               () => setState(() {
                                                 effortssHasChanged = true;
                                                 efforts.remove(e);
@@ -934,12 +934,12 @@ class _AddUserState extends State<AddUser> {
                 } else {
                   snackBar(
                     context,
-                    'Value can\'t be zero!!',
+                    getMessage('zeroValue'),
                     duration: 5,
                   );
                 }
               } on Exception {
-                snackBar(context, 'Check Your Data!!!', duration: 5);
+                snackBar(context, getMessage('checkData'), duration: 5);
               }
             },
           ),

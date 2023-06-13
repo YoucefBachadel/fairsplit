@@ -15,14 +15,7 @@ class AddUnit extends StatefulWidget {
 }
 
 class _AddUnitState extends State<AddUnit> {
-  late String name,
-      capital,
-      reserve,
-      donation,
-      money,
-      effort,
-      threshold,
-      founding;
+  late String name, capital, reserve, donation, money, effort, threshold, founding;
   late bool isExtern;
   bool isLoading = false;
   String password = '';
@@ -31,8 +24,7 @@ class _AddUnitState extends State<AddUnit> {
     setState(() => isLoading = true);
     Navigator.pop(context);
     var res = await sqlQuery(selectUrl, {
-      'sql1':
-          '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+      'sql1': '''SELECT IF(admin = '$password' ,1,0) AS password FROM settings;''',
     });
 
     if (res[0][0]['password'] == '1') {
@@ -43,11 +35,10 @@ class _AddUnitState extends State<AddUnit> {
         'sql4': 'DELETE FROM Units WHERE unitId = $unitId',
       });
 
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-      snackBar(context, 'Unit deleted successfully');
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+      snackBar(context, getMessage('deleteUnit'));
     } else {
-      snackBar(context, 'Wrong Password!!', duration: 1);
+      snackBar(context, getMessage('wrongPassword'), duration: 1);
     }
 
     setState(() => isLoading = false);
@@ -55,13 +46,12 @@ class _AddUnitState extends State<AddUnit> {
 
   void save() async {
     if (name == '') {
-      snackBar(context, 'Name can not be empty!!!', duration: 5);
+      snackBar(context, getMessage('emptyName'), duration: 5);
     } else {
       setState(() => isLoading = true);
 
       var res = await sqlQuery(selectUrl, {
-        'sql1':
-            '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+        'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
       });
 
       if (res[0][0]['password'] == '1') {
@@ -83,20 +73,13 @@ class _AddUnitState extends State<AddUnit> {
                 : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
           });
 
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const MyApp(index: 'un')));
-          snackBar(
-              context,
-              widget.unit.unitId == -1
-                  ? 'Unit added successfully'
-                  : 'Unit updated successfully');
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+          snackBar(context, widget.unit.unitId == -1 ? getMessage('addUnit') : getMessage('updateUnit'));
         } catch (e) {
-          snackBar(context, 'Check Your Data!!!', duration: 5);
+          snackBar(context, getMessage('checkData'), duration: 5);
         }
       } else {
-        snackBar(context, 'Wrong Password!!', duration: 1);
+        snackBar(context, getMessage('wrongPassword'), duration: 1);
       }
 
       setState(() => isLoading = false);
@@ -134,7 +117,7 @@ class _AddUnitState extends State<AddUnit> {
                             context,
                             delteConfirmation(
                               context,
-                              'Are you sure you want to delete this unit, once deleted all related information will be deleted as well',
+                              getMessage('deleteUnitConfitmation'),
                               () => deleteUnit(widget.unit.unitId),
                               onChanged: (text) => password = text,
                               isLoading: isLoading,

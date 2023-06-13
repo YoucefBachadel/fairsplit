@@ -32,6 +32,7 @@ dependencies:
   bitsdojo_window: ^0.1.5
   flutter:
     sdk: flutter
+  flutter_localization: ^0.1.12
   flutter_localizations:
     sdk: flutter
   http: ^0.13.4
@@ -40,7 +41,8 @@ dependencies:
   pdf: ^3.7.3
   printing: ^5.7.5
   provider: ^6.0.5
-  shared_preferences: ^2.0.13
+  syncfusion_flutter_charts: ^21.2.4
+  toggle_switch: ^2.1.0
 
 dev_dependencies:
   flutter_lints: ^1.0.0

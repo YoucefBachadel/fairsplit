@@ -24,16 +24,16 @@ class _AddOtherUserState extends State<AddOtherUser> {
     setState(() => isLoading = true);
     Navigator.pop(context);
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+      'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
     });
 
     if (res[0][0]['password'] == '1') {
       await sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
 
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-      snackBar(context, 'User deleted successfully');
+      snackBar(context, getMessage('deleteUser'));
     } else {
-      snackBar(context, 'Wrong Password!!', duration: 1);
+      snackBar(context, getMessage('wrongPassword'), duration: 1);
     }
 
     setState(() => isLoading = false);
@@ -41,12 +41,12 @@ class _AddOtherUserState extends State<AddOtherUser> {
 
   void save() async {
     if (name == '') {
-      snackBar(context, 'Name can not be empty!!!', duration: 5);
+      snackBar(context, getMessage('emptyName'), duration: 5);
     } else {
       setState(() => isLoading = true);
 
       var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT CASE WHEN admin = '$password' THEN 1 ELSE 0 END AS password FROM settings;''',
+        'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
       });
 
       if (res[0][0]['password'] == '1') {
@@ -63,7 +63,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
 
         if (nameExist) {
           setState(() => isLoading = false);
-          snackBar(context, 'Name already exist!!!');
+          snackBar(context, getMessage('existName'));
         } else {
           await sqlQuery(insertUrl, {
             'sql1': isNew
@@ -72,10 +72,10 @@ class _AddOtherUserState extends State<AddOtherUser> {
           });
 
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-          snackBar(context, widget.user.userId == -1 ? 'User added successfully' : 'User updated successfully');
+          snackBar(context, widget.user.userId == -1 ? getMessage('addUser') : getMessage('updateUser'));
         }
       } else {
-        snackBar(context, 'Wrong Password!!', duration: 1);
+        snackBar(context, getMessage('wrongPassword'), duration: 1);
       }
 
       setState(() => isLoading = false);
@@ -109,7 +109,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                               context,
                               delteConfirmation(
                                 context,
-                                'Are you sure you want to delete this user!!',
+                                getMessage('deleteOtherUserConfirmation'),
                                 () => deleteUser(widget.user.userId),
                                 onChanged: (text) => password = text,
                               ),

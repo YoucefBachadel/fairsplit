@@ -24,8 +24,9 @@ class _CalculationState extends State<Calculation> {
   List<User> moneyUsers = [], globalEffortUsers = [], unitEffortUsers = [], thresholdUsers = [], foundingUsers = [];
   List<Transaction> transactions = [];
   var transactionsDays = <DateTime>{}; //list of days that containe transactions
-  late double reserve;
+  double reserve = 0, caisse = 0, soldeReserve = 0, soldeReserveProfit = 0;
   double unitProfitValue = 0, unitProfitHint = 0;
+  String _unitProfitValue = '';
   // bool reserveIsMoneyPartner = false;
   bool isloading = true, iscalculated = false;
   int bottemNavigationSelectedInex = 0;
@@ -49,7 +50,7 @@ class _CalculationState extends State<Calculation> {
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT reserve FROM Settings;''',
+      'sql1': '''SELECT caisse, reserve, reserveProfit FROM Settings;''',
       'sql2': '''SELECT userId, name, capital FROM Users WHERE type IN ('money','both');''',
       'sql3':
           '''SELECT e.userId, u.name, e.effortPerc,  u.months FROM Effort e, Users u WHERE e.unitId = -1 AND e.userId = u.userId;''',
@@ -67,7 +68,10 @@ class _CalculationState extends State<Calculation> {
           : '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Year(date) >= ${widget.unit.currentMonthOrYear};''',
     });
 
-    reserve = double.parse(res[0][0]['reserve']);
+    caisse = double.parse(res[0][0]['caisse']);
+    soldeReserve = double.parse(res[0][0]['reserve']);
+    soldeReserveProfit = double.parse(res[0][0]['reserveProfit']);
+    reserve = soldeReserve + soldeReserveProfit;
 
     for (var ele in res[1]) {
       moneyUsers.add(User(userId: int.parse(ele['userId']), name: ele['name'], capital: double.parse(ele['capital'])));
@@ -175,16 +179,21 @@ class _CalculationState extends State<Calculation> {
       }
       //set initial capital of user
       user.initialCapital = user.capital;
+
+      //restor the current capital
+      for (var trans in transactions) {
+        if (trans.userId == user.userId) {
+          trans.type == 'in' ? user.capital += trans.amount : user.capital -= trans.amount;
+        }
+      }
     }
 
     setState(() => isloading = false);
   }
 
   void calculate() async {
-    setState(() {
-      isloading = true;
-      iscalculated = true;
-    });
+    setState(() => isloading = true);
+    iscalculated = true;
     controller.clear();
     unitProfitHint = unitProfitValue;
     caTotalEffortUnit = 0;
@@ -345,8 +354,49 @@ class _CalculationState extends State<Calculation> {
     params['sql$counter'] =
         '''INSERT INTO ProfitHistory(name, year, month, profit,profitability, reserve, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',${!isIntern ? widget.unit.currentMonthOrYear : currentYear},${!isIntern ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,$profitability,${caReserve.toStringAsFixed(2)},${caDonation.toStringAsFixed(2)},${caMoney.toStringAsFixed(2)},${caEffort.toStringAsFixed(2)},${caThreshold.toStringAsFixed(2)},${caFounding.toStringAsFixed(2)});''';
     counter++;
-    params['sql$counter'] =
-        'UPDATE settings SET profitability = profitability + $profitability , reserveProfit = reserveProfit + $caReserve + $caReserveMoneyProfit , donationProfit = donationProfit + $caDonation;';
+    params['sql$counter'] = isIntern
+        ? 'UPDATE settings SET profitability = profitability + $profitability , reserveYear = reserveYear + $caReserve , reserveProfitYear = reserveProfitYear + $caReserveMoneyProfit , donationProfit = donationProfit + $caDonation;'
+        : 'UPDATE settings SET profitability = profitability + $profitability , reserve = reserve + $caReserve , reserveProfit = reserveProfit + $caReserveMoneyProfit , donationProfit = donationProfit + $caDonation;';
+
+    if (!isIntern) {
+      //for extern unit we add the added profit to capital as transactions
+
+      Set<int> usersId = {};
+      for (var user in moneyUsers) {
+        usersId.add(user.userId);
+      }
+
+      for (var user in globalEffortUsers) {
+        //if user exist in moneys list we add the effort profit else we add to user to the list
+        if (usersId.contains(user.userId)) {
+          moneyUsers.firstWhere((element) => element.userId == user.userId).effort = user.effort;
+        } else {
+          moneyUsers.add(user);
+        }
+      }
+
+      String transactionSQL =
+          ''' INSERT INTO Transaction (userId,userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ''';
+      String _type = unitProfitValue >= 0 ? 'in' : 'out';
+      for (var user in moneyUsers) {
+        user.capital += user.money + user.effort;
+        if (user.money + user.effort != 0) {
+          transactionSQL +=
+              '''(${user.userId}, '${user.name}', $currentYear , '${DateTime.now()}' , '$_type' , ${(user.money + user.effort).abs()} , ${user.capital} , $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}'),''';
+        }
+      }
+
+      transactionSQL = transactionSQL.substring(0, transactionSQL.length - 1) + ';';
+
+      counter++;
+      params['sql$counter'] = transactionSQL;
+      counter++;
+      params['sql$counter'] =
+          '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,soldeCaisse,note) VALUES ($currentYear , 'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${soldeReserve + caReserve} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}' );''';
+      counter++;
+      params['sql$counter'] =
+          '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,soldeCaisse,note) VALUES ($currentYear , 'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveMoneyProfit.abs()} , ${soldeReserveProfit + caReserveMoneyProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}' );''';
+    }
 
     await sqlQuery(insertUrl, params);
 
@@ -364,7 +414,7 @@ class _CalculationState extends State<Calculation> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, 1),
+      height: getHeight(context, .9),
       width: getWidth(context, .75),
       child: Column(
         children: [
@@ -419,7 +469,14 @@ class _CalculationState extends State<Calculation> {
                               child: RawKeyboardListener(
                                 focusNode: FocusNode(),
                                 onKey: (event) {
-                                  if (event.isKeyPressed(LogicalKeyboardKey.enter) && !iscalculated) calculate();
+                                  if (event.isKeyPressed(LogicalKeyboardKey.enter) && !iscalculated) {
+                                    try {
+                                      unitProfitValue = double.parse(_unitProfitValue);
+                                      calculate();
+                                    } catch (e) {
+                                      snackBar(context, 'number only !!!');
+                                    }
+                                  }
                                 },
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -429,8 +486,8 @@ class _CalculationState extends State<Calculation> {
                                       controller: controller,
                                       hint: myCurrency.format(unitProfitHint),
                                       width: getWidth(context, .25),
-                                      onChanged: ((text) => unitProfitValue = double.parse(text)),
-                                      isNumberOnly: true,
+                                      onChanged: ((text) => _unitProfitValue = text),
+                                      // isNumberOnly: true,
                                       autoFocus: true,
                                       enabled: !iscalculated,
                                     ),
@@ -438,7 +495,14 @@ class _CalculationState extends State<Calculation> {
                                       IconButton(
                                         icon: Icon(Icons.play_arrow, color: secondaryColor),
                                         hoverColor: Colors.transparent,
-                                        onPressed: () => calculate(),
+                                        onPressed: () {
+                                          try {
+                                            unitProfitValue = double.parse(_unitProfitValue);
+                                            calculate();
+                                          } catch (e) {
+                                            snackBar(context, 'number only !!!');
+                                          }
+                                        },
                                       )
                                   ],
                                 ),
@@ -502,6 +566,7 @@ class _CalculationState extends State<Calculation> {
 
   Widget information() {
     return Row(
+      // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         const Spacer(),
         Column(
@@ -547,21 +612,20 @@ class _CalculationState extends State<Calculation> {
             {'key': getText('founding'), 'val': myCurrency.format(caFounding)},
           ].map((e) => infoItem(e['key']!, e['val']!)).toList(),
         ),
-        const Spacer(),
       ],
     );
   }
 
   Widget infoItem(String title, String value) {
     return SizedBox(
-      width: getWidth(context, .25),
+      width: getWidth(context, .3),
       height: getHeight(context, .05),
       child: value.isEmpty
           ? const SizedBox()
           : Row(
               children: [
-                Expanded(child: myText(title)),
-                Expanded(child: myText(':      $value')),
+                Expanded(flex: 2, child: myText(title)),
+                Expanded(flex: 3, child: myText(':      $value')),
               ],
             ),
     );
@@ -592,7 +656,9 @@ class _CalculationState extends State<Calculation> {
           ]),
         )
         .toList();
-    return transactions.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30);
+    return transactions.where((element) => (isIntern || element.date.year == widget.unit.currentMonthOrYear)).isEmpty
+        ? emptyList()
+        : dataTable(columns: column, rows: rows, columnSpacing: 30);
   }
 
   Widget money() {
@@ -615,13 +681,15 @@ class _CalculationState extends State<Calculation> {
           ]),
         )
         .toList();
-    return Column(
-      children: [
-        myText('${getText('money')}  :  ${myCurrency.format(caMoney)} '),
-        mySizedBox(context),
-        moneyUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
-      ],
-    );
+    return moneyUsers.isEmpty
+        ? emptyList()
+        : Column(
+            children: [
+              myText('${getText('money')}  :  ${myCurrency.format(caMoney)} '),
+              mySizedBox(context),
+              dataTable(columns: column, rows: rows, columnSpacing: 30),
+            ],
+          );
   }
 
   Widget threshold() {
@@ -641,13 +709,15 @@ class _CalculationState extends State<Calculation> {
           ]),
         )
         .toList();
-    return Column(
-      children: [
-        myText('${getText('threshold')}  :  ${myCurrency.format(caThreshold)} '),
-        mySizedBox(context),
-        thresholdUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
-      ],
-    );
+    return thresholdUsers.isEmpty
+        ? emptyList()
+        : Column(
+            children: [
+              myText('${getText('threshold')}  :  ${myCurrency.format(caThreshold)} '),
+              mySizedBox(context),
+              dataTable(columns: column, rows: rows, columnSpacing: 30),
+            ],
+          );
   }
 
   Widget founding() {
@@ -667,13 +737,15 @@ class _CalculationState extends State<Calculation> {
           ]),
         )
         .toList();
-    return Column(
-      children: [
-        myText('${getText('founding')}  :  ${myCurrency.format(caFounding)} '),
-        mySizedBox(context),
-        foundingUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
-      ],
-    );
+    return foundingUsers.isEmpty
+        ? emptyList()
+        : Column(
+            children: [
+              myText('${getText('founding')}  :  ${myCurrency.format(caFounding)} '),
+              mySizedBox(context),
+              dataTable(columns: column, rows: rows, columnSpacing: 30),
+            ],
+          );
   }
 
   Widget effort() {
@@ -693,13 +765,15 @@ class _CalculationState extends State<Calculation> {
           ]),
         )
         .toList();
-    return Column(
-      children: [
-        myText('${getText('effort')}  :  ${myCurrency.format(caEffort)} '),
-        mySizedBox(context),
-        unitEffortUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
-      ],
-    );
+    return unitEffortUsers.isEmpty
+        ? emptyList()
+        : Column(
+            children: [
+              myText('${getText('effort')}  :  ${myCurrency.format(caEffort)} '),
+              mySizedBox(context),
+              dataTable(columns: column, rows: rows, columnSpacing: 30),
+            ],
+          );
   }
 
   Widget global() {
@@ -719,12 +793,14 @@ class _CalculationState extends State<Calculation> {
           ]),
         )
         .toList();
-    return Column(
-      children: [
-        myText('${getText('effortGlobal')}  :  ${myCurrency.format(caEffortGlobal)} '),
-        mySizedBox(context),
-        globalEffortUsers.isEmpty ? emptyList() : dataTable(columns: column, rows: rows, columnSpacing: 30),
-      ],
-    );
+    return globalEffortUsers.isEmpty
+        ? emptyList()
+        : Column(
+            children: [
+              myText('${getText('effortGlobal')}  :  ${myCurrency.format(caEffortGlobal)} '),
+              mySizedBox(context),
+              dataTable(columns: column, rows: rows, columnSpacing: 30),
+            ],
+          );
   }
 }

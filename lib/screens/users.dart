@@ -7,7 +7,7 @@ import '../main.dart';
 import '../models/effort.dart';
 import '../models/founding.dart';
 import '../models/threshold.dart';
-import '../providers/transactions_filter.dart';
+import '../providers/filter.dart';
 import '../shared/lists.dart';
 import '../models/unit.dart';
 import '../models/user.dart';
@@ -273,7 +273,7 @@ class _UsersState extends State<Users> {
     List<DataRow> rows = users
         .map((user) => DataRow(
               onLongPress: () {
-                context.read<TransactionsFilter>().change(
+                context.read<Filter>().change(
                       transactionCategory: 'users',
                       search: user.name,
                     );

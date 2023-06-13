@@ -1,3 +1,92 @@
+List<String> monthsOfYear = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+Map<String, String> usersTypes = {
+  'money': getText('money'),
+  'effort': getText('effort'),
+  'both': getText('both'),
+};
+
+Map<String, String> usersTypesSearch = {
+  'tout': getText('tout'),
+  'money': getText('money'),
+  'effort': getText('effort'),
+  'both': getText('both'),
+};
+
+Map<String, String> otherUsersTypes = {
+  'deposit': getText('deposit'),
+  'loan': getText('loan'),
+};
+
+Map<String, String> otherUsersTypesSearch = {
+  'tout': getText('tout'),
+  'loan': getText('loan'),
+  'deposit': getText('deposit'),
+};
+
+Map<String, String> transactionsTypes = {
+  'in': getText('in'),
+  'out': getText('out'),
+};
+
+Map<String, String> transactionsTypesSearch = {
+  'tout': getText('tout'),
+  'in': getText('in'),
+  'out': getText('out'),
+};
+
+Map<String, String> unitsTypesSearch = {
+  'tout': getText('tout'),
+  'intern': getText('intern'),
+  'extern': getText('extern'),
+};
+
+List<String> selectTransactionType = [
+  getText('special'),
+  getText('user'),
+  getText('loan'),
+  getText('deposit'),
+  getText('allUsers'),
+];
+
+Map<String, String> compts = {
+  'caisse': getText('caisse'),
+  'reserve': getText('reserve'),
+  'reserveProfit': getText('reserveProfit'),
+  'donation': getText('donation'),
+  'zakat': getText('zakat'),
+};
+
+Map<String, String> comptsSearch = {
+  'tout': getText('tout'),
+  'caisse': getText('caisse'),
+  'reserve': getText('reserve'),
+  'reserveProfit': getText('reserveProfit'),
+  'donation': getText('donation'),
+  'zakat': getText('zakat'),
+};
+
+Map<String, String> transactionsCategorys = {
+  'caisse': getText('caisse'),
+  'users': getText('users'),
+  'loans': getText('loans'),
+  'deposits': getText('deposits'),
+  'specials': getText('specials'),
+};
+
 Map<String, String> constans = {
   'tout': 'Tout',
   'global': 'Global',
@@ -97,96 +186,37 @@ Map<String, String> constans = {
   'moneyExtern': 'Money Extern',
 };
 
-Map<String, String> messages = {};
-
-List<String> monthsOfYear = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
+Map<String, String> messages = {
+  'wrongPassword': 'Wrong Password!!',
+  'addUser': 'User added successfully',
+  'updateUser': 'User updated successfully',
+  'deleteUser': 'User deleted successfully',
+  'deleteUserConfirmation':
+      'Are you sure you want to delete this user, once deleted all related information will be deleted as well',
+  'deleteOtherUserConfirmation': 'Are you sure you want to delete this user!!',
+  'deleteUnitConfitmation':
+      'Are you sure you want to delete this unit, once deleted all related information will be deleted as well',
+  'addUnit': 'Unit added successfully',
+  'updateUnit': 'Unit updated successfully',
+  'deleteUnit': 'Unit deleted successfully',
+  'addTransaction': 'Transaction added successfully',
+  'emptyName': 'Name can not be empty!!!',
+  'existName': 'Name already exist!!!',
+  'deleteItem': 'Are you sure you want to delete this item',
+  'checkData': 'Check your data!!!',
+  'zeroValue': 'Value can not be zero!!',
+  'zeroAmount': 'Amount can not be zero!!!',
+  'restZero': 'Rest must be >= 0',
+  'capitalZero': 'Capital must be >= 0',
+  'soldeZero': 'Solde must be >= 0',
+  'soldeCaisseZero': 'Solde Caisse must be >= 0',
+  'checkName': 'Check The Name',
+  'amountTotalUserCapital': 'amount > total users capitals',
+};
 
 String getText(String key) => constans[key] ?? '';
 
-Map<String, String> usersTypes = {
-  'money': getText('money'),
-  'effort': getText('effort'),
-  'both': getText('both'),
-};
-
-Map<String, String> usersTypesSearch = {
-  'tout': getText('tout'),
-  'money': getText('money'),
-  'effort': getText('effort'),
-  'both': getText('both'),
-};
-
-Map<String, String> otherUsersTypes = {
-  'deposit': getText('deposit'),
-  'loan': getText('loan'),
-};
-
-Map<String, String> otherUsersTypesSearch = {
-  'tout': getText('tout'),
-  'loan': getText('loan'),
-  'deposit': getText('deposit'),
-};
-
-Map<String, String> transactionsTypes = {
-  'in': getText('in'),
-  'out': getText('out'),
-};
-
-Map<String, String> transactionsTypesSearch = {
-  'tout': getText('tout'),
-  'in': getText('in'),
-  'out': getText('out'),
-};
-
-Map<String, String> unitsTypesSearch = {
-  'tout': getText('tout'),
-  'intern': getText('intern'),
-  'extern': getText('extern'),
-};
-
-List<String> selectTransactionType = [
-  getText('special'),
-  getText('user'),
-  getText('loan'),
-  getText('deposit'),
-  getText('allUsers'),
-];
-
-Map<String, String> compts = {
-  'caisse': getText('caisse'),
-  'reserve': getText('reserve'),
-  'donation': getText('donation'),
-  'zakat': getText('zakat'),
-};
-
-Map<String, String> comptsSearch = {
-  'tout': getText('tout'),
-  'caisse': getText('caisse'),
-  'reserve': getText('reserve'),
-  'donation': getText('donation'),
-  'zakat': getText('zakat'),
-};
-
-Map<String, String> transactionsCategorys = {
-  'caisse': getText('caisse'),
-  'users': getText('users'),
-  'loans': getText('loans'),
-  'deposits': getText('deposits'),
-  'specials': getText('specials'),
-};
+String getMessage(String key) => messages[key] ?? '';
 
 String getKeyFromValue(String value) {
   return constans.keys.firstWhere((key) => constans[key] == value, orElse: () => '');

@@ -1,8 +1,9 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:fairsplit/providers/transactions_filter.dart';
+import 'package:fairsplit/providers/filter.dart';
 import 'package:fairsplit/screens/profit_history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'screens/other_users.dart';
 import 'screens/units.dart';
@@ -24,9 +25,11 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => TransactionsFilter()),
+        ChangeNotifierProvider(create: (_) => Filter()),
       ],
       child: MaterialApp(
+        localizationsDelegates: const [GlobalMaterialLocalizations.delegate],
+        supportedLocales: const [Locale('fr')],
         debugShowCheckedModeBanner: false,
         title: 'FairSplit',
         theme: ThemeData(
@@ -174,7 +177,7 @@ class _MyAppState extends State<MyApp> {
                               .map(
                                 (e) => InkWell(
                                   onTap: () {
-                                    context.read<TransactionsFilter>().reset();
+                                    context.read<Filter>().reset();
                                     setState(() => selectedTab = tabs.indexOf(e));
                                   },
                                   child: tabItem(e, tabs.indexOf(e) == selectedTab),
@@ -251,7 +254,7 @@ class _MyAppState extends State<MyApp> {
       setState(() => isLoading = true);
 
       var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT CASE WHEN user = '$_password' THEN 1 ELSE 0 END AS password FROM settings;''',
+        'sql1': '''SELECT IF(user = '$_password' ,1,0) AS password FROM settings;''',
       });
 
       if (res[0][0]['password'] == '1') {
@@ -264,7 +267,7 @@ class _MyAppState extends State<MyApp> {
                         ? 'da'
                         : tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
       } else {
-        snackBar(context, 'Wrong Password!!', duration: 1);
+        snackBar(context, getMessage('wrongPassword'), duration: 1);
       }
       setState(() => isLoading = false);
     }

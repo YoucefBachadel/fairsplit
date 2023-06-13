@@ -1,11 +1,85 @@
 import 'package:fairsplit/models/other_user.dart';
 import 'package:flutter/material.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 import '../models/user.dart';
 import '../shared/parameters.dart';
 import '../widgets/widget.dart';
 import '../main.dart';
 import '../shared/lists.dart';
+
+class SelectTransactionCategoty extends StatelessWidget {
+  const SelectTransactionCategoty({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: getHeight(context, .58),
+      width: getWidth(context, .39),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Container(
+          alignment: Alignment.center,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  getText('transaction'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.0,
+                  ),
+                ),
+              ),
+              IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                  ))
+            ],
+          ),
+          decoration: BoxDecoration(
+              color: primaryColor,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20.0),
+                topRight: Radius.circular(20.0),
+              )),
+        ),
+        const Spacer(),
+        ...selectTransactionType
+            .map((e) => Column(
+                  children: [
+                    Card(
+                      elevation: 5.0,
+                      child: myButton(
+                        context,
+                        text: e,
+                        width: getWidth(context, .15),
+                        noIcon: true,
+                        color: Colors.white,
+                        textColor: Colors.black,
+                        onTap: () async {
+                          Navigator.pop(context);
+                          await createDialog(
+                              context,
+                              AddTransaction(
+                                sourceTab: 'tr',
+                                selectedTransactionType: selectTransactionType.indexOf(e),
+                              ),
+                              false);
+                        },
+                      ),
+                    ),
+                    mySizedBox(context),
+                  ],
+                ))
+            .toList(),
+        const Spacer(),
+      ]),
+    );
+  }
+}
 
 class AddTransaction extends StatefulWidget {
   final int userId;
@@ -32,11 +106,16 @@ class AddTransaction extends StatefulWidget {
 }
 
 class _AddTransactionState extends State<AddTransaction> {
-  late String selectedName = '', category = 'caisse', type = 'in', amount = '0', note = '', appBarTitle = '';
-  late double caisse, reserve, donation, zakat, rest = 0, selectedUserCapital = 0; //used to show user capital
+  late String selectedName = '', category = 'caisse', type = 'out', amount = '0', note = '', appBarTitle = '';
+  late double caisse,
+      reserve,
+      reserveProfit,
+      donation,
+      zakat,
+      rest = 0,
+      selectedUserCapital = 0; //used to show user capital
   DateTime date = DateTime.now();
   bool isLoading = true;
-  bool isTransactionTypeSelected = true;
   int selectedTransactionType = 0;
   String _password = ''; // used for all users Transaction;
 
@@ -46,44 +125,32 @@ class _AddTransactionState extends State<AddTransaction> {
   OtherUser selectedOtherUser = OtherUser();
 
   void loadData() async {
-    var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM Settings;'});
+    var params = {};
+    int counter = 1;
+    params['sql$counter'] = 'SELECT * FROM Settings;';
+    if ((['tr', 'da'].contains(widget.sourceTab)) && ([1, 4].contains(selectedTransactionType))) {
+      counter++;
+      params['sql$counter'] = '''SELECT userId,name,capital FROM Users;''';
+    }
+    if (['tr', 'da'].contains(widget.sourceTab) && ([2, 3].contains(selectedTransactionType))) {
+      counter++;
+      params['sql$counter'] = '''SELECT userId,name,type,amount,rest FROM OtherUsers;''';
+    }
+    var res = await sqlQuery(selectUrl, params);
+
     var dataSettings = res[0][0];
     caisse = double.parse(dataSettings['caisse']);
     reserve = double.parse(dataSettings['reserve']);
+    reserveProfit = double.parse(dataSettings['reserveProfit']);
     donation = double.parse(dataSettings['donation']);
     zakat = double.parse(dataSettings['zakat']);
 
-    if (widget.sourceTab == 'tr') {
-      var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT userId,name,capital FROM Users;''',
-        'sql2': '''SELECT userId,name,type,amount,rest FROM OtherUsers;''',
-      });
-      var dataUsers = res[0];
-      var dataOtherUsers = res[1];
-
-      for (var element in dataUsers) {
-        users.add(User(
-            userId: int.parse(element['userId']), name: element['name'], capital: double.parse(element['capital'])));
-      }
-
-      for (var element in dataOtherUsers) {
-        OtherUser user = OtherUser(
-          userId: int.parse(element['userId']),
-          name: element['name'],
-          type: element['type'],
-          amount: double.parse(element['amount']),
-          rest: double.parse(element['rest']),
-        );
-        user.type == 'loan' ? loanUsers.add(user) : depositUsers.add(user);
-      }
-
-      users.sort((a, b) => a.name.compareTo(b.name));
-      loanUsers.sort((a, b) => a.name.compareTo(b.name));
-      depositUsers.sort((a, b) => a.name.compareTo(b.name));
-    } else {
+    if (widget.sourceTab == 'da' && selectedTransactionType == 0) {
+      //if source tab is dashboard and type is special
+      category = widget.category;
+    } else if (!['da', 'tr'].contains(widget.sourceTab)) {
+      //else if source tab is not dashboard or transaction
       selectedName = widget.selectedName;
-      selectedTransactionType = widget.selectedTransactionType;
-      if (selectedTransactionType == 3) type = 'out'; //for deposit set default transaction type to sortie
       rest = widget.rest;
       if (widget.sourceTab == 'us') {
         selectedUser = User(userId: widget.userId, name: selectedName, capital: widget.userCapital);
@@ -97,12 +164,33 @@ class _AddTransactionState extends State<AddTransaction> {
           rest: widget.rest,
         );
       }
-      category = widget.category;
+    } else if (selectedTransactionType != 0) {
+      // else if source tab is dashboard or transaction and type is not special
+      var dataUsers = res[1];
+
+      if ([1, 4].contains(selectedTransactionType)) {
+        for (var element in dataUsers) {
+          users.add(User(
+              userId: int.parse(element['userId']), name: element['name'], capital: double.parse(element['capital'])));
+        }
+        users.sort((a, b) => a.name.compareTo(b.name));
+      } else {
+        for (var element in dataUsers) {
+          OtherUser user = OtherUser(
+            userId: int.parse(element['userId']),
+            name: element['name'],
+            type: element['type'],
+            amount: double.parse(element['amount']),
+            rest: double.parse(element['rest']),
+          );
+          user.type == 'loan' ? loanUsers.add(user) : depositUsers.add(user);
+        }
+        loanUsers.sort((a, b) => a.name.compareTo(b.name));
+        depositUsers.sort((a, b) => a.name.compareTo(b.name));
+      }
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
   }
 
   void save() async {
@@ -115,7 +203,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
     if (_soldeCaisse < 0) {
       _testsChecked = false;
-      snackBar(context, 'Solde Caisse must be >= 0');
+      snackBar(context, getMessage('soldeCaisseZero'));
     } else {
       if (selectedTransactionType == 0) {
         //special trnasaction
@@ -128,6 +216,9 @@ class _AddTransactionState extends State<AddTransaction> {
           case 'reserve':
             _solde = reserve + _amount;
             break;
+          case 'reserveProfit':
+            _solde = reserveProfit + _amount;
+            break;
           case 'donation':
             _solde = donation + _amount;
             break;
@@ -137,7 +228,7 @@ class _AddTransactionState extends State<AddTransaction> {
         }
         if (_solde < 0) {
           _testsChecked = false;
-          snackBar(context, 'Solde must be >= 0');
+          snackBar(context, getMessage('soldeZero'));
         } else {
           //insert the special transaction
           //update the setting category
@@ -168,7 +259,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
         if (type == 'out' && _amount.abs() > _totalUsersCapital) {
           _testsChecked = false;
-          snackBar(context, 'amount > total users capitals');
+          snackBar(context, getMessage('amountTotalUserCapital'));
         } else {
           //calculate the amount for each user
           for (var user in moneyUsers) {
@@ -235,7 +326,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             if (_soldeUser < 0) {
               _testsChecked = false;
-              snackBar(context, 'Capital must be >= 0');
+              snackBar(context, getMessage('capitalZero'));
             } else {
               //insert the transaction
               //update the User capital
@@ -249,7 +340,7 @@ class _AddTransactionState extends State<AddTransaction> {
             }
           } else {
             _testsChecked = false;
-            snackBar(context, 'Check The Name');
+            snackBar(context, getMessage('checkName'));
           }
         } else if (selectedTransactionType == 2) {
           //locan transaction
@@ -261,7 +352,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             if (_userRest < 0) {
               _testsChecked = false;
-              snackBar(context, 'Rest must be >= 0');
+              snackBar(context, getMessage('restZero'));
             } else {
               //insert the transaction
               //update the User capital
@@ -276,7 +367,7 @@ class _AddTransactionState extends State<AddTransaction> {
             }
           } else {
             _testsChecked = false;
-            snackBar(context, 'Check The Name');
+            snackBar(context, getMessage('checkName'));
           }
         } else if (selectedTransactionType == 3) {
           //deposit transaction
@@ -289,7 +380,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             if (_userRest < 0) {
               _testsChecked = false;
-              snackBar(context, 'Rest must be >= 0');
+              snackBar(context, getMessage('restZero'));
             } else {
               //insert the transaction
               //update the User capital
@@ -304,14 +395,14 @@ class _AddTransactionState extends State<AddTransaction> {
             }
           } else {
             _testsChecked = false;
-            snackBar(context, 'Check The Name');
+            snackBar(context, getMessage('checkName'));
           }
         }
       }
     }
     if (_testsChecked) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp(index: widget.sourceTab)));
-      snackBar(context, 'Transaction added successfully');
+      snackBar(context, getMessage('addTransaction'));
     } else {
       setState(() => isLoading = false);
     }
@@ -319,16 +410,16 @@ class _AddTransactionState extends State<AddTransaction> {
 
   @override
   void initState() {
-    if (widget.sourceTab == 'tr') isTransactionTypeSelected = false;
-    appBarTitle = widget.sourceTab == 'tr'
-        ? getText('transaction')
-        : widget.selectedTransactionType == 0
-            ? getText('special')
-            : widget.selectedTransactionType == 1
-                ? getText('user')
-                : widget.selectedTransactionType == 2
-                    ? getText('loan')
-                    : getText('deposit');
+    selectedTransactionType = widget.selectedTransactionType;
+    appBarTitle = selectedTransactionType == 0
+        ? getText('special')
+        : selectedTransactionType == 1
+            ? getText('user')
+            : selectedTransactionType == 2
+                ? getText('loan')
+                : selectedTransactionType == 3
+                    ? getText('deposit')
+                    : getText('allUsers');
     loadData();
     super.initState();
   }
@@ -380,473 +471,461 @@ class _AddTransactionState extends State<AddTransaction> {
                 )),
             child: isLoading
                 ? myProgress()
-                : !isTransactionTypeSelected
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: selectTransactionType
-                            .map((e) => Column(
-                                  children: [
-                                    Card(
-                                      elevation: 5.0,
-                                      child: myButton(
-                                        context,
-                                        text: e,
-                                        width: getWidth(context, .15),
-                                        noIcon: true,
+                : Column(
+                    children: [
+                      if (selectedTransactionType == 0) // special transaction
+                        Row(
+                          children: [
+                            Expanded(child: myText(getText('category'))),
+                            Expanded(
+                              flex: 4,
+                              child: Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: myDropDown(
+                                    context,
+                                    value: category,
+                                    width: getWidth(context, .13),
+                                    items: compts.entries.map((item) {
+                                      return DropdownMenuItem(
+                                        value: getKeyFromValue(item.value),
+                                        alignment: AlignmentDirectional.center,
+                                        child: Text(item.value),
+                                      );
+                                    }).toList(),
+                                    onChanged: widget.sourceTab == 'da'
+                                        ? null
+                                        : (value) => setState(() => category = value.toString()),
+                                  )),
+                            ),
+                          ],
+                        )
+                      else if (selectedTransactionType == 1) // users transaction
+                        Row(
+                          children: [
+                            Expanded(child: myText(getText('name'))),
+                            Expanded(
+                              flex: 4,
+                              child: Autocomplete<User>(
+                                displayStringForOption: (user) => user.name,
+                                onSelected: (user) {
+                                  setState(() {
+                                    selectedName = user.name;
+                                    selectedUserCapital = user.capital;
+                                  });
+                                },
+                                optionsBuilder: (textEditingValue) => users.where(
+                                  (user) => user.name.toLowerCase().contains(textEditingValue.text.toLowerCase()),
+                                ),
+                                fieldViewBuilder: (
+                                  context,
+                                  textEditingController,
+                                  focusNode,
+                                  onFieldSubmitted,
+                                ) {
+                                  if (widget.selectedName.isNotEmpty) textEditingController.text = selectedName;
+
+                                  return Container(
+                                      alignment: Alignment.center,
+                                      height: getHeight(context, textFeildHeight),
+                                      decoration: const BoxDecoration(
                                         color: Colors.white,
-                                        textColor: Colors.black,
-                                        onTap: () => setState(() {
-                                          isTransactionTypeSelected = true;
-                                          selectedTransactionType = selectTransactionType.indexOf(e);
-                                          appBarTitle = selectedTransactionType == 0
-                                              ? getText('special')
-                                              : selectedTransactionType == 1
-                                                  ? getText('user')
-                                                  : selectedTransactionType == 2
-                                                      ? getText('loan')
-                                                      : selectedTransactionType == 3
-                                                          ? getText('deposit')
-                                                          : getText('allUsers');
-                                          if (selectedTransactionType == 3) type = 'out';
-                                        }),
+                                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                                      ),
+                                      child: TextFormField(
+                                        controller: textEditingController,
+                                        focusNode: focusNode,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontSize: 18.0),
+                                        enabled: ['da', 'tr'].contains(widget.sourceTab),
+                                        autofocus: true,
+                                        decoration: InputDecoration(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                          border: const OutlineInputBorder(
+                                            borderSide: BorderSide(width: 0.5),
+                                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                                          ),
+                                          suffixIcon: widget.sourceTab != 'tr' || textEditingController.text.isEmpty
+                                              ? const SizedBox()
+                                              : IconButton(
+                                                  onPressed: () => setState(() {
+                                                        textEditingController.clear();
+                                                        selectedName = '';
+                                                      }),
+                                                  icon: const Icon(
+                                                    Icons.clear,
+                                                    size: 20.0,
+                                                  )),
+                                        ),
+                                      ));
+                                },
+                                optionsViewBuilder: (
+                                  BuildContext context,
+                                  AutocompleteOnSelected<User> onSelected,
+                                  Iterable<User> options,
+                                ) {
+                                  return Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Material(
+                                      elevation: 8.0,
+                                      child: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxHeight: getHeight(context, .2),
+                                          maxWidth: getWidth(context, .29),
+                                        ),
+                                        child: ListView.builder(
+                                          padding: EdgeInsets.zero,
+                                          shrinkWrap: true,
+                                          itemCount: options.length,
+                                          itemBuilder: (BuildContext context, int index) {
+                                            final User option = options.elementAt(index);
+                                            return InkWell(
+                                              onTap: () => onSelected(option),
+                                              child: Container(
+                                                padding: const EdgeInsets.all(16.0),
+                                                child: myText(option.name),
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
-                                    mySizedBox(context),
-                                  ],
-                                ))
-                            .toList(),
-                      )
-                    : Column(
-                        children: [
-                          if (selectedTransactionType == 0) // special transactio
-                            Row(
-                              children: [
-                                Expanded(child: myText(getText('category'))),
-                                Expanded(
-                                  flex: 4,
-                                  child: Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: myDropDown(
-                                        context,
-                                        value: category,
-                                        width: getWidth(context, .13),
-                                        items: compts.entries.map((item) {
-                                          return DropdownMenuItem(
-                                            value: getKeyFromValue(item.value),
-                                            alignment: AlignmentDirectional.center,
-                                            child: Text(item.value),
-                                          );
-                                        }).toList(),
-                                        onChanged: widget.sourceTab == 'da'
-                                            ? null
-                                            : (value) => setState(() => category = value.toString()),
-                                      )),
-                                ),
-                              ],
-                            )
-                          else if (selectedTransactionType == 1) // users transaction
-                            Row(
-                              children: [
-                                Expanded(child: myText(getText('name'))),
-                                Expanded(
-                                  flex: 4,
-                                  child: Autocomplete<User>(
-                                    displayStringForOption: (user) => user.name,
-                                    onSelected: (user) {
-                                      setState(() {
-                                        selectedName = user.name;
-                                        selectedUserCapital = user.capital;
-                                      });
-                                    },
-                                    optionsBuilder: (textEditingValue) => users.where(
-                                      (user) => user.name.toLowerCase().contains(textEditingValue.text.toLowerCase()),
-                                    ),
-                                    fieldViewBuilder: (
-                                      context,
-                                      textEditingController,
-                                      focusNode,
-                                      onFieldSubmitted,
-                                    ) {
-                                      if (widget.selectedName.isNotEmpty) {
-                                        textEditingController.text = selectedName;
-                                      }
-                                      return Container(
-                                          alignment: Alignment.center,
-                                          height: getHeight(context, textFeildHeight),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                                          ),
-                                          child: TextFormField(
-                                            controller: textEditingController,
-                                            focusNode: focusNode,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(fontSize: 18.0),
-                                            enabled: widget.sourceTab == 'tr',
-                                            decoration: InputDecoration(
-                                              contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                              border: const OutlineInputBorder(
-                                                borderSide: BorderSide(width: 0.5),
-                                                borderRadius: BorderRadius.all(Radius.circular(12)),
-                                              ),
-                                              suffixIcon: widget.sourceTab != 'tr' || textEditingController.text.isEmpty
-                                                  ? const SizedBox()
-                                                  : IconButton(
-                                                      onPressed: () => setState(() {
-                                                            textEditingController.clear();
-                                                            selectedName = '';
-                                                          }),
-                                                      icon: const Icon(
-                                                        Icons.clear,
-                                                        size: 20.0,
-                                                      )),
-                                            ),
-                                          ));
-                                    },
-                                    optionsViewBuilder: (
-                                      BuildContext context,
-                                      AutocompleteOnSelected<User> onSelected,
-                                      Iterable<User> options,
-                                    ) {
-                                      return Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Material(
-                                          elevation: 8.0,
-                                          child: ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              maxHeight: getHeight(context, .2),
-                                              maxWidth: getWidth(context, .29),
-                                            ),
-                                            child: ListView.builder(
-                                              padding: EdgeInsets.zero,
-                                              shrinkWrap: true,
-                                              itemCount: options.length,
-                                              itemBuilder: (BuildContext context, int index) {
-                                                final User option = options.elementAt(index);
-                                                return InkWell(
-                                                  onTap: () => onSelected(option),
-                                                  child: Container(
-                                                    padding: const EdgeInsets.all(16.0),
-                                                    child: myText(option.name),
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            )
-                          else if (selectedTransactionType == 4) // allUsers Transaction
-                            const SizedBox()
-                          else // loan and deposit transaction
-                            Row(
-                              children: [
-                                Expanded(child: myText(getText('name'))),
-                                Expanded(
-                                  flex: 4,
-                                  child: Autocomplete<OtherUser>(
-                                    displayStringForOption: (user) => user.name,
-                                    onSelected: (user) => setState(() {
-                                      selectedName = user.name;
-                                      rest = user.rest;
-                                    }),
-                                    optionsBuilder: (textEditingValue) {
-                                      if (selectedTransactionType == 2) {
-                                        return loanUsers.where((user) =>
-                                            user.name.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-                                      } else {
-                                        return depositUsers.where((user) =>
-                                            user.name.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-                                      }
-                                    },
-                                    fieldViewBuilder: (
-                                      context,
-                                      textEditingController,
-                                      focusNode,
-                                      onFieldSubmitted,
-                                    ) {
-                                      if (widget.selectedName.isNotEmpty) textEditingController.text = selectedName;
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        )
+                      else if (selectedTransactionType == 4) // allUsers Transaction
+                        const SizedBox()
+                      else // loan and deposit transaction
+                        Row(
+                          children: [
+                            Expanded(child: myText(getText('name'))),
+                            Expanded(
+                              flex: 4,
+                              child: Autocomplete<OtherUser>(
+                                displayStringForOption: (user) => user.name,
+                                onSelected: (user) => setState(() {
+                                  selectedName = user.name;
+                                  rest = user.rest;
+                                }),
+                                optionsBuilder: (textEditingValue) {
+                                  if (selectedTransactionType == 2) {
+                                    return loanUsers.where((user) =>
+                                        user.name.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                                  } else {
+                                    return depositUsers.where((user) =>
+                                        user.name.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                                  }
+                                },
+                                fieldViewBuilder: (
+                                  context,
+                                  textEditingController,
+                                  focusNode,
+                                  onFieldSubmitted,
+                                ) {
+                                  if (widget.selectedName.isNotEmpty) textEditingController.text = selectedName;
 
-                                      return Container(
-                                          alignment: Alignment.center,
-                                          height: getHeight(context, textFeildHeight),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.white,
+                                  return Container(
+                                      alignment: Alignment.center,
+                                      height: getHeight(context, textFeildHeight),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                                      ),
+                                      child: TextFormField(
+                                        controller: textEditingController,
+                                        focusNode: focusNode,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontSize: 18.0),
+                                        enabled: ['da', 'tr'].contains(widget.sourceTab),
+                                        autofocus: true,
+                                        decoration: InputDecoration(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                          border: const OutlineInputBorder(
+                                            borderSide: BorderSide(width: 0.5),
                                             borderRadius: BorderRadius.all(Radius.circular(12)),
                                           ),
-                                          child: TextFormField(
-                                            controller: textEditingController,
-                                            focusNode: focusNode,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(fontSize: 18.0),
-                                            enabled: widget.sourceTab == 'tr',
-                                            decoration: InputDecoration(
-                                              contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                              border: const OutlineInputBorder(
-                                                borderSide: BorderSide(width: 0.5),
-                                                borderRadius: BorderRadius.all(Radius.circular(12)),
-                                              ),
-                                              suffixIcon: widget.sourceTab != 'tr' || textEditingController.text.isEmpty
-                                                  ? const SizedBox()
-                                                  : IconButton(
-                                                      onPressed: () => setState(() {
-                                                            textEditingController.clear();
-                                                            selectedName = '';
-                                                          }),
-                                                      icon: const Icon(Icons.clear, size: 20.0)),
-                                            ),
-                                          ));
-                                    },
-                                    optionsViewBuilder: (
-                                      BuildContext context,
-                                      AutocompleteOnSelected<OtherUser> onSelected,
-                                      Iterable<OtherUser> options,
-                                    ) {
-                                      return Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Material(
-                                          elevation: 8.0,
-                                          child: ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              maxHeight: getHeight(context, .2),
-                                              maxWidth: getWidth(context, .29),
-                                            ),
-                                            child: ListView.builder(
-                                              padding: EdgeInsets.zero,
-                                              shrinkWrap: true,
-                                              itemCount: options.length,
-                                              itemBuilder: (BuildContext context, int index) {
-                                                final OtherUser option = options.elementAt(index);
-                                                return InkWell(
-                                                  onTap: () => onSelected(option),
-                                                  child: Container(
-                                                    padding: const EdgeInsets.all(16.0),
-                                                    child: myText(option.name),
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
+                                          suffixIcon: widget.sourceTab != 'tr' || textEditingController.text.isEmpty
+                                              ? const SizedBox()
+                                              : IconButton(
+                                                  onPressed: () => setState(() {
+                                                        textEditingController.clear();
+                                                        selectedName = '';
+                                                      }),
+                                                  icon: const Icon(Icons.clear, size: 20.0)),
                                         ),
-                                      );
-                                    },
-                                  ),
+                                      ));
+                                },
+                                optionsViewBuilder: (
+                                  BuildContext context,
+                                  AutocompleteOnSelected<OtherUser> onSelected,
+                                  Iterable<OtherUser> options,
+                                ) {
+                                  return Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Material(
+                                      elevation: 8.0,
+                                      child: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxHeight: getHeight(context, .2),
+                                          maxWidth: getWidth(context, .29),
+                                        ),
+                                        child: ListView.builder(
+                                          padding: EdgeInsets.zero,
+                                          shrinkWrap: true,
+                                          itemCount: options.length,
+                                          itemBuilder: (BuildContext context, int index) {
+                                            final OtherUser option = options.elementAt(index);
+                                            return InkWell(
+                                              onTap: () => onSelected(option),
+                                              child: Container(
+                                                padding: const EdgeInsets.all(16.0),
+                                                child: myText(option.name),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      mySizedBox(context),
+                      Row(
+                        children: [
+                          Expanded(child: myText(getText('type'))),
+                          Expanded(
+                            flex: 4,
+                            child: Row(
+                              children: [
+                                ToggleSwitch(
+                                  minWidth: getWidth(context, .064),
+                                  minHeight: getHeight(context, .045),
+                                  borderWidth: 1,
+                                  initialLabelIndex: type == 'out' ? 0 : 1,
+                                  borderColor: const [Colors.grey],
+                                  cornerRadius: 12.0,
+                                  icons: const [Icons.remove, Icons.add],
+                                  activeBgColors: [
+                                    [Colors.red[800]!],
+                                    [Colors.green[800]!]
+                                  ],
+                                  activeFgColor: Colors.white,
+                                  inactiveBgColor: Colors.white,
+                                  inactiveFgColor: Colors.black,
+                                  labels: [getText('out'), getText('in')],
+                                  onToggle: (index) => setState(() => type = index == 0 ? 'out' : 'in'),
                                 ),
+                                // Container(
+                                //   alignment: Alignment.centerLeft,
+                                //   child: myDropDown(
+                                //     context,
+                                //     value: type,
+                                //     width: getWidth(context, .13),
+                                //     items: transactionsTypes.entries.map((item) {
+                                //       return DropdownMenuItem(
+                                //         value: getKeyFromValue(item.value),
+                                //         alignment: AlignmentDirectional.center,
+                                //         child: Text(item.value),
+                                //       );
+                                //     }).toList(),
+                                //     onChanged: (value) => setState(() => type = value.toString()),
+                                //   ),
+                                // ),
+                                mySizedBox(context),
+                                if (selectedTransactionType != 4 &&
+                                    !(selectedTransactionType == 0 && category == 'caisse'))
+                                  myText('${getText('caisse')} :   ${myCurrency.format(caisse)}'),
                               ],
                             ),
-                          mySizedBox(context),
-                          Row(
-                            children: [
-                              Expanded(child: myText(getText('type'))),
-                              Expanded(
-                                flex: 4,
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: myDropDown(
-                                        context,
-                                        value: type,
-                                        width: getWidth(context, .13),
-                                        items: transactionsTypes.entries.map((item) {
-                                          return DropdownMenuItem(
-                                            value: getKeyFromValue(item.value),
-                                            alignment: AlignmentDirectional.center,
-                                            child: Text(item.value),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) => setState(() => type = value.toString()),
-                                      ),
-                                    ),
-                                    mySizedBox(context),
-                                    myText('${getText('caisse')} :   ${myCurrency.format(caisse)}'),
-                                  ],
-                                ),
-                              ),
-                            ],
                           ),
-                          mySizedBox(context),
-                          Row(
-                            children: [
-                              Expanded(child: myText(getText('amount'))),
-                              Expanded(
-                                  flex: 4,
-                                  child: Row(
-                                    children: [
-                                      myTextField(
-                                        context,
-                                        width: getWidth(context, .13),
-                                        isNumberOnly: true,
-                                        autoFocus: widget.sourceTab != 'tr',
-                                        onChanged: (value) => amount = value,
-                                        hint: myCurrency.format(double.parse(amount)),
-                                      ),
-                                      mySizedBox(context),
-                                      InkWell(
-                                        onTap: () => setState(() {
-                                          switch (selectedTransactionType) {
-                                            case 0:
-                                              setState(() {
-                                                amount = category == 'caisse'
-                                                    ? caisse.toString()
-                                                    : category == 'reserve'
-                                                        ? reserve.toString()
+                        ],
+                      ),
+                      mySizedBox(context),
+                      Row(
+                        children: [
+                          Expanded(child: myText(getText('amount'))),
+                          Expanded(
+                              flex: 4,
+                              child: Row(
+                                children: [
+                                  myTextField(
+                                    context,
+                                    width: getWidth(context, .13),
+                                    isNumberOnly: true,
+                                    autoFocus: widget.sourceTab != 'tr' || selectedTransactionType == 4,
+                                    onChanged: (value) => amount = value,
+                                    hint: myCurrency.format(double.parse(amount)),
+                                  ),
+                                  mySizedBox(context),
+                                  InkWell(
+                                    onTap: () => setState(() {
+                                      switch (selectedTransactionType) {
+                                        case 0:
+                                          setState(() {
+                                            amount = category == 'caisse'
+                                                ? caisse.toString()
+                                                : category == 'reserve'
+                                                    ? reserve.toString()
+                                                    : category == 'reserveProfit'
+                                                        ? reserveProfit.toString()
                                                         : category == 'donation'
                                                             ? donation.toString()
                                                             : zakat.toString();
-                                              });
-                                              break;
-                                            case 1:
-                                              setState(() => amount = selectedUserCapital.toString());
-                                              break;
-                                            case 2:
-                                              setState(() => amount = rest.toString());
-                                              break;
-                                            case 3:
-                                              setState(() => amount = rest.toString());
-                                              break;
-                                          }
-                                        }),
-                                        child: (selectedTransactionType == 0)
+                                          });
+                                          break;
+                                        case 1:
+                                          setState(() => amount = selectedUserCapital.toString());
+                                          break;
+                                        case 2:
+                                          setState(() => amount = rest.toString());
+                                          break;
+                                        case 3:
+                                          setState(() => amount = rest.toString());
+                                          break;
+                                      }
+                                    }),
+                                    child: (selectedTransactionType == 0)
+                                        ? myText(
+                                            '${getText('solde')} :   ${myCurrency.format(category == 'caisse' ? caisse : category == 'reserve' ? reserve : category == 'reserveProfit' ? reserveProfit : category == 'donation' ? donation : zakat)}')
+                                        : (selectedTransactionType == 1)
                                             ? myText(
-                                                '${getText('solde')} :   ${myCurrency.format(category == 'caisse' ? caisse : category == 'reserve' ? reserve : category == 'donation' ? donation : zakat)}')
-                                            : (selectedTransactionType == 1)
-                                                ? myText(
-                                                    '${getText('capital')} :   ${myCurrency.format(selectedUserCapital)}')
-                                                : (selectedTransactionType == 4)
-                                                    ? const SizedBox()
-                                                    : myText('${getText('rest')} :   ${myCurrency.format(rest)}'),
-                                      )
-                                    ],
-                                  )),
-                            ],
+                                                '${getText('capital')} :   ${myCurrency.format(selectedUserCapital)}')
+                                            : (selectedTransactionType == 4)
+                                                ? const SizedBox()
+                                                : myText('${getText('rest')} :   ${myCurrency.format(rest)}'),
+                                  )
+                                ],
+                              )),
+                        ],
+                      ),
+                      mySizedBox(context),
+                      Row(
+                        children: [
+                          Expanded(child: myText(getText('date'))),
+                          Expanded(
+                            flex: 4,
+                            child: Row(
+                              children: [
+                                myTextField(
+                                  context,
+                                  hint: myDateFormate.format(date),
+                                  width: getWidth(context, .10),
+                                  enabled: false,
+                                  onChanged: ((text) {}),
+                                ),
+                                mySizedBox(context),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.calendar_month,
+                                    color: primaryColor,
+                                  ),
+                                  onPressed: () async {
+                                    final DateTime? selected = await showDatePicker(
+                                      context: context,
+                                      initialDate: date,
+                                      firstDate: DateTime(currentYear),
+                                      lastDate: DateTime.now(),
+                                      initialEntryMode: DatePickerEntryMode.input,
+                                      locale: const Locale("fr", "FR"),
+                                    );
+                                    if (selected != null && selected != date) {
+                                      setState(
+                                        () => date = DateTime(
+                                          selected.year,
+                                          selected.month,
+                                          selected.day,
+                                          DateTime.now().hour,
+                                          DateTime.now().minute,
+                                          DateTime.now().second,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                )
+                              ],
+                            ),
                           ),
-                          mySizedBox(context),
-                          Row(
-                            children: [
-                              Expanded(child: myText(getText('date'))),
-                              Expanded(
+                        ],
+                      ),
+                      if (selectedTransactionType == 4) mySizedBox(context),
+                      if (selectedTransactionType == 4)
+                        Row(
+                          children: [
+                            Expanded(child: myText(getText('password'))),
+                            Expanded(
                                 flex: 4,
                                 child: Row(
                                   children: [
                                     myTextField(
                                       context,
-                                      hint: myDateFormate.format(date),
-                                      width: getWidth(context, .10),
-                                      enabled: false,
-                                      onChanged: ((text) {}),
+                                      width: getWidth(context, .13),
+                                      onChanged: (text) => _password = text,
+                                      isPassword: true,
                                     ),
-                                    mySizedBox(context),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.calendar_month,
-                                        color: primaryColor,
-                                      ),
-                                      onPressed: () async {
-                                        final DateTime? selected = await showDatePicker(
-                                          context: context,
-                                          initialDate: date,
-                                          firstDate: DateTime(1900, 01, 01, 00, 00, 00),
-                                          lastDate: DateTime.now(),
-                                        );
-                                        if (selected != null && selected != date) {
-                                          setState(
-                                            () => date = DateTime(
-                                              selected.year,
-                                              selected.month,
-                                              selected.day,
-                                              DateTime.now().hour,
-                                              DateTime.now().minute,
-                                              DateTime.now().second,
-                                            ),
-                                          );
-                                        }
-                                      },
-                                    )
                                   ],
-                                ),
-                              ),
-                            ],
+                                )),
+                          ],
+                        ),
+                      const Spacer(),
+                      Row(children: [
+                        Expanded(child: myText(getText('note'))),
+                        const Expanded(flex: 4, child: SizedBox())
+                      ]),
+                      mySizedBox(context),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
                           ),
-                          if (selectedTransactionType == 4) mySizedBox(context),
-                          if (selectedTransactionType == 4)
-                            Row(
-                              children: [
-                                Expanded(child: myText(getText('password'))),
-                                Expanded(
-                                    flex: 4,
-                                    child: Row(
-                                      children: [
-                                        myTextField(
-                                          context,
-                                          width: getWidth(context, .13),
-                                          onChanged: (text) => _password = text,
-                                          isPassword: true,
-                                        ),
-                                      ],
-                                    )),
-                              ],
-                            ),
-                          const Spacer(),
-                          Row(children: [
-                            Expanded(child: myText(getText('note'))),
-                            const Expanded(flex: 4, child: SizedBox())
-                          ]),
-                          mySizedBox(context),
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
+                          child: TextFormField(
+                            onChanged: ((value) => note = value),
+                            style: const TextStyle(fontSize: 22),
+                            maxLength: 350,
+                            minLines: 4,
+                            maxLines: 4,
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.all(8),
+                              border: OutlineInputBorder(
+                                gapPadding: 0,
+                                borderSide: BorderSide(width: 0.5),
                                 borderRadius: BorderRadius.all(Radius.circular(12)),
                               ),
-                              child: TextFormField(
-                                onChanged: ((value) => note = value),
-                                style: const TextStyle(fontSize: 22),
-                                maxLength: 350,
-                                minLines: 4,
-                                maxLines: 4,
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.all(8),
-                                  border: OutlineInputBorder(
-                                    gapPadding: 0,
-                                    borderSide: BorderSide(width: 0.5),
-                                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                                  ),
-                                ),
-                              ),
                             ),
                           ),
-                          const Spacer(),
-                          myButton(context, onTap: () async {
-                            if (amount.isEmpty || amount == '0') {
-                              snackBar(context, 'Amount can not be zero!!!', duration: 5);
-                            } else {
-                              setState(() => isLoading = true);
-                              if (selectedTransactionType == 4) {
-                                var res = await sqlQuery(selectUrl, {
-                                  'sql1':
-                                      '''SELECT CASE WHEN admin = '$_password' THEN 1 ELSE 0 END AS password FROM settings;''',
-                                });
-
-                                if (res[0][0]['password'] == '1') {
-                                  save();
-                                } else {
-                                  setState(() => isLoading = false);
-                                  snackBar(context, 'Wrong Password!!', duration: 1);
-                                }
-                              } else {
-                                save();
-                              }
-                            }
-                          }),
-                          const Spacer(),
-                        ],
+                        ),
                       ),
+                      const Spacer(),
+                      myButton(context, onTap: () async {
+                        if (amount.isEmpty || amount == '0') {
+                          snackBar(context, getMessage('zeroAmount'), duration: 5);
+                        } else {
+                          setState(() => isLoading = true);
+                          if (selectedTransactionType == 4) {
+                            var res = await sqlQuery(selectUrl, {
+                              'sql1': '''SELECT IF(admin = '$_password',1,0) AS password FROM settings;''',
+                            });
+
+                            if (res[0][0]['password'] == '1') {
+                              save();
+                            } else {
+                              setState(() => isLoading = false);
+                              snackBar(context, getMessage('wrongPassword'), duration: 1);
+                            }
+                          } else {
+                            save();
+                          }
+                        }
+                      }),
+                      const Spacer(),
+                    ],
+                  ),
           ),
         ),
       ]),

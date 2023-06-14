@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 int currentYear = 0;
 double profitability = 0;
 bool namesHidden = false;
+bool isAdmin = false;
 
 Color primaryColor = const Color(0XFF02333c); //0XFF303F9F
 Color secondaryColor = const Color(0XFF08535d);
@@ -15,10 +16,9 @@ Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 
 List<pdf.Font> fonts = [];
 double textFeildHeight = .05;
-
 // String host = 'http://localhost/fairsplit';
-// String host = 'http://fairsplit.assala.com/php_test';
-String host = 'http://fairsplit.assala.com/php';
+String host = 'http://fairsplit.assala.com/php_test';
+// String host = 'http://fairsplit.assala.com/php';
 
 Uri insertUrl = Uri.parse('$host/insert.php');
 Uri insertSPUrl = Uri.parse('$host/insertSP.php');

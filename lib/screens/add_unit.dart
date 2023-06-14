@@ -18,28 +18,28 @@ class _AddUnitState extends State<AddUnit> {
   late String name, capital, reserve, donation, money, effort, threshold, founding;
   late bool isExtern;
   bool isLoading = false;
-  String password = '';
+  // String password = '';
 
   void deleteUnit(int unitId) async {
     setState(() => isLoading = true);
     Navigator.pop(context);
-    var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT IF(admin = '$password' ,1,0) AS password FROM settings;''',
+    // var res = await sqlQuery(selectUrl, {
+    //   'sql1': '''SELECT IF(admin = '$password' ,1,0) AS password FROM settings;''',
+    // });
+
+    // if (res[0][0]['password'] == '1') {
+    await sqlQuery(insertUrl, {
+      'sql1': 'DELETE FROM Threshold WHERE unitId = $unitId',
+      'sql2': 'DELETE FROM Founding WHERE unitId = $unitId',
+      'sql3': 'DELETE FROM Effort WHERE unitId = $unitId',
+      'sql4': 'DELETE FROM Units WHERE unitId = $unitId',
     });
 
-    if (res[0][0]['password'] == '1') {
-      await sqlQuery(insertUrl, {
-        'sql1': 'DELETE FROM Threshold WHERE unitId = $unitId',
-        'sql2': 'DELETE FROM Founding WHERE unitId = $unitId',
-        'sql3': 'DELETE FROM Effort WHERE unitId = $unitId',
-        'sql4': 'DELETE FROM Units WHERE unitId = $unitId',
-      });
-
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-      snackBar(context, getMessage('deleteUnit'));
-    } else {
-      snackBar(context, getMessage('wrongPassword'), duration: 1);
-    }
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+    snackBar(context, getMessage('deleteUnit'));
+    // } else {
+    //   snackBar(context, getMessage('wrongPassword'), duration: 1);
+    // }
 
     setState(() => isLoading = false);
   }
@@ -50,37 +50,37 @@ class _AddUnitState extends State<AddUnit> {
     } else {
       setState(() => isLoading = true);
 
-      var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
-      });
+      // var res = await sqlQuery(selectUrl, {
+      //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
+      // });
 
-      if (res[0][0]['password'] == '1') {
-        try {
-          int _unitId = widget.unit.unitId;
-          String _type = isExtern ? 'extern' : 'intern';
-          double _capital = double.parse(capital);
-          double _reserve = double.parse(reserve);
-          double _donation = double.parse(donation);
-          double _money = double.parse(money);
-          double _effort = double.parse(effort);
-          double _threshold = double.parse(threshold);
-          double _founding = double.parse(founding);
+      // if (res[0][0]['password'] == '1') {
+      try {
+        int _unitId = widget.unit.unitId;
+        String _type = isExtern ? 'extern' : 'intern';
+        double _capital = double.parse(capital);
+        double _reserve = double.parse(reserve);
+        double _donation = double.parse(donation);
+        double _money = double.parse(money);
+        double _effort = double.parse(effort);
+        double _threshold = double.parse(threshold);
+        double _founding = double.parse(founding);
 
-          // sending a post request to the url
-          await sqlQuery(insertUrl, {
-            'sql1': _unitId == -1
-                ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated,currentMonthOrYear) VALUES ('$name' ,'$_type',$_capital,0, $_reserve , $_donation  ,$_threshold , $_founding , $_effort , $_money , 0, ${_type == 'intern' ? 1 : currentYear});'''
-                : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
-          });
+        // sending a post request to the url
+        await sqlQuery(insertUrl, {
+          'sql1': _unitId == -1
+              ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated,currentMonthOrYear) VALUES ('$name' ,'$_type',$_capital,0, $_reserve , $_donation  ,$_threshold , $_founding , $_effort , $_money , 0, ${_type == 'intern' ? 1 : currentYear});'''
+              : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
+        });
 
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-          snackBar(context, widget.unit.unitId == -1 ? getMessage('addUnit') : getMessage('updateUnit'));
-        } catch (e) {
-          snackBar(context, getMessage('checkData'), duration: 5);
-        }
-      } else {
-        snackBar(context, getMessage('wrongPassword'), duration: 1);
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+        snackBar(context, widget.unit.unitId == -1 ? getMessage('addUnit') : getMessage('updateUnit'));
+      } catch (e) {
+        snackBar(context, getMessage('checkData'), duration: 5);
       }
+      // } else {
+      //   snackBar(context, getMessage('wrongPassword'), duration: 1);
+      // }
 
       setState(() => isLoading = false);
     }
@@ -103,7 +103,7 @@ class _AddUnitState extends State<AddUnit> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .65),
+      height: getHeight(context, .55),
       width: getWidth(context, .3),
       child: Column(
         children: [
@@ -114,15 +114,15 @@ class _AddUnitState extends State<AddUnit> {
                 widget.unit.unitId != -1
                     ? IconButton(
                         onPressed: () => createDialog(
-                            context,
-                            delteConfirmation(
                               context,
-                              getMessage('deleteUnitConfitmation'),
-                              () => deleteUnit(widget.unit.unitId),
-                              onChanged: (text) => password = text,
-                              isLoading: isLoading,
+                              delteConfirmation(
+                                context,
+                                getMessage('deleteUnitConfitmation'),
+                                () => deleteUnit(widget.unit.unitId),
+                                // onChanged: (text) => password = text,
+                                isLoading: isLoading,
+                              ),
                             ),
-                            true),
                         icon: const Icon(
                           Icons.delete_forever,
                           color: Colors.white,
@@ -167,18 +167,18 @@ class _AddUnitState extends State<AddUnit> {
                   : Column(
                       children: [
                         information(),
-                        const Spacer(),
-                        SizedBox(
-                          width: getWidth(context, .2),
-                          child: myTextField(
-                            context,
-                            width: getWidth(context, .13),
-                            onChanged: (text) => password = text,
-                            isPassword: true,
-                            isCenter: true,
-                            hint: getText('password'),
-                          ),
-                        ),
+                        // const Spacer(),
+                        // SizedBox(
+                        //   width: getWidth(context, .2),
+                        //   child: myTextField(
+                        //     context,
+                        //     width: getWidth(context, .13),
+                        //     onChanged: (text) => password = text,
+                        //     isPassword: true,
+                        //     isCenter: true,
+                        //     hint: getText('password'),
+                        //   ),
+                        // ),
                         const Spacer(),
                         myButton(context, onTap: () => save()),
                         const Spacer(),

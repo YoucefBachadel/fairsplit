@@ -38,7 +38,8 @@ class _UsersState extends State<Users> {
   bool _isAscending = true;
   TextEditingController _controller = TextEditingController();
 
-  void _newUser(BuildContext context, User user) async => await createDialog(context, AddUser(user: user), false);
+  void _newUser(BuildContext context, User user) async =>
+      await createDialog(context, AddUser(user: user), dismissable: false);
 
   void loadData() async {
     var data = await sqlQuery(selectUrl, {
@@ -267,7 +268,7 @@ class _UsersState extends State<Users> {
           }),
         ),
       ),
-      ...[''].map((e) => dataColumn(context, e)),
+      if (isAdmin) dataColumn(context, ''),
     ];
 
     List<DataRow> rows = users
@@ -288,7 +289,7 @@ class _UsersState extends State<Users> {
                   userCapital: user.capital,
                   selectedTransactionType: 1,
                 ),
-                false,
+                dismissable: false,
               ),
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
@@ -351,23 +352,26 @@ class _UsersState extends State<Users> {
                     user.efforts.firstWhere((element) => element.unitId == _effortUnitFilter).evaluation.toString(),
                   ),
                 ],
-                DataCell(IconButton(
-                  onPressed: () => _newUser(context, user),
-                  hoverColor: Colors.transparent,
-                  icon: Icon(Icons.edit, size: 22, color: primaryColor),
-                )),
+                if (isAdmin)
+                  DataCell(IconButton(
+                    onPressed: () => _newUser(context, user),
+                    hoverColor: Colors.transparent,
+                    icon: Icon(Icons.edit, size: 22, color: primaryColor),
+                  )),
               ],
             ))
         .toList();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        onPressed: () => _newUser(context, User()),
-        tooltip: getText('newUser'),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton(
+              mini: true,
+              onPressed: () => _newUser(context, User()),
+              tooltip: getText('newUser'),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Row(
         children: [
           const Spacer(),

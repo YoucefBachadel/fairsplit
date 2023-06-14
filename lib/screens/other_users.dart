@@ -28,8 +28,7 @@ class _OtherUsersState extends State<OtherUsers> {
   bool _isAscending = true;
   TextEditingController _controller = TextEditingController();
 
-  void _newUser(BuildContext context, OtherUser user) async =>
-      await createDialog(context, AddOtherUser(user: user), false);
+  void _newUser(BuildContext context, OtherUser user) async => await createDialog(context, AddOtherUser(user: user));
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {
@@ -120,7 +119,7 @@ class _OtherUsersState extends State<OtherUsers> {
               _isAscending = ascending;
             }),
           )),
-      dataColumn(context, ''),
+      if (isAdmin) dataColumn(context, ''),
     ];
 
     List<DataRow> rows = users
@@ -144,7 +143,7 @@ class _OtherUsersState extends State<OtherUsers> {
                   rest: user.rest,
                   selectedTransactionType: user.type == 'loan' ? 2 : 3,
                 ),
-                false,
+                dismissable: false,
               ),
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
@@ -155,23 +154,26 @@ class _OtherUsersState extends State<OtherUsers> {
                 dataCell(context, getText(user.type)),
                 dataCell(context, myCurrency.format(user.amount), textAlign: TextAlign.end),
                 dataCell(context, myCurrency.format(user.rest), textAlign: TextAlign.end),
-                DataCell(IconButton(
-                  onPressed: () => _newUser(context, user),
-                  hoverColor: Colors.transparent,
-                  icon: Icon(Icons.edit, size: 22, color: primaryColor),
-                )),
+                if (isAdmin)
+                  DataCell(IconButton(
+                    onPressed: () => _newUser(context, user),
+                    hoverColor: Colors.transparent,
+                    icon: Icon(Icons.edit, size: 22, color: primaryColor),
+                  )),
               ],
             ))
         .toList();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        onPressed: () => _newUser(context, OtherUser()),
-        tooltip: getText('newUser'),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton(
+              mini: true,
+              onPressed: () => _newUser(context, OtherUser()),
+              tooltip: getText('newUser'),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Row(
         children: [
           const Spacer(),

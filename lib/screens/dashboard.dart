@@ -94,7 +94,6 @@ class _DashboardState extends State<Dashboard> {
                                 category: getKeyFromValue(e[0]),
                                 selectedTransactionType: 0,
                               ),
-                              false,
                             ),
                             onLongPress: () {
                               context.read<Filter>().change(
@@ -147,7 +146,6 @@ class _DashboardState extends State<Dashboard> {
                                         sourceTab: 'da',
                                         selectedTransactionType: int.parse(e[2]),
                                       ),
-                                      false,
                                     ),
                                     onLongPress: () {
                                       context.read<Filter>().change(loanDeposit: e[3]);

@@ -28,7 +28,7 @@ class _AddUserState extends State<AddUser> {
   bool isLoading = true;
   bool isMoney = false;
   bool isEffort = false;
-  String password = '';
+  // String password = '';
 
   // this to check if has been changed, it will be modified on conferm or delete item
   bool thresholdsHasChanged = false;
@@ -39,23 +39,23 @@ class _AddUserState extends State<AddUser> {
   void deleteUser(int userId) async {
     setState(() => isLoading = true);
     Navigator.pop(context);
-    var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
+    // var res = await sqlQuery(selectUrl, {
+    //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
+    // });
+
+    // if (res[0][0]['password'] == '1') {
+    await sqlQuery(insertUrl, {
+      'sql1': 'DELETE FROM Threshold WHERE userId = $userId',
+      'sql2': 'DELETE FROM Founding WHERE userId = $userId',
+      'sql3': 'DELETE FROM Effort WHERE userId = $userId',
+      'sql4': 'DELETE FROM Users WHERE userId = $userId',
     });
 
-    if (res[0][0]['password'] == '1') {
-      await sqlQuery(insertUrl, {
-        'sql1': 'DELETE FROM Threshold WHERE userId = $userId',
-        'sql2': 'DELETE FROM Founding WHERE userId = $userId',
-        'sql3': 'DELETE FROM Effort WHERE userId = $userId',
-        'sql4': 'DELETE FROM Users WHERE userId = $userId',
-      });
-
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
-      snackBar(context, getMessage('deleteUser'));
-    } else {
-      snackBar(context, getMessage('wrongPassword'), duration: 1);
-    }
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
+    snackBar(context, getMessage('deleteUser'));
+    // } else {
+    //   snackBar(context, getMessage('wrongPassword'), duration: 1);
+    // }
 
     setState(() => isLoading = false);
   }
@@ -75,91 +75,90 @@ class _AddUserState extends State<AddUser> {
     } else {
       setState(() => isLoading = true);
 
-      var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
-      });
+      // var res = await sqlQuery(selectUrl, {
+      //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
+      // });
 
-      if (res[0][0]['password'] == '1') {
-        bool isNew = widget.user.userId == -1;
+      // if (res[0][0]['password'] == '1') {
+      bool isNew = widget.user.userId == -1;
 
-        //chack if the nae exist befor
-        bool nameExist = false;
-        if (isNew || name != widget.user.name) {
-          var res =
-              await sqlQuery(selectUrl, {'sql1': '''SELECT COUNT(*) AS count FROM users WHERE name = '$name';'''});
-          nameExist = res[0][0]['count'] != '0';
-        }
-
-        if (nameExist) {
-          setState(() => isLoading = false);
-          snackBar(context, getMessage('existName'));
-        } else {
-          int _userId = widget.user.userId;
-          List<String> sqls = [];
-          if (isNew) {
-            // sending a post request to the url and get the inserted id
-            _userId = await sqlQuery(insertSPUrl, {
-              'sql':
-                  '''INSERT INTO Users (name,phone,joinDate,type,capital,money,moneyExtern,threshold,founding,effort,effortExtern,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , 0 , '$months');''',
-            });
-          } else {
-            sqls.add(
-              '''UPDATE Users SET name = '$name' ,phone = '$phone'  ,joinDate = '$joinDate' ,type = '$type' ,months = '$months' Where userId = $_userId;''',
-            );
-          }
-
-          //now we insert the threshold / founding / effort  but first we check if they been changed
-
-          String sql = '';
-
-          if (!isNew) {
-            //if the type or the list has changed we delete all existing items of the user and we insert it again
-            if (typeHasChanged || thresholdsHasChanged) sqls.add('DELETE FROM Threshold WHERE userId = $_userId');
-
-            if (typeHasChanged || foundingssHasChanged) sqls.add('DELETE FROM Founding WHERE userId = $_userId');
-
-            if (typeHasChanged || effortssHasChanged) sqls.add('DELETE FROM Effort WHERE userId = $_userId');
-          }
-
-          if (isMoney && thresholds.isNotEmpty && (typeHasChanged || thresholdsHasChanged)) {
-            sql = 'INSERT INTO Threshold(userId, unitId, thresholdPerc) VALUES ';
-            for (var element in thresholds) {
-              sql += '($_userId , ${element.unitId} , ${element.thresholdPerc}),';
-            }
-            sql = sql.substring(0, sql.length - 1);
-            sql += ';';
-
-            sqls.add(sql);
-          }
-          if (isMoney && foundings.isNotEmpty && (typeHasChanged || foundingssHasChanged)) {
-            sql = 'INSERT INTO Founding(userId, unitId, foundingPerc) VALUES ';
-            for (var element in foundings) {
-              sql += '($_userId , ${element.unitId} , ${element.foundingPerc}),';
-            }
-            sql = sql.substring(0, sql.length - 1);
-            sql += ';';
-
-            sqls.add(sql);
-          }
-          if (isEffort && efforts.isNotEmpty && (typeHasChanged || effortssHasChanged)) {
-            sql = 'INSERT INTO Effort(userId, unitId, effortPerc, evaluation) VALUES ';
-            for (var element in efforts) {
-              sql += '($_userId , ${element.unitId} , ${element.effortPerc} , ${element.evaluation}),';
-            }
-            sql = sql.substring(0, sql.length - 1);
-            sql += ';';
-
-            sqls.add(sql);
-          }
-
-          if (sql.isNotEmpty) await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
-
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
-          snackBar(context, isNew ? getMessage('addUser') : getMessage('updateUser'));
-        }
-      } else {
-        snackBar(context, getMessage('wrongPassword'), duration: 1);
+      //chack if the nae exist befor
+      bool nameExist = false;
+      if (isNew || name != widget.user.name) {
+        var res = await sqlQuery(selectUrl, {'sql1': '''SELECT COUNT(*) AS count FROM users WHERE name = '$name';'''});
+        nameExist = res[0][0]['count'] != '0';
       }
+
+      if (nameExist) {
+        setState(() => isLoading = false);
+        snackBar(context, getMessage('existName'));
+      } else {
+        int _userId = widget.user.userId;
+        List<String> sqls = [];
+        if (isNew) {
+          // sending a post request to the url and get the inserted id
+          _userId = await sqlQuery(insertSPUrl, {
+            'sql':
+                '''INSERT INTO Users (name,phone,joinDate,type,capital,money,moneyExtern,threshold,founding,effort,effortExtern,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , 0 , '$months');''',
+          });
+        } else {
+          sqls.add(
+            '''UPDATE Users SET name = '$name' ,phone = '$phone'  ,joinDate = '$joinDate' ,type = '$type' ,months = '$months' Where userId = $_userId;''',
+          );
+        }
+
+        //now we insert the threshold / founding / effort  but first we check if they been changed
+
+        String sql = '';
+
+        if (!isNew) {
+          //if the type or the list has changed we delete all existing items of the user and we insert it again
+          if (typeHasChanged || thresholdsHasChanged) sqls.add('DELETE FROM Threshold WHERE userId = $_userId');
+
+          if (typeHasChanged || foundingssHasChanged) sqls.add('DELETE FROM Founding WHERE userId = $_userId');
+
+          if (typeHasChanged || effortssHasChanged) sqls.add('DELETE FROM Effort WHERE userId = $_userId');
+        }
+
+        if (isMoney && thresholds.isNotEmpty && (typeHasChanged || thresholdsHasChanged)) {
+          sql = 'INSERT INTO Threshold(userId, unitId, thresholdPerc) VALUES ';
+          for (var element in thresholds) {
+            sql += '($_userId , ${element.unitId} , ${element.thresholdPerc}),';
+          }
+          sql = sql.substring(0, sql.length - 1);
+          sql += ';';
+
+          sqls.add(sql);
+        }
+        if (isMoney && foundings.isNotEmpty && (typeHasChanged || foundingssHasChanged)) {
+          sql = 'INSERT INTO Founding(userId, unitId, foundingPerc) VALUES ';
+          for (var element in foundings) {
+            sql += '($_userId , ${element.unitId} , ${element.foundingPerc}),';
+          }
+          sql = sql.substring(0, sql.length - 1);
+          sql += ';';
+
+          sqls.add(sql);
+        }
+        if (isEffort && efforts.isNotEmpty && (typeHasChanged || effortssHasChanged)) {
+          sql = 'INSERT INTO Effort(userId, unitId, effortPerc, evaluation) VALUES ';
+          for (var element in efforts) {
+            sql += '($_userId , ${element.unitId} , ${element.effortPerc} , ${element.evaluation}),';
+          }
+          sql = sql.substring(0, sql.length - 1);
+          sql += ';';
+
+          sqls.add(sql);
+        }
+
+        if (sql.isNotEmpty) await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
+
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
+        snackBar(context, isNew ? getMessage('addUser') : getMessage('updateUser'));
+      }
+      // } else {
+      //   snackBar(context, getMessage('wrongPassword'), duration: 1);
+      // }
       setState(() => isLoading = false);
     }
   }
@@ -189,7 +188,7 @@ class _AddUserState extends State<AddUser> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .9),
+      height: getHeight(context, .85),
       width: isEffort ? getWidth(context, .75) : getWidth(context, .47),
       child: Column(
         children: [
@@ -200,14 +199,14 @@ class _AddUserState extends State<AddUser> {
                 widget.user.userId != -1 && widget.user.capital == 0
                     ? IconButton(
                         onPressed: () => createDialog(
-                            context,
-                            delteConfirmation(
                               context,
-                              getMessage('deleteUserConfirmation'),
-                              () => deleteUser(widget.user.userId),
-                              onChanged: (text) => password = text,
+                              delteConfirmation(
+                                context,
+                                getMessage('deleteUserConfirmation'),
+                                () => deleteUser(widget.user.userId),
+                                // onChanged: (text) => password = text,
+                              ),
                             ),
-                            true),
                         icon: const Icon(
                           Icons.delete_forever,
                           color: Colors.white,
@@ -390,24 +389,24 @@ class _AddUserState extends State<AddUser> {
             ),
           ],
         ),
-        mySizedBox(context),
-        Row(
-          children: [
-            Expanded(child: myText(getText('password'))),
-            Expanded(
-                flex: 4,
-                child: Row(
-                  children: [
-                    myTextField(
-                      context,
-                      width: getWidth(context, .13),
-                      onChanged: (text) => password = text,
-                      isPassword: true,
-                    ),
-                  ],
-                )),
-          ],
-        ),
+        // mySizedBox(context),
+        // Row(
+        //   children: [
+        //     Expanded(child: myText(getText('password'))),
+        //     Expanded(
+        //         flex: 4,
+        //         child: Row(
+        //           children: [
+        //             myTextField(
+        //               context,
+        //               width: getWidth(context, .13),
+        //               onChanged: (text) => password = text,
+        //               isPassword: true,
+        //             ),
+        //           ],
+        //         )),
+        //   ],
+        // ),
       ],
     );
   }
@@ -443,10 +442,10 @@ class _AddUserState extends State<AddUser> {
                           final _thresholdsIds = thresholds.map((e) => e.unitId).toSet();
                           final _filteredIds = _allIds.difference(_thresholdsIds);
                           createDialog(
-                              context,
-                              unitSelect(2,
-                                  units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
-                              true);
+                            context,
+                            unitSelect(2,
+                                units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
+                          );
                         },
                         icon: Icon(
                           Icons.add,
@@ -481,7 +480,6 @@ class _AddUserState extends State<AddUser> {
                                       )
                                     ],
                                   ),
-                                  true,
                                 ),
                                 cells: [
                                   dataCell(context, getUnitName(allUnits, e.unitId), textAlign: TextAlign.start),
@@ -502,7 +500,6 @@ class _AddUserState extends State<AddUser> {
                                                 }),
                                                 authontication: false,
                                               ),
-                                              true,
                                             );
                                           },
                                           icon: const Icon(
@@ -552,10 +549,10 @@ class _AddUserState extends State<AddUser> {
                         final _foundingsIds = foundings.map((e) => e.unitId).toSet();
                         final _filteredIds = _allIds.difference(_foundingsIds);
                         createDialog(
-                            context,
-                            unitSelect(3,
-                                units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
-                            true);
+                          context,
+                          unitSelect(3,
+                              units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
+                        );
                       },
                       icon: Icon(
                         Icons.add,
@@ -590,7 +587,6 @@ class _AddUserState extends State<AddUser> {
                                       )
                                     ],
                                   ),
-                                  true,
                                 ),
                                 cells: [
                                   dataCell(context, getUnitName(allUnits, e.unitId), textAlign: TextAlign.start),
@@ -611,7 +607,6 @@ class _AddUserState extends State<AddUser> {
                                                 }),
                                                 authontication: false,
                                               ),
-                                              true,
                                             );
                                           },
                                           icon: const Icon(
@@ -659,12 +654,12 @@ class _AddUserState extends State<AddUser> {
                         final _effortsIds = efforts.map((e) => e.unitId).toSet();
                         final _filteredIds = _allIds.difference(_effortsIds);
                         createDialog(
-                            context,
-                            unitSelect(1,
-                                units: _effortsIds.isEmpty
-                                    ? [Unit(unitId: -1, name: 'Global')] + allUnits
-                                    : allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
-                            true);
+                          context,
+                          unitSelect(1,
+                              units: _effortsIds.isEmpty
+                                  ? [Unit(unitId: -1, name: 'Global')] + allUnits
+                                  : allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
+                        );
                       },
                       icon: Icon(
                         Icons.add,
@@ -702,7 +697,6 @@ class _AddUserState extends State<AddUser> {
                                     )
                                   ],
                                 ),
-                                true,
                               ),
                               cells: [
                                 dataCell(
@@ -728,7 +722,6 @@ class _AddUserState extends State<AddUser> {
                                               }),
                                               authontication: false,
                                             ),
-                                            true,
                                           );
                                         },
                                         icon: const Icon(

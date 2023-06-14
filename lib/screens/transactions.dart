@@ -379,7 +379,6 @@ class _TransactionsState extends State<Transactions> {
     await createDialog(
       context,
       const SelectTransactionCategoty(),
-      false,
     );
   }
 
@@ -933,16 +932,14 @@ class _TransactionsState extends State<Transactions> {
                     child: Text(item.value),
                   );
                 }).toList(),
-                onChanged: (value) =>
-                    setState(() => context.read<Filter>().change(compt: value.toString())),
+                onChanged: (value) => setState(() => context.read<Filter>().change(compt: value.toString())),
               ),
             ],
           ),
         transactionCategory == 'users'
             ? autoComplete(
-                onSeleted: (item) => setState(() => context
-                    .read<Filter>()
-                    .change(search: namesHidden ? userNames.elementAt(int.parse(item)) : item)),
+                onSeleted: (item) => setState(() =>
+                    context.read<Filter>().change(search: namesHidden ? userNames.elementAt(int.parse(item)) : item)),
                 optionsBuilder: (textEditingValue) {
                   if (namesHidden) {
                     Set<String> indexes = {};
@@ -960,9 +957,8 @@ class _TransactionsState extends State<Transactions> {
             : const SizedBox(),
         transactionCategory == 'loans'
             ? autoComplete(
-                onSeleted: (item) => setState(() => context
-                    .read<Filter>()
-                    .change(search: namesHidden ? loanNames.elementAt(int.parse(item)) : item)),
+                onSeleted: (item) => setState(() =>
+                    context.read<Filter>().change(search: namesHidden ? loanNames.elementAt(int.parse(item)) : item)),
                 optionsBuilder: (textEditingValue) {
                   if (namesHidden) {
                     Set<String> indexes = {};

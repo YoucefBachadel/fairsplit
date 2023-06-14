@@ -126,7 +126,7 @@ Widget myDropDown(
 
 String dateFormat(DateTime date) => DateFormat('dd-MM-yyyy').format(date);
 
-Future createDialog(BuildContext context, Widget content, bool dismissable) {
+Future createDialog(BuildContext context, Widget content, {bool dismissable = true}) {
   return showDialog(
       barrierDismissible: dismissable,
       context: context,
@@ -170,19 +170,19 @@ Widget delteConfirmation(
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineSmall,
         ),
-        if (authontication) mySizedBox(context),
-        if (authontication)
-          SizedBox(
-            width: getWidth(context, .2),
-            child: myTextField(
-              context,
-              width: getWidth(context, .18),
-              onChanged: onChanged,
-              isPassword: true,
-              isCenter: true,
-              hint: getText('password'),
-            ),
-          ),
+        // if (authontication) mySizedBox(context),
+        // if (authontication)
+        //   SizedBox(
+        //     width: getWidth(context, .2),
+        //     child: myTextField(
+        //       context,
+        //       width: getWidth(context, .18),
+        //       onChanged: onChanged,
+        //       isPassword: true,
+        //       isCenter: true,
+        //       hint: getText('password'),
+        //     ),
+        //   ),
         mySizedBox(context),
         myButton(
           context,

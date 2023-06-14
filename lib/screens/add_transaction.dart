@@ -62,12 +62,13 @@ class SelectTransactionCategoty extends StatelessWidget {
                         onTap: () async {
                           Navigator.pop(context);
                           await createDialog(
-                              context,
-                              AddTransaction(
-                                sourceTab: 'tr',
-                                selectedTransactionType: selectTransactionType.indexOf(e),
-                              ),
-                              false);
+                            context,
+                            AddTransaction(
+                              sourceTab: 'tr',
+                              selectedTransactionType: selectTransactionType.indexOf(e),
+                            ),
+                            dismissable: false,
+                          );
                         },
                       ),
                     ),
@@ -427,7 +428,7 @@ class _AddTransactionState extends State<AddTransaction> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .58),
+      height: getHeight(context, isAdmin ? 0.55 : 0.5),
       width: getWidth(context, .39),
       child: Column(children: [
         Container(
@@ -803,55 +804,56 @@ class _AddTransactionState extends State<AddTransaction> {
                               )),
                         ],
                       ),
-                      mySizedBox(context),
-                      Row(
-                        children: [
-                          Expanded(child: myText(getText('date'))),
-                          Expanded(
-                            flex: 4,
-                            child: Row(
-                              children: [
-                                myTextField(
-                                  context,
-                                  hint: myDateFormate.format(date),
-                                  width: getWidth(context, .10),
-                                  enabled: false,
-                                  onChanged: ((text) {}),
-                                ),
-                                mySizedBox(context),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.calendar_month,
-                                    color: primaryColor,
+                      if (isAdmin) mySizedBox(context),
+                      if (isAdmin)
+                        Row(
+                          children: [
+                            Expanded(child: myText(getText('date'))),
+                            Expanded(
+                              flex: 4,
+                              child: Row(
+                                children: [
+                                  myTextField(
+                                    context,
+                                    hint: myDateFormate.format(date),
+                                    width: getWidth(context, .10),
+                                    enabled: false,
+                                    onChanged: ((text) {}),
                                   ),
-                                  onPressed: () async {
-                                    final DateTime? selected = await showDatePicker(
-                                      context: context,
-                                      initialDate: date,
-                                      firstDate: DateTime(currentYear),
-                                      lastDate: DateTime.now(),
-                                      initialEntryMode: DatePickerEntryMode.input,
-                                      locale: const Locale("fr", "FR"),
-                                    );
-                                    if (selected != null && selected != date) {
-                                      setState(
-                                        () => date = DateTime(
-                                          selected.year,
-                                          selected.month,
-                                          selected.day,
-                                          DateTime.now().hour,
-                                          DateTime.now().minute,
-                                          DateTime.now().second,
-                                        ),
+                                  mySizedBox(context),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.calendar_month,
+                                      color: primaryColor,
+                                    ),
+                                    onPressed: () async {
+                                      final DateTime? selected = await showDatePicker(
+                                        context: context,
+                                        initialDate: date,
+                                        firstDate: DateTime(currentYear),
+                                        lastDate: DateTime.now(),
+                                        initialEntryMode: DatePickerEntryMode.input,
+                                        locale: const Locale("fr", "FR"),
                                       );
-                                    }
-                                  },
-                                )
-                              ],
+                                      if (selected != null && selected != date) {
+                                        setState(
+                                          () => date = DateTime(
+                                            selected.year,
+                                            selected.month,
+                                            selected.day,
+                                            DateTime.now().hour,
+                                            DateTime.now().minute,
+                                            DateTime.now().second,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                       if (selectedTransactionType == 4) mySizedBox(context),
                       if (selectedTransactionType == 4)
                         Row(

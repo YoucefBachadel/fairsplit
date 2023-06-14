@@ -23,7 +23,7 @@ class _UnitsState extends State<Units> {
   int? _sortColumnIndex = 0;
   bool _isAscending = true;
 
-  void _newUnit(BuildContext context, Unit unit) async => await createDialog(context, AddUnit(unit: unit), false);
+  void _newUnit(BuildContext context, Unit unit) async => await createDialog(context, AddUnit(unit: unit));
 
   void loadUnits() async {
     var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM Units;'});
@@ -144,45 +144,51 @@ class _UnitsState extends State<Units> {
               ))
           .toList(),
       dataColumn(context, getText('month')),
-      dataColumn(context, ''),
+      if (isAdmin) dataColumn(context, ''),
     ];
 
     List<DataRow> rows = units
-        .map((unit) => DataRow(onSelectChanged: ((value) => _newUnit(context, unit)), cells: [
-              dataCell(context, unit.name, textAlign: TextAlign.start),
-              dataCell(context, getText(unit.type), textAlign: TextAlign.start),
-              dataCell(context, myCurrency.format(unit.capital), textAlign: TextAlign.end),
-              dataCell(context, (unit.capital * 100 / totalCapital).toStringAsFixed(2)),
-              dataCell(context, myCurrency.format(unit.profit), textAlign: TextAlign.end),
-              dataCell(context, (unit.profitability * 100).toStringAsFixed(2)),
-              ...[
-                // unit.reservePerc,
-                // unit.donationPerc,
-                // unit.moneyPerc,
-                // unit.effortPerc,
-                // unit.thresholdPerc,
-                // unit.foundingPerc,
-                unit.type == 'extern' ? unit.currentMonthOrYear : monthsOfYear[unit.currentMonthOrYear - 1],
-              ].map((e) => dataCell(context, e.toString())).toList(),
-              DataCell(
-                unit.calculated
-                    ? const Center(child: Icon(Icons.done))
-                    : IconButton(
-                        onPressed: () => createDialog(context, Calculation(unit: unit), false),
-                        hoverColor: Colors.transparent,
-                        icon: Icon(Icons.play_arrow, color: secondaryColor)),
-              ),
-            ]))
+        .map((unit) => DataRow(
+              onSelectChanged: ((value) => isAdmin ? _newUnit(context, unit) : null),
+              cells: [
+                dataCell(context, unit.name, textAlign: TextAlign.start),
+                dataCell(context, getText(unit.type), textAlign: TextAlign.start),
+                dataCell(context, myCurrency.format(unit.capital), textAlign: TextAlign.end),
+                dataCell(context, (unit.capital * 100 / totalCapital).toStringAsFixed(2)),
+                dataCell(context, myCurrency.format(unit.profit), textAlign: TextAlign.end),
+                dataCell(context, (unit.profitability * 100).toStringAsFixed(2)),
+                ...[
+                  // unit.reservePerc,
+                  // unit.donationPerc,
+                  // unit.moneyPerc,
+                  // unit.effortPerc,
+                  // unit.thresholdPerc,
+                  // unit.foundingPerc,
+                  unit.type == 'extern' ? unit.currentMonthOrYear : monthsOfYear[unit.currentMonthOrYear - 1],
+                ].map((e) => dataCell(context, e.toString())).toList(),
+                if (isAdmin)
+                  DataCell(
+                    unit.calculated
+                        ? const Center(child: Icon(Icons.done))
+                        : IconButton(
+                            onPressed: () => createDialog(context, Calculation(unit: unit), dismissable: false),
+                            hoverColor: Colors.transparent,
+                            icon: Icon(Icons.play_arrow, color: secondaryColor)),
+                  ),
+              ],
+            ))
         .toList();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        onPressed: () => _newUnit(context, Unit()),
-        tooltip: getText('newUnit'),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton(
+              mini: true,
+              onPressed: () => _newUnit(context, Unit()),
+              tooltip: getText('newUnit'),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

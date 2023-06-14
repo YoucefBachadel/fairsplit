@@ -18,23 +18,23 @@ class _AddOtherUserState extends State<AddOtherUser> {
   late String name, phone;
   late DateTime joinDate;
   bool isLoading = false, isDeposit = false;
-  String password = '';
+  // String password = '';
 
   void deleteUser(int userId) async {
     setState(() => isLoading = true);
     Navigator.pop(context);
-    var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
-    });
+    // var res = await sqlQuery(selectUrl, {
+    //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
+    // });
 
-    if (res[0][0]['password'] == '1') {
-      await sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
+    // if (res[0][0]['password'] == '1') {
+    await sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-      snackBar(context, getMessage('deleteUser'));
-    } else {
-      snackBar(context, getMessage('wrongPassword'), duration: 1);
-    }
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+    snackBar(context, getMessage('deleteUser'));
+    // } else {
+    //   snackBar(context, getMessage('wrongPassword'), duration: 1);
+    // }
 
     setState(() => isLoading = false);
   }
@@ -45,38 +45,38 @@ class _AddOtherUserState extends State<AddOtherUser> {
     } else {
       setState(() => isLoading = true);
 
-      var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
-      });
+      // var res = await sqlQuery(selectUrl, {
+      //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
+      // });
 
-      if (res[0][0]['password'] == '1') {
-        bool isNew = widget.user.userId == -1;
-        String _type = isDeposit ? 'deposit' : 'loan';
+      // if (res[0][0]['password'] == '1') {
+      bool isNew = widget.user.userId == -1;
+      String _type = isDeposit ? 'deposit' : 'loan';
 
-        //chack if the nae exist befor
-        bool nameExist = false;
-        if (isNew || name != widget.user.name) {
-          var res = await sqlQuery(selectUrl,
-              {'sql1': '''SELECT COUNT(*) AS count FROM otherusers WHERE name = '$name' AND type = '$_type';'''});
-          nameExist = res[0][0]['count'] != '0';
-        }
-
-        if (nameExist) {
-          setState(() => isLoading = false);
-          snackBar(context, getMessage('existName'));
-        } else {
-          await sqlQuery(insertUrl, {
-            'sql1': isNew
-                ? '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);'''
-                : '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};'''
-          });
-
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-          snackBar(context, widget.user.userId == -1 ? getMessage('addUser') : getMessage('updateUser'));
-        }
-      } else {
-        snackBar(context, getMessage('wrongPassword'), duration: 1);
+      //chack if the nae exist befor
+      bool nameExist = false;
+      if (isNew || name != widget.user.name) {
+        var res = await sqlQuery(selectUrl,
+            {'sql1': '''SELECT COUNT(*) AS count FROM otherusers WHERE name = '$name' AND type = '$_type';'''});
+        nameExist = res[0][0]['count'] != '0';
       }
+
+      if (nameExist) {
+        setState(() => isLoading = false);
+        snackBar(context, getMessage('existName'));
+      } else {
+        await sqlQuery(insertUrl, {
+          'sql1': isNew
+              ? '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);'''
+              : '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};'''
+        });
+
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+        snackBar(context, widget.user.userId == -1 ? getMessage('addUser') : getMessage('updateUser'));
+      }
+      // } else {
+      //   snackBar(context, getMessage('wrongPassword'), duration: 1);
+      // }
 
       setState(() => isLoading = false);
     }
@@ -95,7 +95,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .45),
+      height: getHeight(context, .40),
       width: getWidth(context, .3),
       child: Column(
         children: [
@@ -111,9 +111,8 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                 context,
                                 getMessage('deleteOtherUserConfirmation'),
                                 () => deleteUser(widget.user.userId),
-                                onChanged: (text) => password = text,
+                                // onChanged: (text) => password = text,
                               ),
-                              true,
                             ),
                         icon: const Icon(
                           Icons.delete_forever,
@@ -266,24 +265,24 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             ),
                           ],
                         ),
-                        mySizedBox(context),
-                        Row(
-                          children: [
-                            Expanded(child: myText(getText('password'))),
-                            Expanded(
-                                flex: 4,
-                                child: Row(
-                                  children: [
-                                    myTextField(
-                                      context,
-                                      width: getWidth(context, .13),
-                                      onChanged: (text) => password = text,
-                                      isPassword: true,
-                                    ),
-                                  ],
-                                )),
-                          ],
-                        ),
+                        // mySizedBox(context),
+                        // Row(
+                        //   children: [
+                        //     Expanded(child: myText(getText('password'))),
+                        //     Expanded(
+                        //         flex: 4,
+                        //         child: Row(
+                        //           children: [
+                        //             myTextField(
+                        //               context,
+                        //               width: getWidth(context, .13),
+                        //               onChanged: (text) => password = text,
+                        //               isPassword: true,
+                        //             ),
+                        //           ],
+                        //         )),
+                        //   ],
+                        // ),
                         const Spacer(),
                         myButton(context, onTap: () => save()),
                         const Spacer(),

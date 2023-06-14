@@ -195,7 +195,7 @@ class _MyAppState extends State<MyApp> {
                                         builder: (context) => MyApp(
                                             index: tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
                               } else {
-                                await createDialog(context, passwordDialog(), true);
+                                await createDialog(context, passwordDialog());
                               }
                             },
                             child: Text(
@@ -254,11 +254,13 @@ class _MyAppState extends State<MyApp> {
       setState(() => isLoading = true);
 
       var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT IF(user = '$_password' ,1,0) AS password FROM settings;''',
+        'sql1': '''SELECT IF(user = '$_password',1,IF(admin = '$_password',2,0)) AS password FROM settings;''',
       });
 
-      if (res[0][0]['password'] == '1') {
+      if (['1', '2'].contains(res[0][0]['password'])) {
+        if (res[0][0]['password'] == '2') isAdmin = true;
         namesHidden = false;
+
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(

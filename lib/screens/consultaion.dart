@@ -27,7 +27,6 @@ class _ConsultaionState extends State<Consultaion> {
                 child: const PdfGenerator(
                   import: {'source': 'test'},
                 )),
-            true,
           );
         },
         child: const Icon(Icons.add),

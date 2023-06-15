@@ -189,6 +189,7 @@ class _MyAppState extends State<MyApp> {
                             onTap: () async {
                               if (!namesHidden) {
                                 namesHidden = true;
+                                isAdmin = false;
                                 Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(

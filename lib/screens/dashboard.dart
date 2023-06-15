@@ -1,6 +1,8 @@
+import 'package:fairsplit/models/unit.dart';
 import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../main.dart';
 import '../shared/lists.dart';
@@ -17,6 +19,7 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   bool isLoadingData = true;
+  List<Unit> units = [];
   double caisse = 0,
       reserve = 0,
       donation = 0,
@@ -42,7 +45,8 @@ class _DashboardState extends State<Dashboard> {
           (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
-          s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;'''
+          s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;''',
+      'sql2': 'SELECT name,profitability FROM units;',
     });
     var data = res[0][0];
     currentYear = int.parse(data['currentYear']);
@@ -57,6 +61,13 @@ class _DashboardState extends State<Dashboard> {
     totalDeposit = double.parse(data['totalDeposit'] ?? '0');
     totalProfit = double.parse(data['totalProfit'] ?? '0');
     reserveProfit = double.parse(data['reserveProfit'] ?? '0');
+
+    for (var unit in res[1]) {
+      units.add(Unit(
+        name: unit['name'],
+        profitability: double.parse((double.parse(unit['profitability']) * 100).toStringAsFixed(2)),
+      ));
+    }
 
     setState(() => isLoadingData = false);
   }
@@ -114,6 +125,7 @@ class _DashboardState extends State<Dashboard> {
                         child: Container(
                           margin: const EdgeInsets.all(8.0),
                           padding: const EdgeInsets.all(8.0),
+                          child: profitability == 0 ? emptyList() : chart(),
                           decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: const BorderRadius.all(Radius.circular(20)),
@@ -206,7 +218,39 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget chart() {
-    return Container();
+    return SfCircularChart(
+      title: ChartTitle(
+        text: getText('unitsProfitability'),
+        textStyle: const TextStyle(fontSize: 24, color: Colors.black),
+      ),
+      tooltipBehavior: TooltipBehavior(
+        enable: true,
+        builder: (data, point, series, pointIndex, seriesIndex) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: myText(
+              '${(data as Unit).profitability}%',
+              color: Colors.white,
+            ),
+          );
+        },
+      ),
+      series: [
+        DoughnutSeries<Unit, String>(
+            dataSource: units,
+            xValueMapper: (Unit data, _) => data.name,
+            yValueMapper: (Unit data, _) => data.profitability,
+            enableTooltip: true,
+            dataLabelSettings: DataLabelSettings(
+              isVisible: true,
+              showZeroValue: false,
+              labelPosition: ChartDataLabelPosition.outside,
+              builder: (data, point, series, pointIndex, seriesIndex) {
+                return myText('${(data as Unit).name} : ${(data.profitability / profitability).toStringAsFixed(2)}%');
+              },
+            )),
+      ],
+    );
   }
 }
 

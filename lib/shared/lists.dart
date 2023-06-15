@@ -184,6 +184,7 @@ Map<String, String> constans = {
   'false': 'False',
   'allUsers': 'All Users',
   'moneyExtern': 'Money Extern',
+  'unitsProfitability': 'Units Profitability',
 };
 
 Map<String, String> messages = {

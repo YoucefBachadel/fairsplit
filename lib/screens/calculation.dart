@@ -390,12 +390,16 @@ class _CalculationState extends State<Calculation> {
 
       counter++;
       params['sql$counter'] = transactionSQL;
-      counter++;
-      params['sql$counter'] =
-          '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,soldeCaisse,note) VALUES ($currentYear , 'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${soldeReserve + caReserve} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}' );''';
-      counter++;
-      params['sql$counter'] =
-          '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,soldeCaisse,note) VALUES ($currentYear , 'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveMoneyProfit.abs()} , ${soldeReserveProfit + caReserveMoneyProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}' );''';
+      if (caReserve != 0) {
+        counter++;
+        params['sql$counter'] =
+            '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,soldeCaisse,note) VALUES ($currentYear , 'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${soldeReserve + caReserve} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}' );''';
+      }
+      if (caReserveMoneyProfit != 0) {
+        counter++;
+        params['sql$counter'] =
+            '''INSERT INTO TransactionSP (year,category,date,type,amount,solde,soldeCaisse,note) VALUES ($currentYear , 'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveMoneyProfit.abs()} , ${soldeReserveProfit + caReserveMoneyProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}' );''';
+      }
     }
 
     await sqlQuery(insertUrl, params);

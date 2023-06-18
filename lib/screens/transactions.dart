@@ -5,12 +5,13 @@ import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../shared/functions.dart';
 import '../shared/lists.dart';
 import '../models/transaction.dart';
 import '../models/transaction_sp.dart';
 import '../screens/add_transaction.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 
 class Transactions extends StatefulWidget {
   const Transactions({Key? key}) : super(key: key);

@@ -30,9 +30,9 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   bitsdojo_window: ^0.1.5
+  file_picker: ^5.0.2
   flutter:
     sdk: flutter
-  flutter_localization: ^0.1.12
   flutter_localizations:
     sdk: flutter
   http: ^0.13.4
@@ -42,7 +42,9 @@ dependencies:
   printing: ^5.7.5
   provider: ^6.0.5
   syncfusion_flutter_charts: ^21.2.4
+  syncfusion_flutter_xlsio: ^21.2.3
   toggle_switch: ^2.1.0
+  universal_html: ^2.2.2
 
 dev_dependencies:
   flutter_lints: ^1.0.0

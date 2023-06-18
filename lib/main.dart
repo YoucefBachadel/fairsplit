@@ -1,6 +1,7 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fairsplit/providers/filter.dart';
 import 'package:fairsplit/screens/profit_history.dart';
+import 'package:fairsplit/shared/functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,8 +14,8 @@ import 'screens/user_history.dart';
 import 'screens/users.dart';
 import 'screens/dashboard.dart';
 import 'screens/unit_history.dart';
-import 'shared/parameters.dart';
-import 'widgets/widget.dart';
+import 'shared/constants.dart';
+import 'shared/widgets.dart';
 
 // textTheme: GoogleFonts.gothicA1TextTheme(),
 // textTheme: GoogleFonts.gothicA1TextTheme(),
@@ -28,7 +29,11 @@ void main() {
         ChangeNotifierProvider(create: (_) => Filter()),
       ],
       child: MaterialApp(
-        localizationsDelegates: const [GlobalMaterialLocalizations.delegate],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         supportedLocales: const [Locale('fr')],
         debugShowCheckedModeBanner: false,
         title: 'FairSplit',
@@ -67,25 +72,24 @@ void main() {
   });
 }
 
-final buttonColors = WindowButtonColors(
-  iconNormal: Colors.white,
-  mouseOver: const Color(0xFFF6A00C),
-  mouseDown: const Color(0xFF805306),
-  iconMouseOver: const Color(0xFF805306),
-  iconMouseDown: const Color(0xFFFFD500),
-);
-
-final closeButtonColors = WindowButtonColors(
-  mouseOver: const Color(0xFFD32F2F),
-  mouseDown: const Color(0xFFB71C1C),
-  iconNormal: Colors.white,
-  iconMouseOver: Colors.white,
-);
-
 class WindowButtons extends StatelessWidget {
   const WindowButtons({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    final buttonColors = WindowButtonColors(
+      iconNormal: Colors.white,
+      mouseOver: const Color(0xFFF6A00C),
+      mouseDown: const Color(0xFF805306),
+      iconMouseOver: const Color(0xFF805306),
+      iconMouseDown: const Color(0xFFFFD500),
+    );
+
+    final closeButtonColors = WindowButtonColors(
+      mouseOver: const Color(0xFFD32F2F),
+      mouseDown: const Color(0xFFB71C1C),
+      iconNormal: Colors.white,
+      iconMouseOver: Colors.white,
+    );
     return Row(
       children: [
         MinimizeWindowButton(colors: buttonColors),
@@ -118,6 +122,7 @@ class _MyAppState extends State<MyApp> {
     'ush': 6,
     'unh': 7,
   };
+
   List<String> tabs = [
     getText('dashboard'),
     getText('units'),
@@ -128,6 +133,7 @@ class _MyAppState extends State<MyApp> {
     getText('userHistory'),
     getText('unitHistory'),
   ];
+
   List<Widget> tabScreens = [
     const Dashboard(),
     const Units(),
@@ -154,11 +160,14 @@ class _MyAppState extends State<MyApp> {
           WindowTitleBarBox(
             child: Container(
               color: primaryColor,
-              child: Row(
-                children: [
-                  Expanded(child: MoveWindow(child: Center(child: myText("FairSplit", color: Colors.white, size: 22)))),
-                  const WindowButtons()
-                ],
+              child: MoveWindow(
+                child: Stack(
+                  children: [
+                    // mySizedBox(context),
+                    Positioned.fill(child: Center(child: myText("FairSplit", color: Colors.white, size: 22))),
+                    const Positioned(right: 0, child: WindowButtons())
+                  ],
+                ),
               ),
             ),
           ),

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
-import '../shared/lists.dart';
-import '../shared/parameters.dart';
+import 'lists.dart';
+import 'constants.dart';
 
 Widget myProgress({Color? color}) {
   color = color ?? primaryColor;
@@ -124,19 +123,6 @@ Widget myDropDown(
   );
 }
 
-String dateFormat(DateTime date) => DateFormat('dd-MM-yyyy').format(date);
-
-Future createDialog(BuildContext context, Widget content, {bool dismissable = true}) {
-  return showDialog(
-      barrierDismissible: dismissable,
-      context: context,
-      builder: (context) => StatefulBuilder(
-          builder: (context, setState) => Dialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-                child: content,
-              )));
-}
-
 Widget delteConfirmation(
   BuildContext context,
   String message,
@@ -207,23 +193,6 @@ Widget emptyList() {
       style: const TextStyle(fontSize: 30, color: Colors.grey),
     ),
   );
-}
-
-void snackBar(BuildContext context, String message, {int duration = 3}) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-      elevation: 1.0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 2.0),
-        borderRadius: BorderRadius.circular(6.0),
-      ),
-      content: Text(
-        message,
-        textAlign: TextAlign.center,
-      ),
-      duration: Duration(seconds: duration),
-    ));
 }
 
 InputDecoration textInputDecoration(String hint) {

@@ -8,11 +8,12 @@ import '../models/effort.dart';
 import '../models/founding.dart';
 import '../models/threshold.dart';
 import '../providers/filter.dart';
+import '../shared/functions.dart';
 import '../shared/lists.dart';
 import '../models/unit.dart';
 import '../models/user.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 import '../screens/add_user.dart';
 import 'add_transaction.dart';
 
@@ -649,6 +650,13 @@ class _UsersState extends State<Users> {
             )
           ],
         ),
+        const SizedBox(width: 8.0),
+        IconButton(
+            onPressed: () => createExcel([], 'users'),
+            icon: Icon(
+              Icons.file_download,
+              color: primaryColor,
+            )),
         const SizedBox(width: 8.0),
         (_controller.text.isNotEmpty ||
                 _type != 'tout' ||

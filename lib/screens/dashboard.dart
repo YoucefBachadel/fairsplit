@@ -5,9 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../main.dart';
+import '../shared/functions.dart';
 import '../shared/lists.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 import 'add_transaction.dart';
 
 class Dashboard extends StatefulWidget {

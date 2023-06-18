@@ -16,7 +16,7 @@ Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 
 List<pdf.Font> fonts = [];
 double textFeildHeight = .05;
-// String host = 'http://localhost/fairsplit';
+
 String host = 'http://fairsplit.assala.com/php_test';
 // String host = 'http://fairsplit.assala.com/php';
 
@@ -30,6 +30,8 @@ dynamic sqlQuery(Uri uri, dynamic params) async {
 }
 
 NumberFormat myCurrency = NumberFormat.currency(symbol: '', customPattern: '#,##0.00', locale: 'fr_FR');
+
+String dateFormat(DateTime date) => DateFormat('dd-MM-yyyy').format(date);
 
 DateFormat myDateFormate = DateFormat('dd-MM-yyyy');
 DateFormat myDateFormate2 = DateFormat('dd MMM yyyy');

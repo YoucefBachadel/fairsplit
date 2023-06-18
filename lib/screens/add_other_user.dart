@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../models/other_user.dart';
 import '../main.dart';
+import '../shared/functions.dart';
 import '../shared/lists.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 
 class AddOtherUser extends StatefulWidget {
   final OtherUser user;

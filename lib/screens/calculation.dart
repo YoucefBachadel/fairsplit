@@ -1,13 +1,14 @@
 import 'dart:collection';
 
 import 'package:fairsplit/models/transaction.dart';
-import 'package:fairsplit/widgets/widget.dart';
+import 'package:fairsplit/shared/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../main.dart';
+import '../shared/functions.dart';
 import '../shared/lists.dart';
-import '/shared/parameters.dart';
+import '../shared/constants.dart';
 import '/models/unit.dart';
 import '/models/user.dart';
 

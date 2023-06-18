@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../models/user_history.dart';
 import '../shared/lists.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 
 class UserHistoryScreen extends StatefulWidget {
   const UserHistoryScreen({Key? key}) : super(key: key);

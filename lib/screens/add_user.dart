@@ -5,9 +5,10 @@ import '../models/founding.dart';
 import '../models/threshold.dart' as my_threshold;
 import '../models/unit.dart';
 import '../main.dart';
+import '../shared/functions.dart';
 import '../shared/lists.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 import '../models/user.dart';
 
 class AddUser extends StatefulWidget {

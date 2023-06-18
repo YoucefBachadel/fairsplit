@@ -4,8 +4,8 @@ import 'package:fairsplit/models/profit.dart';
 import 'package:flutter/material.dart';
 
 import '../shared/lists.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 
 class ProfitHistory extends StatefulWidget {
   const ProfitHistory({super.key});

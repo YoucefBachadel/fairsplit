@@ -6,9 +6,10 @@ import 'package:provider/provider.dart';
 import '../main.dart';
 import '../models/other_user.dart';
 import '../screens/add_other_user.dart';
+import '../shared/functions.dart';
 import '../shared/lists.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 
 class OtherUsers extends StatefulWidget {
   const OtherUsers({Key? key}) : super(key: key);

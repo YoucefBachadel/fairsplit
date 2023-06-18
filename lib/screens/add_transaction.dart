@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 import '../models/user.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/functions.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 import '../main.dart';
 import '../shared/lists.dart';
 

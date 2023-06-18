@@ -2,9 +2,10 @@ import 'package:fairsplit/screens/calculation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/unit.dart';
+import '../shared/functions.dart';
 import '../shared/lists.dart';
-import '../shared/parameters.dart';
-import '../widgets/widget.dart';
+import '../shared/constants.dart';
+import '../shared/widgets.dart';
 import 'add_unit.dart';
 
 class Units extends StatefulWidget {

@@ -1,4 +1,4 @@
-import 'package:fairsplit/shared/parameters.dart';
+import 'package:fairsplit/shared/constants.dart';
 
 import '../models/effort.dart';
 import '../models/founding.dart';

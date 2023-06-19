@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:fairsplit/models/profit.dart';
 import 'package:flutter/material.dart';
 
+import '../shared/functions.dart';
 import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
@@ -351,6 +352,47 @@ class _ProfitHistoryState extends State<ProfitHistory> {
             )
           ],
         ),
+        mySizedBox(context),
+        IconButton(
+            onPressed: () => createExcel(
+                  [
+                    [
+                      '#',
+                      getText('name'),
+                      getText('type'),
+                      getText('year'),
+                      getText('month'),
+                      getText('profit'),
+                      getText('profitability'),
+                      getText('reserve'),
+                      getText('donation'),
+                      getText('money'),
+                      getText('effort'),
+                      getText('threshold'),
+                      getText('founding'),
+                    ],
+                    ...profitsHistory.map((profit) => [
+                          profitsHistory.indexOf(profit) + 1,
+                          profit.name,
+                          getText(profit.type),
+                          profit.year,
+                          profit.month == 0 ? '/' : monthsOfYear.elementAt(profit.month - 1),
+                          profit.profit,
+                          (profit.profitability * 100).toStringAsFixed(2),
+                          profit.reserve,
+                          profit.donation,
+                          profit.money,
+                          profit.effort,
+                          profit.threshold,
+                          profit.founding,
+                        ])
+                  ],
+                  getText('profitHistory'),
+                ),
+            icon: Icon(
+              Icons.file_download,
+              color: primaryColor,
+            )),
         mySizedBox(context),
         (_name != 'tout' || _year != 'tout' || _month != 'tout' || _type != 'tout')
             ? IconButton(

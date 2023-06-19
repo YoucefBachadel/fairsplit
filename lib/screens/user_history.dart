@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 
 import '../models/user_history.dart';
+import '../shared/functions.dart';
 import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
@@ -405,7 +406,48 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
             )
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
+        IconButton(
+            onPressed: () => createExcel(
+                  [
+                    [
+                      '#',
+                      getText('name'),
+                      getText('type'),
+                      getText('year'),
+                      getText('startCapital'),
+                      getText('totalIn'),
+                      getText('totalOut'),
+                      getText('moneyProfit'),
+                      getText('effortProfit'),
+                      getText('thresholdProfit'),
+                      getText('foundingProfit'),
+                      getText('totalProfit'),
+                      getText('zakat'),
+                    ],
+                    ...usersHistory.map((user) => [
+                          usersHistory.indexOf(user) + 1,
+                          user.name,
+                          getText(user.type),
+                          user.year,
+                          user.startCapital,
+                          user.totalIn,
+                          user.totalOut,
+                          user.moneyProfit,
+                          user.effortProfit,
+                          user.thresholdProfit,
+                          user.foundingProfit,
+                          user.totalProfit,
+                          user.zakat,
+                        ])
+                  ],
+                  getText('userHistory'),
+                ),
+            icon: Icon(
+              Icons.file_download,
+              color: primaryColor,
+            )),
+        mySizedBox(context),
         (_controller.text.isNotEmpty || _year != 'tout')
             ? IconButton(
                 onPressed: () => setState(() {

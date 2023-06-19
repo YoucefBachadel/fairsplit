@@ -36,10 +36,19 @@ Future createDialog(BuildContext context, Widget content, {bool dismissable = tr
               )));
 }
 
-Future<void> createExcel(List<List<String>> data, String name) async {
+Future<void> createExcel(List<List<dynamic>> data, String name) async {
   final Workbook workbook = Workbook();
   final Worksheet sheet = workbook.worksheets[0];
-  sheet.getRangeByName('A1').setText('Fairsplit');
+
+  int i = 1, j = 1;
+  for (var row in data) {
+    for (var element in row) {
+      sheet.getRangeByIndex(i, j).setText(element.toString());
+      j++;
+    }
+    j = 1;
+    i++;
+  }
   final List<int> bytes = workbook.saveAsStream();
   workbook.dispose();
 
@@ -48,16 +57,22 @@ Future<void> createExcel(List<List<String>> data, String name) async {
       ..setAttribute('download', '$name.xlsx')
       ..click();
   } else {
-    String? outputFile = await FilePicker.platform.saveFile(
+    final String? initialDirectory = (await getDownloadsDirectory())?.path;
+    String? fileName = await FilePicker.platform.saveFile(
       dialogTitle: 'Please select an output file:',
-      fileName: 'output-file.pdf',
+      initialDirectory: initialDirectory,
+      fileName: name,
+      allowedExtensions: ['xlsx'],
     );
 
-    if (outputFile != null) {
-      final String? path = (await getDownloadsDirectory())?.path;
-      final String fileName = Platform.isWindows ? '$path\\$name.xlsx' : '$path/$name.xlsx';
-      final File file = File(fileName);
+    if (fileName != null) {
+      final File file = File('$fileName.xlsx');
       await file.writeAsBytes(bytes, flush: true);
     }
   }
+
+  // final String? path = (await getDownloadsDirectory())?.path;
+  // final String fileName = Platform.isWindows ? '$path\\$name.xlsx' : '$path/$name.xlsx';
+  // final File file = File(fileName);
+  // await file.writeAsBytes(bytes, flush: true);
 }

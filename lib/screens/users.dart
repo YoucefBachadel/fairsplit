@@ -522,7 +522,7 @@ class _UsersState extends State<Users> {
             ),
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -552,7 +552,7 @@ class _UsersState extends State<Users> {
             ),
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -583,7 +583,7 @@ class _UsersState extends State<Users> {
             )
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -614,7 +614,7 @@ class _UsersState extends State<Users> {
             )
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -650,14 +650,48 @@ class _UsersState extends State<Users> {
             )
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         IconButton(
-            onPressed: () => createExcel([], 'users'),
+            onPressed: () => createExcel(
+                  [
+                    [
+                      '#',
+                      getText('name'),
+                      getText('phone'),
+                      getText('joinDate'),
+                      getText('type'),
+                      getText('capital'),
+                      getText('money'),
+                      getText('effort'),
+                      getText('threshold'),
+                      getText('founding'),
+                      if (_thresholdUnitFilter != -2) getText('threshold'),
+                      if (_foundingUnitFilter != -2) getText('founding'),
+                      if (_effortUnitFilter != -2) ...[getText('effort'), getText('evaluation')]
+                    ],
+                    ...users.map((user) => [
+                          users.indexOf(user) + 1,
+                          user.name,
+                          user.phone,
+                          myDateFormate.format(user.joinDate),
+                          getText(user.type),
+                          user.capital,
+                          user.money + user.moneyExtern,
+                          user.effort + user.effortExtern,
+                          user.threshold,
+                          user.founding,
+                          if (_thresholdUnitFilter != -2) user.thresholdPerc,
+                          if (_foundingUnitFilter != -2) user.foundingPerc,
+                          if (_effortUnitFilter != -2) ...[user.effortPerc, user.evaluation]
+                        ])
+                  ],
+                  getText('users'),
+                ),
             icon: Icon(
               Icons.file_download,
               color: primaryColor,
             )),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         (_controller.text.isNotEmpty ||
                 _type != 'tout' ||
                 _thresholdUnitFilter != -2 ||

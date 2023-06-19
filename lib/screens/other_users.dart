@@ -323,7 +323,7 @@ class _OtherUsersState extends State<OtherUsers> {
             ),
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -349,7 +349,26 @@ class _OtherUsersState extends State<OtherUsers> {
             ),
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
+        IconButton(
+            onPressed: () => createExcel(
+                  [
+                    ['#', getText('name'), getText('type'), getText('amount'), getText('rest')],
+                    ...users.map((user) => [
+                          users.indexOf(user) + 1,
+                          user.name,
+                          getText(user.type),
+                          user.amount,
+                          user.rest,
+                        ]),
+                  ],
+                  getText('otherUsers'),
+                ),
+            icon: Icon(
+              Icons.file_download,
+              color: primaryColor,
+            )),
+        mySizedBox(context),
         (_controller.text.isNotEmpty || _type != 'tout')
             ? IconButton(
                 onPressed: () => setState(() {

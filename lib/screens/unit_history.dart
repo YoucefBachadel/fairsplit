@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 
+import '../shared/functions.dart';
 import '../shared/lists.dart';
 import '../models/unit_history.dart';
 import '../shared/constants.dart';
@@ -290,7 +291,48 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
             )
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
+        IconButton(
+            onPressed: () => createExcel(
+                  [
+                    [
+                      '#',
+                      getText('name'),
+                      getText('year'),
+                      getText('rawProfit'),
+                      getText('reserve'),
+                      getText('donation'),
+                      getText('netProfit'),
+                      getText('money'),
+                      getText('effort'),
+                      getText('threshold'),
+                      getText('founding'),
+                      getText('capital'),
+                      getText('profitability'),
+                    ],
+                    ...unitsHistory.map((unit) => [
+                          unitsHistory.indexOf(unit) + 1,
+                          unit.name,
+                          unit.year,
+                          unit.rawProfit,
+                          unit.reserve,
+                          unit.donation,
+                          unit.netProfit,
+                          unit.money,
+                          unit.effort,
+                          unit.threshold,
+                          unit.founding,
+                          unit.capital,
+                          (unit.profitability * 100).toStringAsFixed(2),
+                        ])
+                  ],
+                  getText('unitHistory'),
+                ),
+            icon: Icon(
+              Icons.file_download,
+              color: primaryColor,
+            )),
+        mySizedBox(context),
         (_name != 'tout' || _year != 'tout')
             ? IconButton(
                 onPressed: () => setState(() {

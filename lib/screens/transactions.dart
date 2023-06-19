@@ -908,9 +908,9 @@ class _TransactionsState extends State<Transactions> {
             _toDate = today.add(const Duration(seconds: 86399));
           }),
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         const SizedBox(height: 40, child: VerticalDivider()),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         if (transactionCategory == 'specials')
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -996,7 +996,7 @@ class _TransactionsState extends State<Transactions> {
                 },
               )
             : const SizedBox(),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1024,7 +1024,7 @@ class _TransactionsState extends State<Transactions> {
             ),
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1061,7 +1061,7 @@ class _TransactionsState extends State<Transactions> {
             ),
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1102,7 +1102,7 @@ class _TransactionsState extends State<Transactions> {
             ),
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1145,7 +1145,7 @@ class _TransactionsState extends State<Transactions> {
             ),
           ],
         ),
-        const SizedBox(width: 8.0),
+        mySizedBox(context),
         IconButton(
           icon: Icon(
             Icons.calendar_month,
@@ -1166,6 +1166,14 @@ class _TransactionsState extends State<Transactions> {
             }
           },
         ),
+        mySizedBox(context),
+        IconButton(
+            onPressed: () => createExcel([], getText('transaction')),
+            icon: Icon(
+              Icons.file_download,
+              color: primaryColor,
+            )),
+        mySizedBox(context),
         (_controller.text.isNotEmpty ||
                 _compt != 'tout' ||
                 _type != 'tout' ||

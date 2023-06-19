@@ -163,9 +163,8 @@ class _MyAppState extends State<MyApp> {
               child: MoveWindow(
                 child: Stack(
                   children: [
-                    // mySizedBox(context),
                     Positioned.fill(child: Center(child: myText("FairSplit", color: Colors.white, size: 22))),
-                    const Positioned(right: 0, child: WindowButtons())
+                    const Positioned(right: 0, child: WindowButtons()),
                   ],
                 ),
               ),

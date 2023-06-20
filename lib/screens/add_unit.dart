@@ -156,7 +156,7 @@ class _AddUnitState extends State<AddUnit> {
           ),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               decoration: BoxDecoration(
                   color: scaffoldColor,
                   borderRadius: const BorderRadius.only(
@@ -165,25 +165,28 @@ class _AddUnitState extends State<AddUnit> {
                   )),
               child: isLoading
                   ? myProgress()
-                  : Column(
-                      children: [
-                        information(),
-                        // const Spacer(),
-                        // SizedBox(
-                        //   width: getWidth(context, .2),
-                        //   child: myTextField(
-                        //     context,
-                        //     width: getWidth(context, .13),
-                        //     onChanged: (text) => password = text,
-                        //     isPassword: true,
-                        //     isCenter: true,
-                        //     hint: getText('password'),
-                        //   ),
-                        // ),
-                        const Spacer(),
-                        myButton(context, onTap: () => save()),
-                        const Spacer(),
-                      ],
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          mySizedBox(context),
+                          information(),
+                          // mySizedBox(context),
+                          // SizedBox(
+                          //   width: getWidth(context, .2),
+                          //   child: myTextField(
+                          //     context,
+                          //     width: getWidth(context, .13),
+                          //     onChanged: (text) => password = text,
+                          //     isPassword: true,
+                          //     isCenter: true,
+                          //     hint: getText('password'),
+                          //   ),
+                          // ),
+                          mySizedBox(context),
+                          myButton(context, onTap: () => save()),
+                          mySizedBox(context),
+                        ],
+                      ),
                     ),
             ),
           )

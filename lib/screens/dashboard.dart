@@ -66,7 +66,7 @@ class _DashboardState extends State<Dashboard> {
     for (var unit in res[1]) {
       units.add(Unit(
         name: unit['name'],
-        profitability: double.parse((double.parse(unit['profitability']) * 100).toStringAsFixed(2)),
+        profitability: double.parse(unit['profitability']) * 100,
       ));
     }
 
@@ -230,7 +230,7 @@ class _DashboardState extends State<Dashboard> {
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: myText(
-              '${(data as Unit).profitability}%',
+              '${(data as Unit).profitability.toStringAsFixed(2)}%',
               color: Colors.white,
             ),
           );

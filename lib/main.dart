@@ -59,8 +59,6 @@ void main() {
     ),
   );
 
-  // Add this code below
-
   doWhenWindowReady(() {
     const initialSize = Size(1800, 950);
     appWindow.minSize = initialSize;

@@ -291,47 +291,48 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
             )
           ],
         ),
-        mySizedBox(context),
-        IconButton(
-            onPressed: () => createExcel(
-                  [
+        if (!namesHidden) mySizedBox(context),
+        if (!namesHidden)
+          IconButton(
+              onPressed: () => createExcel(
                     [
-                      '#',
-                      getText('name'),
-                      getText('year'),
-                      getText('rawProfit'),
-                      getText('reserve'),
-                      getText('donation'),
-                      getText('netProfit'),
-                      getText('money'),
-                      getText('effort'),
-                      getText('threshold'),
-                      getText('founding'),
-                      getText('capital'),
-                      getText('profitability'),
+                      [
+                        '#',
+                        getText('name'),
+                        getText('year'),
+                        getText('rawProfit'),
+                        getText('reserve'),
+                        getText('donation'),
+                        getText('netProfit'),
+                        getText('money'),
+                        getText('effort'),
+                        getText('threshold'),
+                        getText('founding'),
+                        getText('capital'),
+                        getText('profitability'),
+                      ],
+                      ...unitsHistory.map((unit) => [
+                            unitsHistory.indexOf(unit) + 1,
+                            unit.name,
+                            unit.year,
+                            unit.rawProfit,
+                            unit.reserve,
+                            unit.donation,
+                            unit.netProfit,
+                            unit.money,
+                            unit.effort,
+                            unit.threshold,
+                            unit.founding,
+                            unit.capital,
+                            (unit.profitability * 100).toStringAsFixed(2),
+                          ])
                     ],
-                    ...unitsHistory.map((unit) => [
-                          unitsHistory.indexOf(unit) + 1,
-                          unit.name,
-                          unit.year,
-                          unit.rawProfit,
-                          unit.reserve,
-                          unit.donation,
-                          unit.netProfit,
-                          unit.money,
-                          unit.effort,
-                          unit.threshold,
-                          unit.founding,
-                          unit.capital,
-                          (unit.profitability * 100).toStringAsFixed(2),
-                        ])
-                  ],
-                  getText('unitHistory'),
-                ),
-            icon: Icon(
-              Icons.file_download,
-              color: primaryColor,
-            )),
+                    getText('unitHistory'),
+                  ),
+              icon: Icon(
+                Icons.file_download,
+                color: primaryColor,
+              )),
         mySizedBox(context),
         (_name != 'tout' || _year != 'tout')
             ? IconButton(

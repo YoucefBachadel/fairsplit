@@ -593,8 +593,7 @@ class _TransactionsState extends State<Transactions> {
                     textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, getText(transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(
-                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
                     textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
                 dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
@@ -630,8 +629,7 @@ class _TransactionsState extends State<Transactions> {
                     namesHidden ? userNames.toList().indexOf(transaction.userName).toString() : transaction.userName,
                     textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(
-                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
                     textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
                 dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
@@ -665,8 +663,7 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, (transactionsSP.indexOf(transaction) + 1).toString()),
                 dataCell(context, getText(transaction.category), textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(
-                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
                     textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
                 dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
@@ -702,8 +699,7 @@ class _TransactionsState extends State<Transactions> {
                     namesHidden ? loanNames.toList().indexOf(transaction.userName).toString() : transaction.userName,
                     textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(
-                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
                     textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
                 dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
@@ -739,8 +735,7 @@ class _TransactionsState extends State<Transactions> {
                     namesHidden ? depositNames.toList().indexOf(transaction.userName).toString() : transaction.userName,
                     textAlign: namesHidden ? TextAlign.center : TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(
-                    context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
+                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
                     textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
                 dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
@@ -1166,13 +1161,90 @@ class _TransactionsState extends State<Transactions> {
             }
           },
         ),
-        mySizedBox(context),
-        IconButton(
-            onPressed: () => createExcel([], getText('transaction')),
-            icon: Icon(
-              Icons.file_download,
-              color: primaryColor,
-            )),
+        if (!namesHidden) mySizedBox(context),
+        if (!namesHidden)
+          IconButton(
+              onPressed: () => createExcel(
+                    [
+                      [
+                        '#',
+                        if (transactionCategory == 'specials') getText('category') else getText('name'),
+                        if (transactionCategory == 'caisse') getText('source'),
+                        getText('date'),
+                        getText('type'),
+                        getText('in'),
+                        getText('out'),
+                        if (transactionCategory == 'caisse')
+                          getText('soldeCaisse')
+                        else if (transactionCategory == 'specials')
+                          getText('solde')
+                        else
+                          getText('soldeUser'),
+                        getText('note'),
+                      ],
+                      if (transactionCategory == 'caisse')
+                        ...transactions.map((trans) => [
+                              transactions.indexOf(trans) + 1,
+                              trans.userName,
+                              getText(trans.source),
+                              myDateFormate.format(trans.date),
+                              trans.type == 'in' ? getText('in') : getText('out'),
+                              trans.type == 'in' ? trans.amount : '/',
+                              trans.type == 'out' ? trans.amount : '/',
+                              trans.soldeCaisse,
+                              trans.note,
+                            ])
+                      else if (transactionCategory == 'users')
+                        ...transactions.map((trans) => [
+                              transactions.indexOf(trans) + 1,
+                              trans.userName,
+                              myDateFormate.format(trans.date),
+                              trans.type == 'in' ? getText('in') : getText('out'),
+                              trans.type == 'in' ? trans.amount : '/',
+                              trans.type == 'out' ? trans.amount : '/',
+                              trans.soldeUser,
+                              trans.note,
+                            ])
+                      else if (transactionCategory == 'specials')
+                        ...transactionsSP.map((trans) => [
+                              transactionsSP.indexOf(trans) + 1,
+                              trans.category,
+                              myDateFormate.format(trans.date),
+                              trans.type == 'in' ? getText('in') : getText('out'),
+                              trans.type == 'in' ? trans.amount : '/',
+                              trans.type == 'out' ? trans.amount : '/',
+                              trans.solde,
+                              trans.note,
+                            ])
+                      else if (transactionCategory == 'loans')
+                        ...loanTransactions.map((trans) => [
+                              loanTransactions.indexOf(trans) + 1,
+                              trans.userName,
+                              myDateFormate.format(trans.date),
+                              trans.type == 'in' ? getText('in') : getText('out'),
+                              trans.type == 'in' ? trans.amount : '/',
+                              trans.type == 'out' ? trans.amount : '/',
+                              trans.soldeUser,
+                              trans.note,
+                            ])
+                      else
+                        ...depositTransactions.map((trans) => [
+                              depositTransactions.indexOf(trans) + 1,
+                              trans.userName,
+                              myDateFormate.format(trans.date),
+                              trans.type == 'in' ? getText('in') : getText('out'),
+                              trans.type == 'in' ? trans.amount : '/',
+                              trans.type == 'out' ? trans.amount : '/',
+                              trans.soldeUser,
+                              trans.note,
+                            ])
+                    ],
+                    getText('transaction'),
+                  ),
+              icon: Icon(
+                Icons.file_download,
+                color: primaryColor,
+              )),
         mySizedBox(context),
         (_controller.text.isNotEmpty ||
                 _compt != 'tout' ||

@@ -25,6 +25,7 @@ class _OtherUsersState extends State<OtherUsers> {
   bool isloading = true;
   String _search = '';
   String _type = 'tout';
+  double totalLoan = 0, totalDeposit = 0;
   int? _sortColumnIndex = 1;
   bool _isAscending = true;
   TextEditingController _controller = TextEditingController();
@@ -65,9 +66,14 @@ class _OtherUsersState extends State<OtherUsers> {
 
   void filterUsers() {
     users.clear();
+    totalLoan = 0;
+    totalDeposit = 0;
     for (var user in allUsers) {
       if ((_search.isEmpty || user.name == _search || (namesHidden && user.userId == int.parse(_search))) &&
-          (_type == 'tout' || user.type == _type)) users.add(user);
+          (_type == 'tout' || user.type == _type)) {
+        users.add(user);
+        user.type == 'loan' ? totalLoan += user.rest : totalDeposit += user.rest;
+      }
     }
 
     onSort();
@@ -213,6 +219,19 @@ class _OtherUsersState extends State<OtherUsers> {
                             _controllerV,
                           ),
           ),
+          mySizedBox(context),
+          SizedBox(width: getWidth(context, .52), child: const Divider()),
+          mySizedBox(context),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              myText('${getText('totalLoan')} :      ${myCurrency.format(totalLoan)}'),
+              SizedBox(width: getWidth(context, .05)),
+              myText('${getText('totalDeposit')} :      ${myCurrency.format(totalDeposit)}'),
+              SizedBox(width: getWidth(context, .05)),
+            ],
+          ),
+          mySizedBox(context),
         ]),
       ),
     );

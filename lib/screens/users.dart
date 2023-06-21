@@ -34,6 +34,13 @@ class _UsersState extends State<Users> {
   int _thresholdUnitFilter = -2;
   int _foundingUnitFilter = -2;
   int _effortUnitFilter = -2;
+  double tcapital = 0,
+      tweightedCapital = 0,
+      tinitialCapital = 0,
+      tmoney = 0,
+      teffort = 0,
+      tthreshold = 0,
+      tfounding = 0;
 
   int? _sortColumnIndex = 1;
   bool _isAscending = true;
@@ -79,6 +86,14 @@ class _UsersState extends State<Users> {
     bool _isfoundingFilter = false;
     bool _iseffortFilter = false;
 
+    tcapital = 0;
+    tweightedCapital = 0;
+    tinitialCapital = 0;
+    tmoney = 0;
+    teffort = 0;
+    tthreshold = 0;
+    tfounding = 0;
+
     users.clear();
     for (var user in allUsers) {
       //first we check if selected threshold filter exist in the user list of thresholds
@@ -118,7 +133,17 @@ class _UsersState extends State<Users> {
           (_type == 'tout' || user.type == _type) &&
           (_thresholdUnitFilter == -2 || _isthresholdFilter) &&
           (_foundingUnitFilter == -2 || _isfoundingFilter) &&
-          (_effortUnitFilter == -2 || _iseffortFilter)) users.add(user);
+          (_effortUnitFilter == -2 || _iseffortFilter)) {
+        users.add(user);
+
+        tcapital += user.capital;
+        tweightedCapital += user.weightedCapital;
+        tinitialCapital += user.initialCapital;
+        tmoney += user.money;
+        teffort += user.effort;
+        tthreshold += user.threshold;
+        tfounding += user.founding;
+      }
 
       //at the end we reset the serch atrebut for the next user
       _isthresholdFilter = false;
@@ -151,28 +176,35 @@ class _UsersState extends State<Users> {
       case 5:
         users.sort((tr1, tr2) {
           return !_isAscending
-              ? (tr2.money + tr2.moneyExtern).compareTo(tr1.money + tr1.moneyExtern)
-              : (tr1.money + tr1.moneyExtern).compareTo(tr2.money + tr2.moneyExtern);
+              ? (tr2.money + tr2.initialCapital).compareTo(tr1.money + tr1.initialCapital)
+              : (tr1.money + tr1.initialCapital).compareTo(tr2.money + tr2.initialCapital);
         });
         break;
       case 6:
         users.sort((tr1, tr2) {
-          return !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold);
+          return !_isAscending
+              ? (tr2.money + tr2.moneyExtern).compareTo(tr1.money + tr1.moneyExtern)
+              : (tr1.money + tr1.moneyExtern).compareTo(tr2.money + tr2.moneyExtern);
         });
         break;
       case 7:
         users.sort((tr1, tr2) {
-          return !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding);
+          return !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold);
         });
         break;
       case 8:
+        users.sort((tr1, tr2) {
+          return !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding);
+        });
+        break;
+      case 9:
         users.sort((tr1, tr2) {
           return !_isAscending
               ? (tr2.effort + tr2.effortExtern).compareTo(tr1.effort + tr1.effortExtern)
               : (tr1.effort + tr1.effortExtern).compareTo(tr2.effort + tr2.effortExtern);
         });
         break;
-      case 9:
+      case 10:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2) {
             return !_isAscending
@@ -187,7 +219,7 @@ class _UsersState extends State<Users> {
           }
         });
         break;
-      case 10:
+      case 11:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2 && _foundingUnitFilter != -2) {
             return !_isAscending
@@ -201,7 +233,7 @@ class _UsersState extends State<Users> {
           }
         });
         break;
-      case 11:
+      case 12:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2 && _foundingUnitFilter != -2) {
             return !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort);
@@ -210,7 +242,7 @@ class _UsersState extends State<Users> {
           }
         });
         break;
-      case 12:
+      case 13:
         users.sort((tr1, tr2) {
           return !_isAscending ? tr2.evaluation.compareTo(tr1.evaluation) : tr1.evaluation.compareTo(tr2.evaluation);
         });
@@ -253,6 +285,7 @@ class _UsersState extends State<Users> {
       ...[
         getText('capital'),
         getText('weightedCapital'),
+        getText('initialCapital'),
         getText('money'),
         getText('threshold'),
         getText('founding'),
@@ -308,6 +341,11 @@ class _UsersState extends State<Users> {
                 dataCell(
                   context,
                   user.type == 'effort' ? '/' : myCurrency.format(user.weightedCapital),
+                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                ),
+                dataCell(
+                  context,
+                  user.type == 'effort' ? '/' : myCurrency.format(user.initialCapital),
                   textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
                 ),
                 dataCell(
@@ -411,6 +449,36 @@ class _UsersState extends State<Users> {
                                 _controllerH,
                                 _controllerV,
                               )),
+            mySizedBox(context),
+            SizedBox(width: getWidth(context, .52), child: const Divider()),
+            mySizedBox(context),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    totalItem(context, getText('capital'), myCurrency.format(tcapital)),
+                    totalItem(context, getText('weightedCapital'), myCurrency.format(tweightedCapital)),
+                    totalItem(context, getText('initialCapital'), myCurrency.format(tinitialCapital)),
+                  ],
+                ),
+                SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
+                Column(
+                  children: [
+                    totalItem(context, getText('money'), myCurrency.format(tmoney)),
+                    totalItem(context, getText('effort'), myCurrency.format(teffort)),
+                  ],
+                ),
+                SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
+                Column(
+                  children: [
+                    totalItem(context, getText('threshold'), myCurrency.format(tthreshold)),
+                    totalItem(context, getText('founding'), myCurrency.format(tfounding)),
+                  ],
+                ),
+              ],
+            ),
+            mySizedBox(context),
           ],
         ),
       ),
@@ -658,6 +726,8 @@ class _UsersState extends State<Users> {
                         getText('joinDate'),
                         getText('type'),
                         getText('capital'),
+                        getText('weightedCapital'),
+                        getText('initialCapital'),
                         getText('money'),
                         getText('effort'),
                         getText('threshold'),
@@ -673,6 +743,8 @@ class _UsersState extends State<Users> {
                             myDateFormate.format(user.joinDate),
                             getText(user.type),
                             user.capital,
+                            user.weightedCapital,
+                            user.initialCapital,
                             user.money + user.moneyExtern,
                             user.effort + user.effortExtern,
                             user.threshold,

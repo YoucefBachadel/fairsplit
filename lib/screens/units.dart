@@ -232,10 +232,10 @@ class _UnitsState extends State<Units> {
                         myText(getText('intern')),
                         const SizedBox(width: 40, child: Divider()),
                         mySizedBox(context),
-                        totalItem(getText('count'), internCount.toString()),
-                        totalItem(
-                            getText('percentage'), '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
-                        totalItem(getText('capital'), myCurrency.format(internCapital)),
+                        totalItem(context, getText('count'), internCount.toString()),
+                        totalItem(context, getText('percentage'),
+                            '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
+                        totalItem(context, getText('capital'), myCurrency.format(internCapital)),
                       ],
                     ),
                     SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
@@ -244,10 +244,10 @@ class _UnitsState extends State<Units> {
                         myText(getText('extern')),
                         const SizedBox(width: 40, child: Divider()),
                         mySizedBox(context),
-                        totalItem(getText('count'), externCount.toString()),
-                        totalItem(
-                            getText('percentage'), '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
-                        totalItem(getText('capital'), myCurrency.format(externCapital)),
+                        totalItem(context, getText('count'), externCount.toString()),
+                        totalItem(context, getText('percentage'),
+                            '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
+                        totalItem(context, getText('capital'), myCurrency.format(externCapital)),
                       ],
                     ),
                   ],
@@ -260,18 +260,6 @@ class _UnitsState extends State<Units> {
             )
           ],
         ),
-      ),
-    );
-  }
-
-  Widget totalItem(String title, String value) {
-    return SizedBox(
-      width: getWidth(context, .2),
-      child: Row(
-        children: [
-          Expanded(flex: 2, child: myText(title)),
-          Expanded(flex: 3, child: myText(':    $value')),
-        ],
       ),
     );
   }

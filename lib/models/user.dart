@@ -12,7 +12,7 @@ class User {
   String type;
   double capital;
   double weightedCapital;
-  double initialCapital; //used in calculation
+  double initialCapital; //used in calculation and to store user capital after passage
   double money;
   double moneyExtern;
   double threshold;
@@ -73,6 +73,7 @@ List<User> toUsers(
       joinDate: DateTime.parse(element['joinDate']),
       type: element['type'],
       capital: double.parse(element['capital']),
+      initialCapital: double.parse(element['initialCapital']),
       money: double.parse(element['money']),
       moneyExtern: double.parse(element['moneyExtern']),
       threshold: double.parse(element['threshold']),

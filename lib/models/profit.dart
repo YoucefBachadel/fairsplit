@@ -7,6 +7,7 @@ class Profit {
   double profit;
   double profitability;
   double unitProfitability;
+  double weightedCapital;
   double reserve;
   double reserveProfit;
   double donation;
@@ -23,6 +24,7 @@ class Profit {
     this.profit = 0,
     this.profitability = 0,
     this.unitProfitability = 0,
+    this.weightedCapital = 0,
     this.reserve = 0,
     this.reserveProfit = 0,
     this.donation = 0,

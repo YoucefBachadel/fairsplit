@@ -100,7 +100,7 @@ class _AddUserState extends State<AddUser> {
           // sending a post request to the url and get the inserted id
           _userId = await sqlQuery(insertSPUrl, {
             'sql':
-                '''INSERT INTO Users (name,phone,joinDate,type,capital,money,moneyExtern,threshold,founding,effort,effortExtern,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , 0 , '$months');''',
+                '''INSERT INTO Users (name,phone,joinDate,type,capital,initialCapital,money,moneyExtern,threshold,founding,effort,effortExtern,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , '$months');''',
           });
         } else {
           sqls.add(

@@ -17,8 +17,8 @@ Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 List<pdf.Font> fonts = [];
 double textFeildHeight = .05;
 
-String host = 'http://fairsplit.assala.com/php_test';
-// String host = 'http://fairsplit.assala.com/php';
+// String host = 'http://fairsplit.assala.com/php_test';
+String host = 'http://fairsplit.assala.com/php';
 
 Uri insertUrl = Uri.parse('$host/insert.php');
 Uri insertSPUrl = Uri.parse('$host/insertSP.php');

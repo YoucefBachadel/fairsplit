@@ -52,6 +52,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
         profit: double.parse(ele['profit']),
         profitability: double.parse(ele['profitability']),
         unitProfitability: double.parse(ele['unitProfitability']),
+        weightedCapital: double.parse(ele['weightedCapital']),
         reserve: double.parse(ele['reserve']),
         reserveProfit: double.parse(ele['reserveProfit']),
         donation: double.parse(ele['donation']),
@@ -132,31 +133,36 @@ class _ProfitHistoryState extends State<ProfitHistory> {
             : tr1.unitProfitability.compareTo(tr2.unitProfitability));
         break;
       case 8:
+        profitsHistory.sort((tr1, tr2) => !_isAscending
+            ? tr2.weightedCapital.compareTo(tr1.weightedCapital)
+            : tr1.weightedCapital.compareTo(tr2.weightedCapital));
+        break;
+      case 9:
         profitsHistory.sort(
             (tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
         break;
-      case 9:
+      case 10:
         profitsHistory.sort((tr1, tr2) => !_isAscending
             ? tr2.reserveProfit.compareTo(tr1.reserveProfit)
             : tr1.reserveProfit.compareTo(tr2.reserveProfit));
         break;
-      case 10:
+      case 11:
         profitsHistory.sort(
             (tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
         break;
-      case 11:
+      case 12:
         profitsHistory
             .sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
         break;
-      case 12:
+      case 13:
         profitsHistory
             .sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
         break;
-      case 13:
+      case 14:
         profitsHistory.sort((tr1, tr2) =>
             !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold));
         break;
-      case 14:
+      case 15:
         profitsHistory.sort(
             (tr1, tr2) => !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding));
         break;
@@ -197,6 +203,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
         getText('profit'),
         '${getText('profitability')} %',
         '${getText('unitProfitability')} %',
+        getText('weightedCapital'),
         getText('reserve'),
         getText('reserveProfit'),
         getText('donation'),
@@ -232,6 +239,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
               dataCell(context, (profit.profitability * 100).toStringAsFixed(2)),
               dataCell(context, (profit.unitProfitability * 100).toStringAsFixed(2)),
               ...[
+                myCurrency.format(profit.weightedCapital),
                 myCurrency.format(profit.reserve),
                 myCurrency.format(profit.reserveProfit),
                 myCurrency.format(profit.donation),
@@ -289,26 +297,27 @@ class _ProfitHistoryState extends State<ProfitHistory> {
               children: [
                 Column(
                   children: [
-                    totalItem(getText('profit'), myCurrency.format(tprofit)),
-                    totalItem(getText('profitability'), '${(tprofitability * 100).toStringAsFixed(2)} %'),
-                    totalItem(getText('unitProfitability'), '${(tunitProfitability * 100).toStringAsFixed(2)} %'),
+                    totalItem(context, getText('profit'), myCurrency.format(tprofit)),
+                    totalItem(context, getText('profitability'), '${(tprofitability * 100).toStringAsFixed(2)} %'),
+                    totalItem(
+                        context, getText('unitProfitability'), '${(tunitProfitability * 100).toStringAsFixed(2)} %'),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(getText('reserve'), myCurrency.format(treserve)),
-                    totalItem(getText('reserveProfit'), myCurrency.format(treserveProfit)),
-                    totalItem(getText('donation'), myCurrency.format(tdonation)),
+                    totalItem(context, getText('reserve'), myCurrency.format(treserve)),
+                    totalItem(context, getText('reserveProfit'), myCurrency.format(treserveProfit)),
+                    totalItem(context, getText('donation'), myCurrency.format(tdonation)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(getText('money'), myCurrency.format(tmoney)),
-                    totalItem(getText('effort'), myCurrency.format(teffort)),
-                    totalItem(getText('threshold'), myCurrency.format(tthreshold)),
-                    totalItem(getText('founding'), myCurrency.format(tfounding)),
+                    totalItem(context, getText('money'), myCurrency.format(tmoney)),
+                    totalItem(context, getText('effort'), myCurrency.format(teffort)),
+                    totalItem(context, getText('threshold'), myCurrency.format(tthreshold)),
+                    totalItem(context, getText('founding'), myCurrency.format(tfounding)),
                   ],
                 ),
               ],
@@ -443,6 +452,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                         getText('profit'),
                         getText('profitability'),
                         getText('unitProfitability'),
+                        getText('weightedCapital'),
                         getText('reserve'),
                         getText('reserveProfit'),
                         getText('donation'),
@@ -460,6 +470,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                             profit.profit,
                             (profit.profitability * 100).toStringAsFixed(2),
                             (profit.unitProfitability * 100).toStringAsFixed(2),
+                            profit.weightedCapital,
                             profit.reserve,
                             profit.reserveProfit,
                             profit.donation,
@@ -491,19 +502,6 @@ class _ProfitHistoryState extends State<ProfitHistory> {
               )
             : const SizedBox(),
       ],
-    );
-  }
-
-  Widget totalItem(String title, String value) {
-    return Container(
-      width: getWidth(context, .23),
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Row(
-        children: [
-          Expanded(flex: 2, child: myText(title)),
-          Expanded(flex: 2, child: myText(':    $value')),
-        ],
-      ),
     );
   }
 }

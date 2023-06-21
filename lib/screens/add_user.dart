@@ -803,7 +803,7 @@ class _AddUserState extends State<AddUser> {
     String _evaluation = evaluation.toString();
 
     return Container(
-      height: type == 1 ? getHeight(context, .31) : getHeight(context, .25),
+      height: type == 1 ? getHeight(context, .28) : getHeight(context, .23),
       width: getWidth(context, .29),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
@@ -871,7 +871,7 @@ class _AddUserState extends State<AddUser> {
                   ],
                 )
               : const SizedBox(),
-          const Spacer(),
+          mySizedBox(context),
           myButton(
             context,
             icon: Icons.add,
@@ -937,7 +937,7 @@ class _AddUserState extends State<AddUser> {
               }
             },
           ),
-          const Spacer(),
+          mySizedBox(context),
         ],
       ),
     );

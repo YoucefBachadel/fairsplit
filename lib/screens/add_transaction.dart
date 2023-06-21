@@ -429,7 +429,7 @@ class _AddTransactionState extends State<AddTransaction> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, isAdmin ? 0.55 : 0.5),
+      height: getHeight(context, isAdmin ? 0.52 : 0.47),
       width: getWidth(context, .39),
       child: Column(children: [
         Container(
@@ -877,11 +877,6 @@ class _AddTransactionState extends State<AddTransaction> {
                             ],
                           ),
                         mySizedBox(context),
-                        Row(children: [
-                          Expanded(child: myText(getText('note'))),
-                          const Expanded(flex: 4, child: SizedBox())
-                        ]),
-                        mySizedBox(context),
                         Container(
                           alignment: Alignment.centerLeft,
                           child: Container(
@@ -895,9 +890,10 @@ class _AddTransactionState extends State<AddTransaction> {
                               maxLength: 350,
                               minLines: 4,
                               maxLines: 4,
-                              decoration: const InputDecoration(
-                                contentPadding: EdgeInsets.all(8),
-                                border: OutlineInputBorder(
+                              decoration: InputDecoration(
+                                hintText: getText('note'),
+                                contentPadding: const EdgeInsets.all(8),
+                                border: const OutlineInputBorder(
                                   gapPadding: 0,
                                   borderSide: BorderSide(width: 0.5),
                                   borderRadius: BorderRadius.all(Radius.circular(12)),

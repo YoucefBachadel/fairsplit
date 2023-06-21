@@ -150,144 +150,146 @@ class _AddOtherUserState extends State<AddOtherUser> {
           Expanded(
             child: isLoading
                 ? myProgress()
-                : Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                        color: scaffoldColor,
-                        borderRadius: const BorderRadius.only(
-                          bottomRight: Radius.circular(20.0),
-                          bottomLeft: Radius.circular(20.0),
-                        )),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              getText('loan'),
-                              style: !isDeposit
-                                  ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: primaryColor)
-                                  : Theme.of(context).textTheme.headlineSmall,
-                            ),
-                            Transform.scale(
-                              scale: 1.8,
-                              child: Switch(
-                                value: isDeposit,
-                                onChanged: (value) => widget.user.userId != -1
-                                    ? null
-                                    : setState(
-                                        () {
-                                          isDeposit = value;
-                                        },
-                                      ),
-                                thumbColor: MaterialStateProperty.all(Colors.white),
-                                trackColor: MaterialStateProperty.all(primaryColor),
-                                hoverColor: Colors.transparent,
+                : SingleChildScrollView(
+                    child: Container(
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                          color: scaffoldColor,
+                          borderRadius: const BorderRadius.only(
+                            bottomRight: Radius.circular(20.0),
+                            bottomLeft: Radius.circular(20.0),
+                          )),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                getText('loan'),
+                                style: !isDeposit
+                                    ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: primaryColor)
+                                    : Theme.of(context).textTheme.headlineSmall,
                               ),
-                            ),
-                            Text(
-                              getText('deposit'),
-                              style: isDeposit
-                                  ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: primaryColor)
-                                  : Theme.of(context).textTheme.headlineSmall,
-                            ),
-                          ],
-                        ),
-                        const Divider(),
-                        Row(
-                          children: [
-                            Expanded(child: myText(getText('name'))),
-                            Expanded(
-                              flex: 4,
-                              child: myTextField(
-                                context,
-                                hint: name,
-                                width: getWidth(context, .33),
-                                onChanged: ((text) => name = text),
+                              Transform.scale(
+                                scale: 1.8,
+                                child: Switch(
+                                  value: isDeposit,
+                                  onChanged: (value) => widget.user.userId != -1
+                                      ? null
+                                      : setState(
+                                          () {
+                                            isDeposit = value;
+                                          },
+                                        ),
+                                  thumbColor: MaterialStateProperty.all(Colors.white),
+                                  trackColor: MaterialStateProperty.all(primaryColor),
+                                  hoverColor: Colors.transparent,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        mySizedBox(context),
-                        Row(
-                          children: [
-                            Expanded(child: myText(getText('joinDate'))),
-                            Expanded(
-                              flex: 4,
-                              child: Row(
-                                children: [
-                                  myTextField(
-                                    context,
-                                    hint: myDateFormate.format(joinDate),
-                                    width: getWidth(context, .1),
-                                    enabled: false,
-                                    onChanged: ((text) {}),
-                                  ),
-                                  mySizedBox(context),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.calendar_month,
-                                      color: primaryColor,
+                              Text(
+                                getText('deposit'),
+                                style: isDeposit
+                                    ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: primaryColor)
+                                    : Theme.of(context).textTheme.headlineSmall,
+                              ),
+                            ],
+                          ),
+                          const Divider(),
+                          Row(
+                            children: [
+                              Expanded(child: myText(getText('name'))),
+                              Expanded(
+                                flex: 4,
+                                child: myTextField(
+                                  context,
+                                  hint: name,
+                                  width: getWidth(context, .33),
+                                  onChanged: ((text) => name = text),
+                                ),
+                              ),
+                            ],
+                          ),
+                          mySizedBox(context),
+                          Row(
+                            children: [
+                              Expanded(child: myText(getText('joinDate'))),
+                              Expanded(
+                                flex: 4,
+                                child: Row(
+                                  children: [
+                                    myTextField(
+                                      context,
+                                      hint: myDateFormate.format(joinDate),
+                                      width: getWidth(context, .1),
+                                      enabled: false,
+                                      onChanged: ((text) {}),
                                     ),
-                                    onPressed: () async {
-                                      final DateTime? selected = await showDatePicker(
-                                        context: context,
-                                        initialDate: joinDate,
-                                        firstDate: DateTime(1900, 01, 01, 00, 00, 00),
-                                        lastDate: DateTime.now(),
-                                      );
-                                      if (selected != null && selected != joinDate) {
-                                        setState(() {
-                                          joinDate = selected;
-                                        });
-                                      }
-                                    },
-                                  )
-                                ],
+                                    mySizedBox(context),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.calendar_month,
+                                        color: primaryColor,
+                                      ),
+                                      onPressed: () async {
+                                        final DateTime? selected = await showDatePicker(
+                                          context: context,
+                                          initialDate: joinDate,
+                                          firstDate: DateTime(1900, 01, 01, 00, 00, 00),
+                                          lastDate: DateTime.now(),
+                                        );
+                                        if (selected != null && selected != joinDate) {
+                                          setState(() {
+                                            joinDate = selected;
+                                          });
+                                        }
+                                      },
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        mySizedBox(context),
-                        Row(
-                          children: [
-                            Expanded(child: myText(getText('phone'))),
-                            Expanded(
-                              flex: 4,
-                              child: myTextField(
-                                context,
-                                hint: phone,
-                                width: getWidth(context, .13),
-                                onChanged: ((text) {
-                                  phone = text;
-                                }),
-                                isNumberOnly: true,
+                            ],
+                          ),
+                          mySizedBox(context),
+                          Row(
+                            children: [
+                              Expanded(child: myText(getText('phone'))),
+                              Expanded(
+                                flex: 4,
+                                child: myTextField(
+                                  context,
+                                  hint: phone,
+                                  width: getWidth(context, .13),
+                                  onChanged: ((text) {
+                                    phone = text;
+                                  }),
+                                  isNumberOnly: true,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        // mySizedBox(context),
-                        // Row(
-                        //   children: [
-                        //     Expanded(child: myText(getText('password'))),
-                        //     Expanded(
-                        //         flex: 4,
-                        //         child: Row(
-                        //           children: [
-                        //             myTextField(
-                        //               context,
-                        //               width: getWidth(context, .13),
-                        //               onChanged: (text) => password = text,
-                        //               isPassword: true,
-                        //             ),
-                        //           ],
-                        //         )),
-                        //   ],
-                        // ),
-                        const Spacer(),
-                        myButton(context, onTap: () => save()),
-                        const Spacer(),
-                      ],
+                            ],
+                          ),
+                          // mySizedBox(context),
+                          // Row(
+                          //   children: [
+                          //     Expanded(child: myText(getText('password'))),
+                          //     Expanded(
+                          //         flex: 4,
+                          //         child: Row(
+                          //           children: [
+                          //             myTextField(
+                          //               context,
+                          //               width: getWidth(context, .13),
+                          //               onChanged: (text) => password = text,
+                          //               isPassword: true,
+                          //             ),
+                          //           ],
+                          //         )),
+                          //   ],
+                          // ),
+                          mySizedBox(context),
+                          myButton(context, onTap: () => save()),
+                          mySizedBox(context),
+                        ],
+                      ),
                     ),
                   ),
           )

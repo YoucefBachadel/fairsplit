@@ -59,6 +59,7 @@ class _TransactionsState extends State<Transactions> {
   bool _isAscendingTransDeposit = false;
 
   TextEditingController _controller = TextEditingController();
+  final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {
@@ -772,108 +773,108 @@ class _TransactionsState extends State<Transactions> {
         onPressed: () => _newTransaction(context),
         child: const Icon(Icons.add),
       ),
-      body: Row(
-        children: [
-          const Spacer(),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0),
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  blurRadius: 3.0,
-                ),
-              ],
+      body: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 3.0,
             ),
-            child: Column(children: [
-              const SizedBox(width: double.minPositive, height: 8.0),
-              searchBar(),
-              const SizedBox(width: double.minPositive, height: 8.0),
-              SizedBox(width: getWidth(context, .45), child: const Divider()),
-              const SizedBox(width: double.minPositive, height: 8.0),
-              Expanded(
-                  child: isloading
-                      ? myProgress()
-                      : transactionCategory == 'caisse'
+          ],
+        ),
+        child: Column(children: [
+          const SizedBox(width: double.minPositive, height: 8.0),
+          searchBar(),
+          const SizedBox(width: double.minPositive, height: 8.0),
+          SizedBox(width: getWidth(context, .45), child: const Divider()),
+          const SizedBox(width: double.minPositive, height: 8.0),
+          Expanded(
+              child: isloading
+                  ? myProgress()
+                  : transactionCategory == 'caisse'
+                      ? transactions.isEmpty
+                          ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                          : myScorallable(
+                              dataTable(
+                                isAscending: _isAscendingTransCaisse,
+                                sortColumnIndex: _sortColumnIndexTransCaisse,
+                                columns: columnsTransCaisse,
+                                rows: rowsTransCaisse,
+                                columnSpacing: 30,
+                              ),
+                              _controllerH,
+                              _controllerV)
+                      : transactionCategory == 'users'
                           ? transactions.isEmpty
                               ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                              : SingleChildScrollView(
-                                  child: dataTable(
-                                    isAscending: _isAscendingTransCaisse,
-                                    sortColumnIndex: _sortColumnIndexTransCaisse,
-                                    columns: columnsTransCaisse,
-                                    rows: rowsTransCaisse,
+                              : myScorallable(
+                                  dataTable(
+                                    isAscending: _isAscendingTrans,
+                                    sortColumnIndex: _sortColumnIndexTrans,
+                                    columns: columnsTrans,
+                                    rows: rowsTrans,
                                     columnSpacing: 30,
                                   ),
-                                )
-                          : transactionCategory == 'users'
-                              ? transactions.isEmpty
+                                  _controllerH,
+                                  _controllerV)
+                          : transactionCategory == 'specials'
+                              ? transactionsSP.isEmpty
                                   ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                                  : SingleChildScrollView(
-                                      child: dataTable(
-                                        isAscending: _isAscendingTrans,
-                                        sortColumnIndex: _sortColumnIndexTrans,
-                                        columns: columnsTrans,
-                                        rows: rowsTrans,
+                                  : myScorallable(
+                                      dataTable(
+                                        isAscending: _isAscendingTransSP,
+                                        sortColumnIndex: _sortColumnIndexTransSP,
+                                        columns: columnsTransSP,
+                                        rows: rowsTransSP,
                                         columnSpacing: 30,
                                       ),
-                                    )
-                              : transactionCategory == 'specials'
-                                  ? transactionsSP.isEmpty
+                                      _controllerH,
+                                      _controllerV)
+                              : transactionCategory == 'loans'
+                                  ? loanTransactions.isEmpty
                                       ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                                      : SingleChildScrollView(
-                                          child: dataTable(
-                                            isAscending: _isAscendingTransSP,
-                                            sortColumnIndex: _sortColumnIndexTransSP,
-                                            columns: columnsTransSP,
-                                            rows: rowsTransSP,
+                                      : myScorallable(
+                                          dataTable(
+                                            isAscending: _isAscendingTransLoan,
+                                            sortColumnIndex: _sortColumnIndexTransLoan,
+                                            columns: columnsTransLoan,
+                                            rows: rowsTransLoan,
                                             columnSpacing: 30,
                                           ),
-                                        )
-                                  : transactionCategory == 'loans'
-                                      ? loanTransactions.isEmpty
+                                          _controllerH,
+                                          _controllerV)
+                                  : transactionCategory == 'deposits'
+                                      ? depositTransactions.isEmpty
                                           ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                                          : SingleChildScrollView(
-                                              child: dataTable(
-                                                isAscending: _isAscendingTransLoan,
-                                                sortColumnIndex: _sortColumnIndexTransLoan,
-                                                columns: columnsTransLoan,
-                                                rows: rowsTransLoan,
+                                          : myScorallable(
+                                              dataTable(
+                                                isAscending: _isAscendingTransDeposit,
+                                                sortColumnIndex: _sortColumnIndexTransDeposit,
+                                                columns: columnsTransDeposit,
+                                                rows: rowsTransDeposit,
                                                 columnSpacing: 30,
                                               ),
-                                            )
-                                      : transactionCategory == 'deposits'
-                                          ? depositTransactions.isEmpty
-                                              ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                                              : SingleChildScrollView(
-                                                  child: dataTable(
-                                                    isAscending: _isAscendingTransDeposit,
-                                                    sortColumnIndex: _sortColumnIndexTransDeposit,
-                                                    columns: columnsTransDeposit,
-                                                    rows: rowsTransDeposit,
-                                                    columnSpacing: 30,
-                                                  ),
-                                                )
-                                          : const SizedBox()),
-              const SizedBox(height: 8.0),
-              SizedBox(width: getWidth(context, .52), child: const Divider()),
-              const SizedBox(height: 8.0),
-              Row(
-                children: [
-                  myText('${getText('totalIn')} :      ${myCurrency.format(totalIn)}'),
-                  SizedBox(width: getWidth(context, .05)),
-                  myText('${getText('totalOut')} :      ${myCurrency.format(totalOut)}'),
-                  SizedBox(width: getWidth(context, .05)),
-                  myText('${getText('total')} :      ${myCurrency.format(totalIn - totalOut)}'),
-                ],
-              ),
-              const SizedBox(height: 8.0),
-            ]),
+                                              _controllerH,
+                                              _controllerV)
+                                      : const SizedBox()),
+          mySizedBox(context),
+          SizedBox(width: getWidth(context, .52), child: const Divider()),
+          mySizedBox(context),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              myText('${getText('totalIn')} :      ${myCurrency.format(totalIn)}'),
+              SizedBox(width: getWidth(context, .05)),
+              myText('${getText('totalOut')} :      ${myCurrency.format(totalOut)}'),
+              SizedBox(width: getWidth(context, .05)),
+              myText('${getText('total')} :      ${myCurrency.format(totalIn - totalOut)}'),
+            ],
           ),
-          const Spacer(),
-        ],
+          mySizedBox(context),
+        ]),
       ),
     );
   }

@@ -23,6 +23,7 @@ class _UnitsState extends State<Units> {
 
   int? _sortColumnIndex = 0;
   bool _isAscending = true;
+  final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
   void _newUnit(BuildContext context, Unit unit) async => await createDialog(context, AddUnit(unit: unit));
 
@@ -190,77 +191,75 @@ class _UnitsState extends State<Units> {
               child: const Icon(Icons.add),
             )
           : null,
-      body: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0),
-            padding: const EdgeInsets.all(16.0),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(color: Colors.grey, blurRadius: 3.0),
-              ],
+      body: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.all(16.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(color: Colors.grey, blurRadius: 3.0),
+          ],
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: isLoadingUnits
+                  ? myProgress()
+                  : units.isEmpty
+                      ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                      : myScorallable(
+                          dataTable(
+                            isAscending: _isAscending,
+                            sortColumnIndex: _sortColumnIndex,
+                            columns: columns,
+                            rows: rows,
+                            columnSpacing: 50,
+                          ),
+                          _controllerH,
+                          _controllerV,
+                        ),
             ),
-            child: Column(
+            mySizedBox(context),
+            SizedBox(width: getWidth(context, .52), child: const Divider()),
+            mySizedBox(context),
+            Column(
               children: [
-                Expanded(
-                  child: isLoadingUnits
-                      ? myProgress()
-                      : units.isEmpty
-                          ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                          : SingleChildScrollView(
-                              child: dataTable(
-                                isAscending: _isAscending,
-                                sortColumnIndex: _sortColumnIndex,
-                                columns: columns,
-                                rows: rows,
-                                columnSpacing: 50,
-                              ),
-                            ),
-                ),
-                mySizedBox(context),
-                SizedBox(width: getWidth(context, .52), child: const Divider()),
-                mySizedBox(context),
-                Column(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
+                    Column(
                       children: [
-                        Column(
-                          children: [
-                            myText(getText('intern')),
-                            const SizedBox(width: 40, child: Divider()),
-                            mySizedBox(context),
-                            totalItem(getText('count'), internCount.toString()),
-                            totalItem(
-                                getText('percentage'), '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
-                            totalItem(getText('capital'), myCurrency.format(internCapital)),
-                          ],
-                        ),
-                        SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
-                        Column(
-                          children: [
-                            myText(getText('extern')),
-                            const SizedBox(width: 40, child: Divider()),
-                            mySizedBox(context),
-                            totalItem(getText('count'), externCount.toString()),
-                            totalItem(
-                                getText('percentage'), '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
-                            totalItem(getText('capital'), myCurrency.format(externCapital)),
-                          ],
-                        ),
+                        myText(getText('intern')),
+                        const SizedBox(width: 40, child: Divider()),
+                        mySizedBox(context),
+                        totalItem(getText('count'), internCount.toString()),
+                        totalItem(
+                            getText('percentage'), '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
+                        totalItem(getText('capital'), myCurrency.format(internCapital)),
                       ],
                     ),
-                    mySizedBox(context),
-                    SizedBox(width: getWidth(context, .4), child: const Divider()),
-                    myText('${getText('totalCapital')}            :            ${myCurrency.format(totalCapital)}'),
-                    mySizedBox(context),
+                    SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
+                    Column(
+                      children: [
+                        myText(getText('extern')),
+                        const SizedBox(width: 40, child: Divider()),
+                        mySizedBox(context),
+                        totalItem(getText('count'), externCount.toString()),
+                        totalItem(
+                            getText('percentage'), '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
+                        totalItem(getText('capital'), myCurrency.format(externCapital)),
+                      ],
+                    ),
                   ],
-                )
+                ),
+                mySizedBox(context),
+                SizedBox(width: getWidth(context, .4), child: const Divider()),
+                myText('${getText('totalCapital')}            :            ${myCurrency.format(totalCapital)}'),
+                mySizedBox(context),
               ],
-            ),
-          ),
-        ],
+            )
+          ],
+        ),
       ),
     );
   }

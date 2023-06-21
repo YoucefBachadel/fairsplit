@@ -26,6 +26,18 @@ class _ProfitHistoryState extends State<ProfitHistory> {
   String _type = 'tout';
   int? _sortColumnIndex = 3;
   bool _isAscending = false;
+  final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
+
+  double tprofit = 0,
+      tprofitability = 0,
+      tunitProfitability = 0,
+      treserve = 0,
+      treserveProfit = 0,
+      tdonation = 0,
+      tmoney = 0,
+      teffort = 0,
+      tthreshold = 0,
+      tfounding = 0;
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM ProfitHistory;'});
@@ -39,7 +51,9 @@ class _ProfitHistoryState extends State<ProfitHistory> {
         month: int.parse(ele['month']),
         profit: double.parse(ele['profit']),
         profitability: double.parse(ele['profitability']),
+        unitProfitability: double.parse(ele['unitProfitability']),
         reserve: double.parse(ele['reserve']),
+        reserveProfit: double.parse(ele['reserveProfit']),
         donation: double.parse(ele['donation']),
         threshold: double.parse(ele['threshold']),
         founding: double.parse(ele['founding']),
@@ -59,12 +73,33 @@ class _ProfitHistoryState extends State<ProfitHistory> {
 
   void filterHistory() {
     profitsHistory.clear();
+    tprofit = 0;
+    tprofitability = 0;
+    tunitProfitability = 0;
+    treserve = 0;
+    treserveProfit = 0;
+    tdonation = 0;
+    tmoney = 0;
+    teffort = 0;
+    tthreshold = 0;
+    tfounding = 0;
     for (var profit in allProfitsHistroy) {
       if ((_name == 'tout' || profit.name == _name) &&
           (_type == 'tout' || profit.type == _type) &&
           (_year == 'tout' || profit.year.toString() == _year) &&
           (_month == 'tout' || profit.month == monthsOfYear.indexOf(_month) + 1)) {
         profitsHistory.add(profit);
+
+        tprofit += profit.profit;
+        tprofitability += profit.profitability;
+        tunitProfitability += profit.unitProfitability;
+        treserve += profit.reserve;
+        treserveProfit += profit.reserveProfit;
+        tdonation += profit.donation;
+        tmoney += profit.money;
+        teffort += profit.effort;
+        tthreshold += profit.threshold;
+        tfounding += profit.founding;
       }
     }
     onSort();
@@ -92,26 +127,36 @@ class _ProfitHistoryState extends State<ProfitHistory> {
             : tr1.profitability.compareTo(tr2.profitability));
         break;
       case 7:
-        profitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
+        profitsHistory.sort((tr1, tr2) => !_isAscending
+            ? tr2.unitProfitability.compareTo(tr1.unitProfitability)
+            : tr1.unitProfitability.compareTo(tr2.unitProfitability));
         break;
       case 8:
         profitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
+            (tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
         break;
       case 9:
+        profitsHistory.sort((tr1, tr2) => !_isAscending
+            ? tr2.reserveProfit.compareTo(tr1.reserveProfit)
+            : tr1.reserveProfit.compareTo(tr2.reserveProfit));
+        break;
+      case 10:
+        profitsHistory.sort(
+            (tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
+        break;
+      case 11:
         profitsHistory
             .sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
         break;
-      case 10:
+      case 12:
         profitsHistory
             .sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
         break;
-      case 11:
+      case 13:
         profitsHistory.sort((tr1, tr2) =>
             !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold));
         break;
-      case 12:
+      case 14:
         profitsHistory.sort(
             (tr1, tr2) => !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding));
         break;
@@ -151,7 +196,9 @@ class _ProfitHistoryState extends State<ProfitHistory> {
       ...[
         getText('profit'),
         '${getText('profitability')} %',
+        '${getText('unitProfitability')} %',
         getText('reserve'),
+        getText('reserveProfit'),
         getText('donation'),
         getText('money'),
         getText('effort'),
@@ -183,8 +230,10 @@ class _ProfitHistoryState extends State<ProfitHistory> {
               ),
               dataCell(context, myCurrency.format(profit.profit), textAlign: TextAlign.end),
               dataCell(context, (profit.profitability * 100).toStringAsFixed(2)),
+              dataCell(context, (profit.unitProfitability * 100).toStringAsFixed(2)),
               ...[
                 myCurrency.format(profit.reserve),
+                myCurrency.format(profit.reserveProfit),
                 myCurrency.format(profit.donation),
                 myCurrency.format(profit.money),
                 myCurrency.format(profit.effort),
@@ -197,48 +246,76 @@ class _ProfitHistoryState extends State<ProfitHistory> {
         .toList();
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Row(
-        children: [
-          const Spacer(),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0),
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  blurRadius: 3.0,
-                ),
-              ],
+      body: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 3.0,
             ),
-            child: Column(
+          ],
+        ),
+        child: Column(
+          children: [
+            const SizedBox(width: double.minPositive, height: 8.0),
+            searchBar(),
+            const SizedBox(width: double.minPositive, height: 8.0),
+            SizedBox(width: getWidth(context, .19), child: const Divider()),
+            const SizedBox(width: double.minPositive, height: 8.0),
+            Expanded(
+              child: isloading
+                  ? myProgress()
+                  : profitsHistory.isEmpty
+                      ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                      : myScorallable(
+                          dataTable(
+                            isAscending: _isAscending,
+                            sortColumnIndex: _sortColumnIndex,
+                            columns: columns,
+                            rows: rows,
+                          ),
+                          _controllerH,
+                          _controllerV,
+                        ),
+            ),
+            mySizedBox(context),
+            SizedBox(width: getWidth(context, .52), child: const Divider()),
+            mySizedBox(context),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(width: double.minPositive, height: 8.0),
-                searchBar(),
-                const SizedBox(width: double.minPositive, height: 8.0),
-                SizedBox(width: getWidth(context, .19), child: const Divider()),
-                const SizedBox(width: double.minPositive, height: 8.0),
-                Expanded(
-                  child: isloading
-                      ? myProgress()
-                      : profitsHistory.isEmpty
-                          ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                          : SingleChildScrollView(
-                              child: dataTable(
-                                isAscending: _isAscending,
-                                sortColumnIndex: _sortColumnIndex,
-                                columnSpacing: 30,
-                                columns: columns,
-                                rows: rows,
-                              ),
-                            ),
+                Column(
+                  children: [
+                    totalItem(getText('profit'), myCurrency.format(tprofit)),
+                    totalItem(getText('profitability'), '${(tprofitability * 100).toStringAsFixed(2)} %'),
+                    totalItem(getText('unitProfitability'), '${(tunitProfitability * 100).toStringAsFixed(2)} %'),
+                  ],
+                ),
+                SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
+                Column(
+                  children: [
+                    totalItem(getText('reserve'), myCurrency.format(treserve)),
+                    totalItem(getText('reserveProfit'), myCurrency.format(treserveProfit)),
+                    totalItem(getText('donation'), myCurrency.format(tdonation)),
+                  ],
+                ),
+                SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
+                Column(
+                  children: [
+                    totalItem(getText('money'), myCurrency.format(tmoney)),
+                    totalItem(getText('effort'), myCurrency.format(teffort)),
+                    totalItem(getText('threshold'), myCurrency.format(tthreshold)),
+                    totalItem(getText('founding'), myCurrency.format(tfounding)),
+                  ],
                 ),
               ],
             ),
-          ),
-          const Spacer(),
-        ],
+            mySizedBox(context),
+          ],
+        ),
       ),
     );
   }
@@ -365,7 +442,9 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                         getText('month'),
                         getText('profit'),
                         getText('profitability'),
+                        getText('unitProfitability'),
                         getText('reserve'),
+                        getText('reserveProfit'),
                         getText('donation'),
                         getText('money'),
                         getText('effort'),
@@ -380,7 +459,9 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                             profit.month == 0 ? '/' : monthsOfYear.elementAt(profit.month - 1),
                             profit.profit,
                             (profit.profitability * 100).toStringAsFixed(2),
+                            (profit.unitProfitability * 100).toStringAsFixed(2),
                             profit.reserve,
+                            profit.reserveProfit,
                             profit.donation,
                             profit.money,
                             profit.effort,
@@ -410,6 +491,19 @@ class _ProfitHistoryState extends State<ProfitHistory> {
               )
             : const SizedBox(),
       ],
+    );
+  }
+
+  Widget totalItem(String title, String value) {
+    return Container(
+      width: getWidth(context, .23),
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Row(
+        children: [
+          Expanded(flex: 2, child: myText(title)),
+          Expanded(flex: 2, child: myText(':    $value')),
+        ],
+      ),
     );
   }
 }

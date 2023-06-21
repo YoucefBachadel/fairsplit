@@ -6,7 +6,9 @@ class Profit {
   int month;
   double profit;
   double profitability;
+  double unitProfitability;
   double reserve;
+  double reserveProfit;
   double donation;
   double money;
   double effort;
@@ -20,7 +22,9 @@ class Profit {
     this.month = 0,
     this.profit = 0,
     this.profitability = 0,
+    this.unitProfitability = 0,
     this.reserve = 0,
+    this.reserveProfit = 0,
     this.donation = 0,
     this.money = 0,
     this.effort = 0,

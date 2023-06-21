@@ -38,6 +38,7 @@ class _UsersState extends State<Users> {
   int? _sortColumnIndex = 1;
   bool _isAscending = true;
   TextEditingController _controller = TextEditingController();
+  final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
   void _newUser(BuildContext context, User user) async =>
       await createDialog(context, AddUser(user: user), dismissable: false);
@@ -373,50 +374,45 @@ class _UsersState extends State<Users> {
               child: const Icon(Icons.add),
             )
           : null,
-      body: Row(
-        children: [
-          const Spacer(),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0),
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  blurRadius: 3.0,
-                ),
-              ],
+      body: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 3.0,
             ),
-            child: Column(
-              children: [
-                const SizedBox(width: double.minPositive, height: 8.0),
-                searchBar(),
-                const SizedBox(width: double.minPositive, height: 8.0),
-                SizedBox(width: getWidth(context, .52), child: const Divider()),
-                const SizedBox(width: double.minPositive, height: 8.0),
-                Expanded(
-                  child: isloading
-                      ? myProgress()
-                      : users.isEmpty
-                          ? SizedBox(width: getWidth(context, .45), child: emptyList())
-                          : users.isEmpty
-                              ? emptyList()
-                              : SingleChildScrollView(
-                                  child: dataTable(
-                                    isAscending: _isAscending,
-                                    sortColumnIndex: _sortColumnIndex,
-                                    columnSpacing: 30,
-                                    columns: columns,
-                                    rows: rows,
-                                  ),
+          ],
+        ),
+        child: Column(
+          children: [
+            const SizedBox(width: double.minPositive, height: 8.0),
+            searchBar(),
+            const SizedBox(width: double.minPositive, height: 8.0),
+            SizedBox(width: getWidth(context, .52), child: const Divider()),
+            const SizedBox(width: double.minPositive, height: 8.0),
+            Expanded(
+                child: isloading
+                    ? myProgress()
+                    : users.isEmpty
+                        ? SizedBox(width: getWidth(context, .45), child: emptyList())
+                        : users.isEmpty
+                            ? emptyList()
+                            : myScorallable(
+                                dataTable(
+                                  isAscending: _isAscending,
+                                  sortColumnIndex: _sortColumnIndex,
+                                  columnSpacing: 30,
+                                  columns: columns,
+                                  rows: rows,
                                 ),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-        ],
+                                _controllerH,
+                                _controllerV,
+                              )),
+          ],
+        ),
       ),
     );
   }

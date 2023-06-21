@@ -27,6 +27,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
   bool _isAscending = false;
 
   TextEditingController _controller = TextEditingController();
+  final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM UserHistory;'});
@@ -214,48 +215,43 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Row(
-        children: [
-          const Spacer(),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0),
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  blurRadius: 3.0,
-                ),
-              ],
+      body: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 3.0,
             ),
-            child: Column(
-              children: [
-                const SizedBox(width: double.minPositive, height: 8.0),
-                serachBar(),
-                const SizedBox(width: double.minPositive, height: 8.0),
-                SizedBox(width: getWidth(context, .19), child: const Divider()),
-                const SizedBox(width: double.minPositive, height: 8.0),
-                Expanded(
-                  flex: 5,
-                  child: isloading
-                      ? myProgress()
-                      : usersHistory.isEmpty
-                          ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                          : SingleChildScrollView(
-                              child: dataTable(
-                                isAscending: _isAscending,
-                                sortColumnIndex: _sortColumnIndex,
-                                columns: columns,
-                                rows: rows,
-                              ),
+          ],
+        ),
+        child: Column(
+          children: [
+            const SizedBox(width: double.minPositive, height: 8.0),
+            serachBar(),
+            const SizedBox(width: double.minPositive, height: 8.0),
+            SizedBox(width: getWidth(context, .19), child: const Divider()),
+            const SizedBox(width: double.minPositive, height: 8.0),
+            Expanded(
+                flex: 5,
+                child: isloading
+                    ? myProgress()
+                    : usersHistory.isEmpty
+                        ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                        : myScorallable(
+                            dataTable(
+                              isAscending: _isAscending,
+                              sortColumnIndex: _sortColumnIndex,
+                              columns: columns,
+                              rows: rows,
                             ),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-        ],
+                            _controllerH,
+                            _controllerV,
+                          )),
+          ],
+        ),
       ),
     );
   }

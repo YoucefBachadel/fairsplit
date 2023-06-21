@@ -226,11 +226,12 @@ class _DashboardState extends State<Dashboard> {
       ),
       tooltipBehavior: TooltipBehavior(
         enable: true,
+        duration: 1500,
         builder: (data, point, series, pointIndex, seriesIndex) {
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: myText(
-              '${(data as Unit).profitability.toStringAsFixed(2)}%',
+              '${(data as Unit).name} : ${(data).profitability.toStringAsFixed(2)}%',
               color: Colors.white,
             ),
           );
@@ -239,6 +240,9 @@ class _DashboardState extends State<Dashboard> {
       series: [
         DoughnutSeries<Unit, String>(
             dataSource: units,
+            strokeColor: Colors.white,
+            strokeWidth: 1,
+            radius: '60%',
             xValueMapper: (Unit data, _) => data.name,
             yValueMapper: (Unit data, _) => data.profitability,
             enableTooltip: true,
@@ -247,7 +251,8 @@ class _DashboardState extends State<Dashboard> {
               showZeroValue: false,
               labelPosition: ChartDataLabelPosition.outside,
               builder: (data, point, series, pointIndex, seriesIndex) {
-                return myText('${(data as Unit).name} : ${(data.profitability / profitability).toStringAsFixed(2)}%');
+                return myText('${(data as Unit).name} : ${(data.profitability / profitability).toStringAsFixed(2)}%',
+                    size: 16);
               },
             )),
       ],

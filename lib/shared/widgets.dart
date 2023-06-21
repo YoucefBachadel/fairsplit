@@ -275,6 +275,25 @@ DataTable dataTable({
   );
 }
 
+Widget myScorallable(Widget widget, ScrollController _controllerH, ScrollController _controllerV) {
+  return Scrollbar(
+    thumbVisibility: true,
+    controller: _controllerH,
+    child: Scrollbar(
+      thumbVisibility: true,
+      controller: _controllerV,
+      child: SingleChildScrollView(
+        controller: _controllerH,
+        scrollDirection: Axis.horizontal,
+        child: SingleChildScrollView(
+          controller: _controllerV,
+          child: widget,
+        ),
+      ),
+    ),
+  );
+}
+
 class DecimalTextInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {

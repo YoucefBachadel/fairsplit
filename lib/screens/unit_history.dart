@@ -26,6 +26,7 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
 
   int? _sortColumnIndex = 2;
   bool _isAscending = false;
+  final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM UnitHistory;'});
@@ -183,49 +184,43 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Row(
-        children: [
-          const Spacer(),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0),
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  blurRadius: 3.0,
-                ),
-              ],
+      body: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 3.0,
             ),
-            child: Column(
-              children: [
-                const SizedBox(width: double.minPositive, height: 8.0),
-                searchBar(),
-                const SizedBox(width: double.minPositive, height: 8.0),
-                SizedBox(width: getWidth(context, .19), child: const Divider()),
-                const SizedBox(width: double.minPositive, height: 8.0),
-                Expanded(
-                  child: isloading
-                      ? myProgress()
-                      : unitsHistory.isEmpty
-                          ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                          : SingleChildScrollView(
-                              child: dataTable(
-                                isAscending: _isAscending,
-                                sortColumnIndex: _sortColumnIndex,
-                                columnSpacing: 20,
-                                columns: columns,
-                                rows: rows,
-                              ),
-                              // child: sfGride(),
+          ],
+        ),
+        child: Column(
+          children: [
+            const SizedBox(width: double.minPositive, height: 8.0),
+            searchBar(),
+            const SizedBox(width: double.minPositive, height: 8.0),
+            SizedBox(width: getWidth(context, .19), child: const Divider()),
+            const SizedBox(width: double.minPositive, height: 8.0),
+            Expanded(
+                child: isloading
+                    ? myProgress()
+                    : unitsHistory.isEmpty
+                        ? SizedBox(width: getWidth(context, .60), child: emptyList())
+                        : myScorallable(
+                            dataTable(
+                              isAscending: _isAscending,
+                              sortColumnIndex: _sortColumnIndex,
+                              columnSpacing: 20,
+                              columns: columns,
+                              rows: rows,
                             ),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-        ],
+                            _controllerH,
+                            _controllerV,
+                          )),
+          ],
+        ),
       ),
     );
   }

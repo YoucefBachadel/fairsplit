@@ -353,7 +353,7 @@ class _CalculationState extends State<Calculation> {
         ''' UPDATE Units SET profit = profit + $unitProfitValue, profitability = profitability + $profitability,  calculated = $calculated, currentMonthOrYear = $nextMonthOrYear  WHERE unitId = ${widget.unit.unitId}; ''';
     counter++;
     params['sql$counter'] =
-        '''INSERT INTO ProfitHistory(name, year, month, profit,profitability, reserve, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',${!isIntern ? widget.unit.currentMonthOrYear : currentYear},${!isIntern ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,$profitability,${caReserve.toStringAsFixed(2)},${caDonation.toStringAsFixed(2)},${caMoney.toStringAsFixed(2)},${caEffort.toStringAsFixed(2)},${caThreshold.toStringAsFixed(2)},${caFounding.toStringAsFixed(2)});''';
+        '''INSERT INTO ProfitHistory(name, year, month, profit,profitability,unitProfitability, reserve,reserveProfit, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',${!isIntern ? widget.unit.currentMonthOrYear : currentYear},${!isIntern ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,$profitability,${caMoney / widget.unit.capital},${caReserve.toStringAsFixed(2)},${caReserveMoneyProfit.toStringAsFixed(2)},${caDonation.toStringAsFixed(2)},${caMoney.toStringAsFixed(2)},${caEffort.toStringAsFixed(2)},${caThreshold.toStringAsFixed(2)},${caFounding.toStringAsFixed(2)});''';
     counter++;
     params['sql$counter'] = isIntern
         ? 'UPDATE settings SET profitability = profitability + $profitability , reserveYear = reserveYear + $caReserve , reserveProfitYear = reserveProfitYear + $caReserveMoneyProfit , donationProfit = donationProfit + $caDonation;'
@@ -584,7 +584,10 @@ class _CalculationState extends State<Calculation> {
                   ? widget.unit.currentMonthOrYear.toString()
                   : monthsOfYear[widget.unit.currentMonthOrYear - 1]
             },
-            {'key': '${getText('unitProfitability')} %', 'val': (caMoney / widget.unit.capital).toStringAsFixed(2)},
+            {
+              'key': '${getText('unitProfitability')} %',
+              'val': (caMoney / widget.unit.capital * 100).toStringAsFixed(2)
+            },
             {'key': '${getText('profitability')} %', 'val': (profitability * 100).toStringAsFixed(2)},
             {'key': '${getText('reserve')} %', 'val': widget.unit.reservePerc.toString()},
             {'key': '${getText('donation')} %', 'val': widget.unit.donationPerc.toString()},

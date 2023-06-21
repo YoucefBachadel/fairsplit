@@ -62,8 +62,8 @@ void main() {
   doWhenWindowReady(() {
     const initialSize = Size(1800, 950);
     appWindow.minSize = initialSize;
-    appWindow.size = initialSize;
-    appWindow.alignment = Alignment.center;
+    // appWindow.size = initialSize;
+    // appWindow.alignment = Alignment.center;
     appWindow.title = "FairSplit";
     appWindow.maximize();
     appWindow.show();

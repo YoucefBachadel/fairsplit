@@ -154,7 +154,7 @@ class _CalculationState extends State<Calculation> {
         : DateUtils.getDaysInMonth(currentYear, widget.unit.currentMonthOrYear);
 
     //if is intern unit we add the first day of the current month and next month
-    //if is extern unit we add the first dat of janury of the current year and next year
+    //if is extern unit we add the first day of janury of the current year and next year
     transactionsDays.addAll({
       DateTime(
         !isIntern ? widget.unit.currentMonthOrYear : currentYear,
@@ -180,13 +180,6 @@ class _CalculationState extends State<Calculation> {
       }
       //set initial capital of user
       user.initialCapital = user.capital;
-
-      //restor the current capital
-      for (var trans in transactions) {
-        if (trans.userId == user.userId) {
-          trans.type == 'in' ? user.capital += trans.amount : user.capital -= trans.amount;
-        }
-      }
     }
 
     setState(() => isloading = false);
@@ -248,6 +241,7 @@ class _CalculationState extends State<Calculation> {
 
       // calculate the total of all users capitals
       double totalUsersCapital = 0; // the sum of all users capital including reserve
+
       for (var user in moneyUsers) {
         totalUsersCapital += user.capital;
       }

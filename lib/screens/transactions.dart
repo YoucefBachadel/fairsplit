@@ -3,7 +3,10 @@ import 'dart:collection';
 import 'package:fairsplit/models/transactio_others.dart';
 import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 import '../shared/functions.dart';
 import '../shared/lists.dart';
@@ -12,6 +15,7 @@ import '../models/transaction_sp.dart';
 import '../screens/add_transaction.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
+import 'pdf_generator.dart';
 
 class Transactions extends StatefulWidget {
   const Transactions({Key? key}) : super(key: key);
@@ -1247,6 +1251,25 @@ class _TransactionsState extends State<Transactions> {
                 color: primaryColor,
               )),
         mySizedBox(context),
+        context.watch<Filter>().search.isNotEmpty
+            ? IconButton(
+                onPressed: () {
+                  createDialog(
+                    context,
+                    SizedBox(
+                      width: getWidth(context, .392),
+                      child: PdfGenerator(
+                        pdf: printPage(),
+                      ),
+                    ),
+                  );
+                },
+                icon: Icon(
+                  Icons.print,
+                  color: primaryColor,
+                ))
+            : const SizedBox(),
+        mySizedBox(context),
         (_controller.text.isNotEmpty ||
                 _compt != 'tout' ||
                 _type != 'tout' ||
@@ -1272,8 +1295,10 @@ class _TransactionsState extends State<Transactions> {
     );
   }
 
-  Widget autoComplete(
-      {required Function(String) onSeleted, required Iterable<String> Function(TextEditingValue) optionsBuilder}) {
+  Widget autoComplete({
+    required Function(String) onSeleted,
+    required Iterable<String> Function(TextEditingValue) optionsBuilder,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1319,7 +1344,7 @@ class _TransactionsState extends State<Transactions> {
                     controller: _controller,
                     focusNode: focusNode,
                     style: const TextStyle(fontSize: 18.0),
-                    onChanged: ((value) => setState(() {})),
+                    onChanged: ((value) => setState(() => _search = value)),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
                       hintText: getText('search'),
@@ -1382,5 +1407,86 @@ class _TransactionsState extends State<Transactions> {
         ),
       ],
     );
+  }
+
+  Future<Uint8List> printPage() async {
+    final pdf = pw.Document();
+    List<Map<String, String>> data = [];
+    final font = await rootBundle.load("fonts/arial.ttf");
+
+    if (transactionCategory == 'users') {
+      transactions
+          .map((trans) => data.add({
+                'date': myDateFormate.format(trans.date),
+                'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
+                'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
+                'solde': myCurrency.format(trans.soldeUser)
+              }))
+          .toList();
+    } else if (transactionCategory == 'loans') {
+      loanTransactions
+          .map((trans) => data.add({
+                'date': myDateFormate.format(trans.date),
+                'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
+                'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
+                'solde': myCurrency.format(trans.soldeUser)
+              }))
+          .toList();
+    } else if (transactionCategory == 'deposits') {
+      depositTransactions
+          .map((trans) => data.add({
+                'date': myDateFormate.format(trans.date),
+                'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
+                'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
+                'solde': myCurrency.format(trans.soldeUser)
+              }))
+          .toList();
+    }
+
+    pdf.addPage(pdfPage(font: font, build: [
+      pw.Row(children: [
+        pw.Text(_search),
+        pw.Spacer(),
+        pw.Text('From:    ${myDateFormate.format(_fromDate)}', style: const pw.TextStyle(fontSize: 10)),
+      ]),
+      pw.SizedBox(height: 5),
+      pw.Row(children: [
+        pw.Spacer(),
+        pw.Text('To:    ${myDateFormate.format(_toDate)}', style: const pw.TextStyle(fontSize: 10)),
+      ]),
+      pw.SizedBox(height: 10),
+      pw.Table.fromTextArray(
+        headers: ['Date', 'In', 'Out', 'Solde'],
+        data: data
+            .map((trans) => [
+                  trans['date'],
+                  trans['in'],
+                  trans['out'],
+                  trans['solde'],
+                ])
+            .toList(),
+        headerStyle: const pw.TextStyle(fontSize: 10),
+        cellStyle: const pw.TextStyle(fontSize: 10),
+        headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+        border: const pw.TableBorder(
+          horizontalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+          // verticalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+        ),
+        cellAlignments: {
+          0: pw.Alignment.center,
+          1: pw.Alignment.centerRight,
+          2: pw.Alignment.centerRight,
+          3: pw.Alignment.centerRight,
+        },
+        headerAlignments: {
+          0: pw.Alignment.center,
+          1: pw.Alignment.center,
+          2: pw.Alignment.center,
+          3: pw.Alignment.center,
+        },
+      ),
+      pw.Divider(),
+    ]));
+    return pdf.save();
   }
 }

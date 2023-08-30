@@ -458,7 +458,6 @@ class _UsersState extends State<Users> {
                 Column(
                   children: [
                     totalItem(context, getText('capital'), myCurrency.format(tcapital)),
-                    totalItem(context, getText('weightedCapital'), myCurrency.format(tweightedCapital)),
                     totalItem(context, getText('initialCapital'), myCurrency.format(tinitialCapital)),
                   ],
                 ),

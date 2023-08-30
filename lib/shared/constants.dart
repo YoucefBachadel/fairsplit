@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:pdf/widgets.dart' as pdf;
 import 'package:http/http.dart' as http;
 
 int currentYear = 0;
@@ -14,7 +13,6 @@ Color primaryColor = const Color(0XFF02333c); //0XFF303F9F
 Color secondaryColor = const Color(0XFF08535d);
 Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 
-List<pdf.Font> fonts = [];
 double textFeildHeight = .05;
 
 String host = 'http://fairsplit.assala.com/php_test';

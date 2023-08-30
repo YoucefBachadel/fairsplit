@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 import 'lists.dart';
 import 'constants.dart';
@@ -303,6 +305,57 @@ Widget totalItem(BuildContext context, String title, String value) {
         Expanded(flex: 2, child: myText(title)),
         Expanded(flex: 2, child: myText(':    $value')),
       ],
+    ),
+  );
+}
+
+pw.MultiPage pdfPage({
+  required List<pw.Widget> build,
+  required ByteData font,
+  PdfPageFormat pdfPageFormat = PdfPageFormat.a5,
+}) {
+  return pw.MultiPage(
+    pageFormat: pdfPageFormat,
+    theme: pw.ThemeData.withFont(base: pw.Font.ttf(font)),
+    margin: const pw.EdgeInsets.all(40),
+    // maxPages: 1000,
+    // header: (pw.Context context) => pw.Center(child: pw.Text('Header')),
+    // footer: (pw.Context context) => pw.Center(child: pw.Text('Footer')),
+    build: (pw.Context context) => build,
+  );
+}
+
+pw.Table pdfTable(List<pw.TableRow> children) {
+  return pw.Table(
+    border: pw.TableBorder.all(width: 0.2),
+    children: children,
+  );
+}
+
+pw.Widget pdfTableHeaderRow(String text) {
+  return pw.Container(
+    alignment: pw.Alignment.center,
+    child: pw.Text(text),
+  );
+}
+
+Future<pw.Widget> pdfTableRow({
+  required String text,
+  pw.Alignment? alignment,
+  pw.TextDirection? textDirection,
+}) async {
+  List<pw.Font> fonts = [];
+  fonts.add(pw.Font.ttf(await rootBundle.load('fonts/GothicA1-Regular.ttf')));
+  return pw.Container(
+    alignment: alignment ?? pw.Alignment.center,
+    padding: const pw.EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
+    child: pw.Text(
+      text,
+      textDirection: textDirection,
+      style: pw.TextStyle(
+        fontFallback: fonts,
+        fontSize: 8,
+      ),
     ),
   );
 }

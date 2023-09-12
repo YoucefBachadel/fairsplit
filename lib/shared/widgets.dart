@@ -261,7 +261,7 @@ DataTable dataTable({
   return DataTable(
     sortAscending: isAscending,
     sortColumnIndex: sortColumnIndex,
-    dataRowHeight: 35,
+    dataRowMinHeight: 35,
     headingRowHeight: 30,
     columnSpacing: columnSpacing,
     horizontalMargin: 8,

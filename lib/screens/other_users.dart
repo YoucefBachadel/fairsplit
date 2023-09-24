@@ -368,6 +368,7 @@ class _OtherUsersState extends State<OtherUsers> {
         if (!namesHidden)
           IconButton(
               onPressed: () => createExcel(
+                    getText('otherUsers'),
                     [
                       ['#', getText('name'), getText('type'), getText('amount'), getText('rest')],
                       ...users.map((user) => [
@@ -378,7 +379,6 @@ class _OtherUsersState extends State<OtherUsers> {
                             user.rest,
                           ]),
                     ],
-                    getText('otherUsers'),
                   ),
               icon: Icon(
                 Icons.file_download,

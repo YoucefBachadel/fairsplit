@@ -717,6 +717,7 @@ class _UsersState extends State<Users> {
         if (!namesHidden)
           IconButton(
               onPressed: () => createExcel(
+                    getText('users'),
                     [
                       [
                         '#',
@@ -753,7 +754,6 @@ class _UsersState extends State<Users> {
                             if (_effortUnitFilter != -2) ...[user.effortPerc, user.evaluation]
                           ])
                     ],
-                    getText('users'),
                   ),
               icon: Icon(
                 Icons.file_download,

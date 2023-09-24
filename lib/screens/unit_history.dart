@@ -290,6 +290,7 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
         if (!namesHidden)
           IconButton(
               onPressed: () => createExcel(
+                    getText('unitHistory'),
                     [
                       [
                         '#',
@@ -322,7 +323,6 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
                             (unit.profitability * 100).toStringAsFixed(2),
                           ])
                     ],
-                    getText('unitHistory'),
                   ),
               icon: Icon(
                 Icons.file_download,

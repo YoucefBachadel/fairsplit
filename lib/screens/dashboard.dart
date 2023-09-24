@@ -46,11 +46,12 @@ class _DashboardState extends State<Dashboard> {
           (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
-          s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;''',
+          s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear , s.reference FROM Settings s;''',
       'sql2': 'SELECT name,profitability FROM units;',
     });
     var data = res[0][0];
     currentYear = int.parse(data['currentYear']);
+    reference = int.parse(data['reference']);
     profitability = double.parse(data['profitability']);
     caisse = double.parse(data['caisse']);
     reserve = double.parse(data['reserve']);

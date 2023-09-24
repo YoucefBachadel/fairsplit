@@ -1,5 +1,6 @@
 class TransactionSP {
   int transactionId;
+  String reference;
   int year;
   String category;
   DateTime date;
@@ -9,6 +10,7 @@ class TransactionSP {
   String note;
 
   TransactionSP({
+    required this.reference,
     required this.transactionId,
     required this.category,
     required this.type,

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+
 import 'screens/other_users.dart';
 import 'screens/units.dart';
 import 'shared/lists.dart';
@@ -147,6 +149,11 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     selectedTab = tabsIndex[widget.index] ?? 0;
+    initFont();
+  }
+
+  initFont() async {
+    pdfFont = pw.Font.ttf(await rootBundle.load("fonts/pdfFont.ttf"));
   }
 
   @override
@@ -260,23 +267,27 @@ class _MyAppState extends State<MyApp> {
     void onTap() async {
       setState(() => isLoading = true);
 
-      var res = await sqlQuery(selectUrl, {
-        'sql1': '''SELECT IF(user = '$_password',1,IF(admin = '$_password',2,0)) AS password FROM settings;''',
-      });
-
-      if (['1', '2'].contains(res[0][0]['password'])) {
-        if (res[0][0]['password'] == '2') isAdmin = true;
-        namesHidden = false;
-
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MyApp(
-                    index: widget.index == 'first'
-                        ? 'da'
-                        : tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
-      } else {
+      if (_password.contains('"') || _password.contains('\'')) {
         snackBar(context, getMessage('wrongPassword'), duration: 1);
+      } else {
+        var res = await sqlQuery(selectUrl, {
+          'sql1': '''SELECT IF(user = '$_password',1,IF(admin = '$_password',2,0)) AS password FROM settings;''',
+        });
+
+        if (['1', '2'].contains(res[0][0]['password'])) {
+          if (res[0][0]['password'] == '2') isAdmin = true;
+          namesHidden = false;
+
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => MyApp(
+                      index: widget.index == 'first'
+                          ? 'da'
+                          : tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
+        } else {
+          snackBar(context, getMessage('wrongPassword'), duration: 1);
+        }
       }
       setState(() => isLoading = false);
     }

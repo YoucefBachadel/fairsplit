@@ -442,6 +442,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
         if (!namesHidden)
           IconButton(
               onPressed: () => createExcel(
+                    getText('profitHistory'),
                     [
                       [
                         '#',
@@ -480,7 +481,6 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                             profit.founding,
                           ])
                     ],
-                    getText('profitHistory'),
                   ),
               icon: Icon(
                 Icons.file_download,

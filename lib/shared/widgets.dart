@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 import 'lists.dart';
 import 'constants.dart';
@@ -21,10 +22,11 @@ Widget myButton(
   Color? color,
   Color textColor = Colors.white,
   bool isLoading = false,
+  bool enabled = true,
 }) {
   color = color ?? secondaryColor;
   return InkWell(
-    onTap: isLoading ? null : onTap,
+    onTap: isLoading || !enabled ? null : onTap,
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       decoration: BoxDecoration(
@@ -33,7 +35,7 @@ Widget myButton(
       ),
       alignment: Alignment.center,
       width: width ?? getWidth(context, .09),
-      child: isLoading
+      child: isLoading && enabled
           ? myProgress(color: Colors.white)
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -78,17 +80,17 @@ Widget myTextField(
         obscureText: isPassword,
         enabled: enabled,
         style: const TextStyle(fontSize: 22),
-        decoration: textInputDecoration(hint),
+        decoration: textInputDecoration(hint: hint),
         inputFormatters: [isNumberOnly ? DecimalTextInputFormatter() : FilteringTextInputFormatter.deny(r'')],
       ),
     ),
   );
 }
 
-Widget myText(String text, {Color color = Colors.black, double size = 18.0}) {
+Widget myText(String text, {Color color = Colors.black, double size = 18.0, bool isBold = false}) {
   return Text(
     text,
-    style: TextStyle(fontSize: size, color: color),
+    style: TextStyle(fontSize: size, color: color, fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
   );
 }
 
@@ -103,7 +105,7 @@ Widget myDropDown(
   return Container(
     alignment: Alignment.center,
     height: getHeight(context, textFeildHeight),
-    width: width ?? getWidth(context, .09),
+    width: width ?? getWidth(context, .08),
     decoration: BoxDecoration(
       color: Colors.white,
       border: Border.all(color: color),
@@ -197,10 +199,10 @@ Widget emptyList() {
   );
 }
 
-InputDecoration textInputDecoration(String hint) {
+InputDecoration textInputDecoration({String hint = '', double padding = 0}) {
   return InputDecoration(
     hintText: hint,
-    contentPadding: const EdgeInsets.all(0),
+    contentPadding: EdgeInsets.all(padding),
     filled: true,
     fillColor: Colors.white,
     border: const OutlineInputBorder(
@@ -281,12 +283,12 @@ Widget myScorallable(Widget widget, ScrollController _controllerH, ScrollControl
   return Scrollbar(
     thumbVisibility: true,
     controller: _controllerH,
-    child: Scrollbar(
-      thumbVisibility: true,
-      controller: _controllerV,
-      child: SingleChildScrollView(
-        controller: _controllerH,
-        scrollDirection: Axis.horizontal,
+    child: SingleChildScrollView(
+      controller: _controllerH,
+      scrollDirection: Axis.horizontal,
+      child: Scrollbar(
+        thumbVisibility: true,
+        controller: _controllerV,
         child: SingleChildScrollView(
           controller: _controllerV,
           child: widget,
@@ -309,18 +311,27 @@ Widget totalItem(BuildContext context, String title, String value) {
   );
 }
 
+PdfPreview pdfPreview(Future<Uint8List> pdf) {
+  return PdfPreview(
+    build: (format) => pdf,
+    allowPrinting: false,
+    allowSharing: false,
+    canChangeOrientation: false,
+    canChangePageFormat: false,
+    loadingWidget: Center(child: CircularProgressIndicator(color: primaryColor)),
+  );
+}
+
 pw.MultiPage pdfPage({
   required List<pw.Widget> build,
-  required ByteData font,
   PdfPageFormat pdfPageFormat = PdfPageFormat.a5,
 }) {
   return pw.MultiPage(
     pageFormat: pdfPageFormat,
-    theme: pw.ThemeData.withFont(base: pw.Font.ttf(font)),
-    margin: const pw.EdgeInsets.all(40),
-    // maxPages: 1000,
-    // header: (pw.Context context) => pw.Center(child: pw.Text('Header')),
-    // footer: (pw.Context context) => pw.Center(child: pw.Text('Footer')),
+    crossAxisAlignment: pw.CrossAxisAlignment.end,
+    textDirection: pw.TextDirection.rtl,
+    theme: pw.ThemeData.withFont(base: pdfFont),
+    margin: const pw.EdgeInsets.all(25),
     build: (pw.Context context) => build,
   );
 }

@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:http/http.dart' as http;
 
 int currentYear = 0;
+int reference = 0;
 double profitability = 0;
 bool namesHidden = false;
 bool isAdmin = false;
@@ -15,12 +17,15 @@ Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 
 double textFeildHeight = .05;
 
+late pw.Font pdfFont;
+
 String host = 'http://fairsplit.assala.com/php_test';
 // String host = 'http://fairsplit.assala.com/php';
 
 Uri insertUrl = Uri.parse('$host/insert.php');
 Uri insertSPUrl = Uri.parse('$host/insertSP.php');
 Uri selectUrl = Uri.parse('$host/select.php');
+Uri reciversUrl = Uri.parse('$host/recivers.php');
 
 dynamic sqlQuery(Uri uri, dynamic params) async {
   var res = await http.post(uri, body: jsonEncode(params));

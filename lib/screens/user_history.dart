@@ -406,6 +406,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         if (!namesHidden)
           IconButton(
               onPressed: () => createExcel(
+                    getText('userHistory'),
                     [
                       [
                         '#',
@@ -438,7 +439,6 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                             user.zakat,
                           ])
                     ],
-                    getText('userHistory'),
                   ),
               icon: Icon(
                 Icons.file_download,

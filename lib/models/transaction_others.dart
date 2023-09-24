@@ -1,5 +1,6 @@
 class TransactionOther {
   int transactionId;
+  String reference;
   String userName;
   String category;
   int year;
@@ -12,6 +13,7 @@ class TransactionOther {
 
   TransactionOther({
     required this.transactionId,
+    required this.reference,
     this.userName = '',
     required this.category,
     required this.year,

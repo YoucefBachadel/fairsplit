@@ -162,8 +162,8 @@ class _PrintTransactionState extends State<PrintTransaction> {
                   TextFormField(
                     style: const TextStyle(fontSize: 18),
                     textAlign: TextAlign.end,
-                    minLines: 7,
-                    maxLines: 7,
+                    minLines: 6,
+                    maxLines: 6,
                     decoration: const InputDecoration(
                       contentPadding: EdgeInsets.all(12),
                       border: OutlineInputBorder(
@@ -181,8 +181,8 @@ class _PrintTransactionState extends State<PrintTransaction> {
                   TextFormField(
                     style: const TextStyle(fontSize: 18),
                     textAlign: TextAlign.end,
-                    minLines: 7,
-                    maxLines: 7,
+                    minLines: 6,
+                    maxLines: 6,
                     decoration: const InputDecoration(
                       contentPadding: EdgeInsets.all(12),
                       border: OutlineInputBorder(
@@ -206,6 +206,7 @@ class _PrintTransactionState extends State<PrintTransaction> {
                       onTap: () => printPdf(context, pdf.save()),
                     ),
                   ),
+                  const Spacer(),
                 ],
               ),
             ),

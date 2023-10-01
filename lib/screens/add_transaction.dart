@@ -420,7 +420,7 @@ class _AddTransactionState extends State<AddTransaction> {
     if (selectedTransactionType != 4) {
       await createDialog(
         context,
-        dismissable: false,
+        dismissable: isAdmin,
         // const SelectTransactionCategoty(),
         PrintTransaction(
           source: (selectedTransactionType == 012)

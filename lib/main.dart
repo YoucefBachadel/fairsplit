@@ -55,7 +55,7 @@ void main() {
                 900: primaryColor,
               },
             ),
-            fontFamily: 'Gothic'),
+            fontFamily: 'Itim'),
         home: const MyApp(index: 'first'),
       ),
     ),

@@ -14,6 +14,7 @@ import '../models/transaction_sp.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 import 'add_transaction.dart';
+import 'print_transaction.dart';
 
 class Transactions extends StatefulWidget {
   const Transactions({Key? key}) : super(key: key);
@@ -592,6 +593,18 @@ class _TransactionsState extends State<Transactions> {
 
     List<DataRow> rowsTransCaisse = transactions
         .map((transaction) => DataRow(
+              onSelectChanged: ((value) async => !isAdmin
+                  ? null
+                  : await createDialog(
+                      context,
+                      dismissable: true,
+                      PrintTransaction(
+                        source: transaction.source,
+                        type: transaction.type,
+                        reference: transaction.reference,
+                        amount: transaction.amount,
+                        date: myDateFormate.format(transaction.date),
+                      ))),
               cells: [
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
@@ -639,6 +652,18 @@ class _TransactionsState extends State<Transactions> {
         .toList();
     List<DataRow> rowsTrans = transactions
         .map((transaction) => DataRow(
+              onSelectChanged: ((value) async => !isAdmin
+                  ? null
+                  : await createDialog(
+                      context,
+                      dismissable: true,
+                      PrintTransaction(
+                        source: 'user',
+                        type: transaction.type,
+                        reference: transaction.reference,
+                        amount: transaction.amount,
+                        date: myDateFormate.format(transaction.date),
+                      ))),
               cells: [
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
@@ -676,6 +701,18 @@ class _TransactionsState extends State<Transactions> {
         .toList();
     List<DataRow> rowsTransSP = transactionsSP
         .map((transaction) => DataRow(
+              onSelectChanged: ((value) async => !isAdmin
+                  ? null
+                  : await createDialog(
+                      context,
+                      dismissable: true,
+                      PrintTransaction(
+                        source: 'special',
+                        type: transaction.type,
+                        reference: transaction.reference,
+                        amount: transaction.amount,
+                        date: myDateFormate.format(transaction.date),
+                      ))),
               cells: [
                 dataCell(context, (transactionsSP.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
@@ -711,6 +748,18 @@ class _TransactionsState extends State<Transactions> {
         .toList();
     List<DataRow> rowsTransLoan = loanTransactions
         .map((transaction) => DataRow(
+              onSelectChanged: ((value) async => !isAdmin
+                  ? null
+                  : await createDialog(
+                      context,
+                      dismissable: true,
+                      PrintTransaction(
+                        source: 'loan',
+                        type: transaction.type,
+                        reference: transaction.reference,
+                        amount: transaction.amount,
+                        date: myDateFormate.format(transaction.date),
+                      ))),
               cells: [
                 dataCell(context, (loanTransactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
@@ -748,6 +797,18 @@ class _TransactionsState extends State<Transactions> {
         .toList();
     List<DataRow> rowsTransDeposit = depositTransactions
         .map((transaction) => DataRow(
+              onSelectChanged: ((value) async => !isAdmin
+                  ? null
+                  : await createDialog(
+                      context,
+                      dismissable: true,
+                      PrintTransaction(
+                        source: 'deposit',
+                        type: transaction.type,
+                        reference: transaction.reference,
+                        amount: transaction.amount,
+                        date: myDateFormate.format(transaction.date),
+                      ))),
               cells: [
                 dataCell(context, (depositTransactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
@@ -1204,6 +1265,10 @@ class _TransactionsState extends State<Transactions> {
             children: [
               mySizedBox(context),
               IconButton(
+                  icon: Icon(
+                    Icons.file_download,
+                    color: primaryColor,
+                  ),
                   onPressed: () => createExcel(
                         getText('transaction'),
                         [
@@ -1286,11 +1351,7 @@ class _TransactionsState extends State<Transactions> {
                                   trans.note,
                                 ])
                         ],
-                      ),
-                  icon: Icon(
-                    Icons.file_download,
-                    color: primaryColor,
-                  )),
+                      )),
             ],
           ),
         if (context.watch<Filter>().search.isNotEmpty || transactionCategory == 'caisse')
@@ -1298,19 +1359,20 @@ class _TransactionsState extends State<Transactions> {
             children: [
               mySizedBox(context),
               IconButton(
-                  onPressed: () {
-                    createDialog(
-                      context,
-                      SizedBox(
-                        width: getWidth(context, transactionCategory == 'caisse' ? .7 : .392),
-                        child: printPage(),
-                      ),
-                    );
-                  },
-                  icon: Icon(
-                    Icons.print,
-                    color: primaryColor,
-                  )),
+                icon: Icon(
+                  Icons.print,
+                  color: primaryColor,
+                ),
+                onPressed: () {
+                  createDialog(
+                    context,
+                    SizedBox(
+                      width: getWidth(context, transactionCategory == 'caisse' ? .7 : .392),
+                      child: printPage(),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         mySizedBox(context),
@@ -1322,6 +1384,10 @@ class _TransactionsState extends State<Transactions> {
             _fromDate != DateTime(int.parse(years.last)) ||
             _toDate != today.add(const Duration(seconds: 86399)))
           IconButton(
+            icon: Icon(
+              Icons.update,
+              color: primaryColor,
+            ),
             onPressed: () => setState(() {
               context.read<Filter>().resetFilter();
               _reference = '';
@@ -1332,10 +1398,6 @@ class _TransactionsState extends State<Transactions> {
               _fromDate = DateTime(int.parse(years.last));
               _toDate = today.add(const Duration(seconds: 86399));
             }),
-            icon: Icon(
-              Icons.update,
-              color: primaryColor,
-            ),
           ),
       ],
     );
@@ -1513,7 +1575,7 @@ class _TransactionsState extends State<Transactions> {
       pw.Table.fromTextArray(
         headers: [
           if (transactionCategory == 'caisse') 'Name',
-          if (transactionCategory == 'caisse') 'Source',
+          if (transactionCategory == 'caisse') 'Type',
           'Date',
           'In',
           'Out',

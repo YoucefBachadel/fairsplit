@@ -198,27 +198,12 @@ class _MyAppState extends State<MyApp> {
                               )
                               .toList(),
                           const Spacer(flex: 10),
-                          InkWell(
-                            onTap: () async {
-                              if (!namesHidden) {
-                                namesHidden = true;
-                                isAdmin = false;
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => MyApp(
-                                            index: tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
-                              } else {
-                                await createDialog(context, passwordDialog());
-                              }
-                            },
-                            child: Text(
-                              myDateFormate2.format(DateTime.now()),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w500,
-                              ),
+                          Text(
+                            myDateFormate2.format(DateTime.now()),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           mySizedBox(context),
@@ -276,7 +261,6 @@ class _MyAppState extends State<MyApp> {
 
         if (['1', '2'].contains(res[0][0]['password'])) {
           if (res[0][0]['password'] == '2') isAdmin = true;
-          namesHidden = false;
 
           Navigator.pushReplacement(
               context,

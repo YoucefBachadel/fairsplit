@@ -56,7 +56,7 @@ class _OtherUsersState extends State<OtherUsers> {
       user.isUserWithCapital = user.type == 'loan' && user.rest != 0 && usersWithCapital.contains(user.name);
       allUsers.add(user);
 
-      userNames.add(namesHidden ? ele['userId'] : ele['name']);
+      userNames.add(ele['name']);
     }
 
     setState(() {
@@ -69,8 +69,7 @@ class _OtherUsersState extends State<OtherUsers> {
     totalLoan = 0;
     totalDeposit = 0;
     for (var user in allUsers) {
-      if ((_search.isEmpty || user.name == _search || (namesHidden && user.userId == int.parse(_search))) &&
-          (_type == 'tout' || user.type == _type)) {
+      if ((_search.isEmpty || user.name == _search) && (_type == 'tout' || user.type == _type)) {
         users.add(user);
         user.type == 'loan' ? totalLoan += user.rest : totalDeposit += user.rest;
       }
@@ -155,8 +154,7 @@ class _OtherUsersState extends State<OtherUsers> {
               ),
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
-                dataCell(context, namesHidden ? user.userId.toString() : user.name,
-                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
+                dataCell(context, user.name, textAlign: TextAlign.start),
                 // dataCell(context, myDateFormate.format(user.joinDate)),
                 // dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
@@ -324,7 +322,7 @@ class _OtherUsersState extends State<OtherUsers> {
                               onTap: () => onSelected(option),
                               child: Container(
                                 padding: const EdgeInsets.all(16.0),
-                                alignment: namesHidden ? Alignment.center : Alignment.centerLeft,
+                                alignment: Alignment.centerLeft,
                                 child: myText(option),
                               ),
                             );
@@ -364,26 +362,25 @@ class _OtherUsersState extends State<OtherUsers> {
             ),
           ],
         ),
-        if (!namesHidden) mySizedBox(context),
-        if (!namesHidden)
-          IconButton(
-              onPressed: () => createExcel(
-                    getText('otherUsers'),
-                    [
-                      ['#', getText('name'), getText('type'), getText('amount'), getText('rest')],
-                      ...users.map((user) => [
-                            users.indexOf(user) + 1,
-                            user.name,
-                            getText(user.type),
-                            user.amount,
-                            user.rest,
-                          ]),
-                    ],
-                  ),
-              icon: Icon(
-                Icons.file_download,
-                color: primaryColor,
-              )),
+        mySizedBox(context),
+        IconButton(
+            onPressed: () => createExcel(
+                  getText('otherUsers'),
+                  [
+                    ['#', getText('name'), getText('type'), getText('amount'), getText('rest')],
+                    ...users.map((user) => [
+                          users.indexOf(user) + 1,
+                          user.name,
+                          getText(user.type),
+                          user.amount,
+                          user.rest,
+                        ]),
+                  ],
+                ),
+            icon: Icon(
+              Icons.file_download,
+              color: primaryColor,
+            )),
         mySizedBox(context),
         (_controller.text.isNotEmpty || _type != 'tout')
             ? IconButton(

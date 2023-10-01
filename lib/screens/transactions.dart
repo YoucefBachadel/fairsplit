@@ -608,18 +608,7 @@ class _TransactionsState extends State<Transactions> {
               cells: [
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
-                dataCell(
-                    context,
-                    namesHidden
-                        ? transaction.source == 'user'
-                            ? '1${userNames.toList().indexOf(transaction.userName)}'
-                            : transaction.source == 'loan'
-                                ? '2${loanNames.toList().indexOf(transaction.userName)}'
-                                : transaction.source == 'deposit'
-                                    ? '3${depositNames.toList().indexOf(transaction.userName)}'
-                                    : '4'
-                        : transaction.userName,
-                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
+                dataCell(context, transaction.userName, textAlign: TextAlign.start),
                 dataCell(context, getText(transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
@@ -667,9 +656,7 @@ class _TransactionsState extends State<Transactions> {
               cells: [
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
-                dataCell(context,
-                    namesHidden ? userNames.toList().indexOf(transaction.userName).toString() : transaction.userName,
-                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
+                dataCell(context, transaction.userName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
@@ -763,9 +750,7 @@ class _TransactionsState extends State<Transactions> {
               cells: [
                 dataCell(context, (loanTransactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
-                dataCell(context,
-                    namesHidden ? loanNames.toList().indexOf(transaction.userName).toString() : transaction.userName,
-                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
+                dataCell(context, transaction.userName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
@@ -812,9 +797,7 @@ class _TransactionsState extends State<Transactions> {
               cells: [
                 dataCell(context, (depositTransactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
-                dataCell(context,
-                    namesHidden ? depositNames.toList().indexOf(transaction.userName).toString() : transaction.userName,
-                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
+                dataCell(context, transaction.userName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
@@ -1038,57 +1021,21 @@ class _TransactionsState extends State<Transactions> {
           ),
         if (transactionCategory == 'users')
           autoComplete(
-            onSeleted: (item) => setState(
-                () => context.read<Filter>().change(search: namesHidden ? userNames.elementAt(int.parse(item)) : item)),
-            optionsBuilder: (textEditingValue) {
-              if (namesHidden) {
-                Set<String> indexes = {};
-                for (var ele in userNames) {
-                  if (userNames.toList().indexOf(ele).toString().contains(textEditingValue.text)) {
-                    indexes.add(userNames.toList().indexOf(ele).toString());
-                  }
-                }
-                return indexes;
-              } else {
-                return userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-              }
-            },
+            onSeleted: (item) => setState(() => context.read<Filter>().change(search: item)),
+            optionsBuilder: (textEditingValue) =>
+                userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
           ),
         if (transactionCategory == 'loans')
           autoComplete(
-            onSeleted: (item) => setState(
-                () => context.read<Filter>().change(search: namesHidden ? loanNames.elementAt(int.parse(item)) : item)),
-            optionsBuilder: (textEditingValue) {
-              if (namesHidden) {
-                Set<String> indexes = {};
-                for (var ele in loanNames) {
-                  if (loanNames.toList().indexOf(ele).toString().contains(textEditingValue.text)) {
-                    indexes.add(loanNames.toList().indexOf(ele).toString());
-                  }
-                }
-                return indexes;
-              } else {
-                return loanNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-              }
-            },
+            onSeleted: (item) => setState(() => context.read<Filter>().change(search: item)),
+            optionsBuilder: (textEditingValue) =>
+                loanNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
           ),
         if (transactionCategory == 'deposits')
           autoComplete(
-            onSeleted: (item) => setState(() =>
-                context.read<Filter>().change(search: namesHidden ? depositNames.elementAt(int.parse(item)) : item)),
-            optionsBuilder: (textEditingValue) {
-              if (namesHidden) {
-                Set<String> indexes = {};
-                for (var ele in depositNames) {
-                  if (depositNames.toList().indexOf(ele).toString().contains(textEditingValue.text)) {
-                    indexes.add(depositNames.toList().indexOf(ele).toString());
-                  }
-                }
-                return indexes;
-              } else {
-                return depositNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-              }
-            },
+            onSeleted: (item) => setState(() => context.read<Filter>().change(search: item)),
+            optionsBuilder: (textEditingValue) =>
+                depositNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
           ),
         if (transactionCategory != 'caisse') mySizedBox(context),
         Column(
@@ -1260,100 +1207,99 @@ class _TransactionsState extends State<Transactions> {
             }
           },
         ),
-        if (!namesHidden)
-          Column(
-            children: [
-              mySizedBox(context),
-              IconButton(
-                  icon: Icon(
-                    Icons.file_download,
-                    color: primaryColor,
-                  ),
-                  onPressed: () => createExcel(
-                        getText('transaction'),
+        Column(
+          children: [
+            mySizedBox(context),
+            IconButton(
+                icon: Icon(
+                  Icons.file_download,
+                  color: primaryColor,
+                ),
+                onPressed: () => createExcel(
+                      getText('transaction'),
+                      [
                         [
-                          [
-                            '#',
-                            getText('reference'),
-                            if (transactionCategory == 'specials') getText('category') else getText('name'),
-                            if (transactionCategory == 'caisse') getText('source'),
-                            getText('date'),
-                            getText('type'),
-                            getText('in'),
-                            getText('out'),
-                            if (transactionCategory == 'caisse')
-                              getText('soldeCaisse')
-                            else if (transactionCategory == 'specials')
-                              getText('solde')
-                            else
-                              getText('soldeUser'),
-                            getText('note'),
-                          ],
+                          '#',
+                          getText('reference'),
+                          if (transactionCategory == 'specials') getText('category') else getText('name'),
+                          if (transactionCategory == 'caisse') getText('source'),
+                          getText('date'),
+                          getText('type'),
+                          getText('in'),
+                          getText('out'),
                           if (transactionCategory == 'caisse')
-                            ...transactions.map((trans) => [
-                                  transactions.indexOf(trans) + 1,
-                                  trans.reference,
-                                  trans.userName,
-                                  getText(trans.source),
-                                  myDateFormate.format(trans.date),
-                                  trans.type == 'in' ? getText('in') : getText('out'),
-                                  trans.type == 'in' ? trans.amount : '/',
-                                  trans.type == 'out' ? trans.amount : '/',
-                                  trans.soldeCaisse,
-                                  trans.note,
-                                ])
-                          else if (transactionCategory == 'users')
-                            ...transactions.map((trans) => [
-                                  transactions.indexOf(trans) + 1,
-                                  trans.reference,
-                                  trans.userName,
-                                  myDateFormate.format(trans.date),
-                                  trans.type == 'in' ? getText('in') : getText('out'),
-                                  trans.type == 'in' ? trans.amount : '/',
-                                  trans.type == 'out' ? trans.amount : '/',
-                                  trans.soldeUser,
-                                  trans.note,
-                                ])
+                            getText('soldeCaisse')
                           else if (transactionCategory == 'specials')
-                            ...transactionsSP.map((trans) => [
-                                  transactionsSP.indexOf(trans) + 1,
-                                  trans.reference,
-                                  trans.category,
-                                  myDateFormate.format(trans.date),
-                                  trans.type == 'in' ? getText('in') : getText('out'),
-                                  trans.type == 'in' ? trans.amount : '/',
-                                  trans.type == 'out' ? trans.amount : '/',
-                                  trans.solde,
-                                  trans.note,
-                                ])
-                          else if (transactionCategory == 'loans')
-                            ...loanTransactions.map((trans) => [
-                                  loanTransactions.indexOf(trans) + 1,
-                                  trans.reference,
-                                  trans.userName,
-                                  myDateFormate.format(trans.date),
-                                  trans.type == 'in' ? getText('in') : getText('out'),
-                                  trans.type == 'in' ? trans.amount : '/',
-                                  trans.type == 'out' ? trans.amount : '/',
-                                  trans.soldeUser,
-                                  trans.note,
-                                ])
+                            getText('solde')
                           else
-                            ...depositTransactions.map((trans) => [
-                                  depositTransactions.indexOf(trans) + 1,
-                                  trans.reference,
-                                  trans.userName,
-                                  myDateFormate.format(trans.date),
-                                  trans.type == 'in' ? getText('in') : getText('out'),
-                                  trans.type == 'in' ? trans.amount : '/',
-                                  trans.type == 'out' ? trans.amount : '/',
-                                  trans.soldeUser,
-                                  trans.note,
-                                ])
+                            getText('soldeUser'),
+                          getText('note'),
                         ],
-                      )),
-            ],
-          ),
+                        if (transactionCategory == 'caisse')
+                          ...transactions.map((trans) => [
+                                transactions.indexOf(trans) + 1,
+                                trans.reference,
+                                trans.userName,
+                                getText(trans.source),
+                                myDateFormate.format(trans.date),
+                                trans.type == 'in' ? getText('in') : getText('out'),
+                                trans.type == 'in' ? trans.amount : '/',
+                                trans.type == 'out' ? trans.amount : '/',
+                                trans.soldeCaisse,
+                                trans.note,
+                              ])
+                        else if (transactionCategory == 'users')
+                          ...transactions.map((trans) => [
+                                transactions.indexOf(trans) + 1,
+                                trans.reference,
+                                trans.userName,
+                                myDateFormate.format(trans.date),
+                                trans.type == 'in' ? getText('in') : getText('out'),
+                                trans.type == 'in' ? trans.amount : '/',
+                                trans.type == 'out' ? trans.amount : '/',
+                                trans.soldeUser,
+                                trans.note,
+                              ])
+                        else if (transactionCategory == 'specials')
+                          ...transactionsSP.map((trans) => [
+                                transactionsSP.indexOf(trans) + 1,
+                                trans.reference,
+                                trans.category,
+                                myDateFormate.format(trans.date),
+                                trans.type == 'in' ? getText('in') : getText('out'),
+                                trans.type == 'in' ? trans.amount : '/',
+                                trans.type == 'out' ? trans.amount : '/',
+                                trans.solde,
+                                trans.note,
+                              ])
+                        else if (transactionCategory == 'loans')
+                          ...loanTransactions.map((trans) => [
+                                loanTransactions.indexOf(trans) + 1,
+                                trans.reference,
+                                trans.userName,
+                                myDateFormate.format(trans.date),
+                                trans.type == 'in' ? getText('in') : getText('out'),
+                                trans.type == 'in' ? trans.amount : '/',
+                                trans.type == 'out' ? trans.amount : '/',
+                                trans.soldeUser,
+                                trans.note,
+                              ])
+                        else
+                          ...depositTransactions.map((trans) => [
+                                depositTransactions.indexOf(trans) + 1,
+                                trans.reference,
+                                trans.userName,
+                                myDateFormate.format(trans.date),
+                                trans.type == 'in' ? getText('in') : getText('out'),
+                                trans.type == 'in' ? trans.amount : '/',
+                                trans.type == 'out' ? trans.amount : '/',
+                                trans.soldeUser,
+                                trans.note,
+                              ])
+                      ],
+                    )),
+          ],
+        ),
         if (context.watch<Filter>().search.isNotEmpty || transactionCategory == 'caisse')
           Column(
             children: [
@@ -1430,16 +1376,7 @@ class _TransactionsState extends State<Transactions> {
               onFieldSubmitted,
             ) {
               _searchController = textEditingController;
-              var list = transactionCategory == 'users'
-                  ? userNames
-                  : transactionCategory == 'loans'
-                      ? loanNames
-                      : depositNames;
-              _searchController.text = !namesHidden
-                  ? _search
-                  : _search.isEmpty
-                      ? ''
-                      : list.toList().indexOf(_search).toString();
+              _searchController.text = _search;
 
               return Container(
                   alignment: Alignment.center,
@@ -1500,7 +1437,7 @@ class _TransactionsState extends State<Transactions> {
                           onTap: () => onSelected(option),
                           child: Container(
                             padding: const EdgeInsets.all(16.0),
-                            alignment: namesHidden ? Alignment.center : Alignment.centerLeft,
+                            alignment: Alignment.centerLeft,
                             child: myText(option),
                           ),
                         );
@@ -1519,45 +1456,50 @@ class _TransactionsState extends State<Transactions> {
   Widget printPage() {
     final pdf = pw.Document();
     List<Map<String, String>> data = [];
+    double totalIn = 0, totalOut = 0;
 
     if (transactionCategory == 'caisse') {
-      transactions
-          .map((trans) => data.add({
-                'name': trans.userName,
-                'source': trans.source,
-                'date': myDateFormate.format(trans.date),
-                'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
-                'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
-                'solde': myCurrency.format(trans.soldeCaisse)
-              }))
-          .toList();
+      transactions.map((trans) {
+        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
+        data.add({
+          'name': trans.userName,
+          'source': trans.source,
+          'date': myDateFormate.format(trans.date),
+          'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
+          'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
+          'solde': myCurrency.format(trans.soldeCaisse)
+        });
+      }).toList();
     } else if (transactionCategory == 'users') {
-      transactions
-          .map((trans) => data.add({
-                'date': myDateFormate.format(trans.date),
-                'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
-                'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
-                'solde': myCurrency.format(trans.soldeUser)
-              }))
-          .toList();
+      transactions.map((trans) {
+        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
+        data.add({
+          'date': myDateFormate.format(trans.date),
+          'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
+          'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
+          'solde': myCurrency.format(trans.soldeUser)
+        });
+      }).toList();
     } else if (transactionCategory == 'loans') {
-      loanTransactions
-          .map((trans) => data.add({
-                'date': myDateFormate.format(trans.date),
-                'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
-                'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
-                'solde': myCurrency.format(trans.soldeUser)
-              }))
-          .toList();
+      loanTransactions.map((trans) {
+        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
+        data.add({
+          'date': myDateFormate.format(trans.date),
+          'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
+          'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
+          'solde': myCurrency.format(trans.soldeUser)
+        });
+      }).toList();
     } else if (transactionCategory == 'deposits') {
-      depositTransactions
-          .map((trans) => data.add({
-                'date': myDateFormate.format(trans.date),
-                'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
-                'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
-                'solde': myCurrency.format(trans.soldeUser)
-              }))
-          .toList();
+      depositTransactions.map((trans) {
+        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
+        data.add({
+          'date': myDateFormate.format(trans.date),
+          'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
+          'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
+          'solde': myCurrency.format(trans.soldeUser)
+        });
+      }).toList();
     }
 
     pdf.addPage(pdfPage(pdfPageFormat: transactionCategory == 'caisse' ? PdfPageFormat.a4 : PdfPageFormat.a5, build: [
@@ -1612,6 +1554,34 @@ class _TransactionsState extends State<Transactions> {
               },
       ),
       pw.Divider(),
+      pw.Row(children: [
+        pw.Spacer(flex: 3),
+        pw.Expanded(
+          flex: 2,
+          child: pw.Column(children: [
+            pw.Container(
+                child: pw.Row(children: [
+              pw.Expanded(child: pw.Text('Total in:', textAlign: pw.TextAlign.left)),
+              pw.Text(myCurrency.format(totalIn)),
+            ])),
+            pw.Container(
+                child: pw.Row(children: [
+              pw.Expanded(child: pw.Text('Total out:', textAlign: pw.TextAlign.left)),
+              pw.Text(myCurrency.format(totalOut)),
+            ])),
+            pw.Divider(),
+            pw.Container(
+                child: pw.Row(children: [
+              pw.Expanded(child: pw.Text('Total:', textAlign: pw.TextAlign.left)),
+              pw.Text(myCurrency.format(totalIn - totalOut)),
+            ])),
+            pw.SizedBox(height: 2),
+            pw.Container(height: 1, color: PdfColors.grey400),
+            pw.SizedBox(height: .5),
+            pw.Container(height: 1, color: PdfColors.grey400),
+          ]),
+        ),
+      ]),
     ]));
 
     return Stack(

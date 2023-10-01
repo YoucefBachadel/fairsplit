@@ -263,19 +263,20 @@ DataTable dataTable({
   return DataTable(
     sortAscending: isAscending,
     sortColumnIndex: sortColumnIndex,
-    dataRowMinHeight: 35,
-    headingRowHeight: 30,
     columnSpacing: columnSpacing,
+    columns: columns,
+    rows: rows,
+    dataRowMinHeight: 35,
+    dataRowMaxHeight: 35,
+    headingRowHeight: 30,
     horizontalMargin: 8,
+    showCheckboxColumn: false,
+    border: TableBorder.all(width: 0.1),
     headingRowColor: MaterialStateProperty.all(Colors.grey[300]),
     headingTextStyle: const TextStyle(
       color: Colors.black,
       fontWeight: FontWeight.w600,
     ),
-    border: TableBorder.all(width: 0.1),
-    showCheckboxColumn: false,
-    columns: columns,
-    rows: rows,
   );
 }
 

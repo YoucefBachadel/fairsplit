@@ -67,7 +67,7 @@ class _UsersState extends State<Users> {
     allUsers = toUsers(dataUsers, toThresholds(dataThresholds), toFoundings(dataFoundings), toEfforts(dataEfforts));
 
     for (var ele in dataUsers) {
-      userNames.add(namesHidden ? ele['userId'] : ele['name']);
+      userNames.add(ele['name']);
     }
     for (var element in dataUnits) {
       units.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
@@ -129,7 +129,7 @@ class _UsersState extends State<Users> {
       }
 
       //to add user it mast contain search name and the type and the three list filter
-      if ((_search.isEmpty || user.name == _search || (namesHidden && user.userId == int.parse(_search))) &&
+      if ((_search.isEmpty || user.name == _search) &&
           (_type == 'tout' || user.type == _type) &&
           (_thresholdUnitFilter == -2 || _isthresholdFilter) &&
           (_foundingUnitFilter == -2 || _isfoundingFilter) &&
@@ -328,8 +328,7 @@ class _UsersState extends State<Users> {
               ),
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
-                dataCell(context, namesHidden ? user.userId.toString() : user.name,
-                    textAlign: namesHidden ? TextAlign.center : TextAlign.start),
+                dataCell(context, user.name, textAlign: TextAlign.start),
                 // dataCell(context, myDateFormate.format(user.joinDate)),
                 // dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
@@ -571,7 +570,7 @@ class _UsersState extends State<Users> {
                               onTap: () => onSelected(option),
                               child: Container(
                                 padding: const EdgeInsets.all(16.0),
-                                alignment: namesHidden ? Alignment.center : Alignment.centerLeft,
+                                alignment: Alignment.centerLeft,
                                 child: myText(option),
                               ),
                             );
@@ -713,52 +712,51 @@ class _UsersState extends State<Users> {
             )
           ],
         ),
-        if (!namesHidden) mySizedBox(context),
-        if (!namesHidden)
-          IconButton(
-              onPressed: () => createExcel(
-                    getText('users'),
+        mySizedBox(context),
+        IconButton(
+            onPressed: () => createExcel(
+                  getText('users'),
+                  [
                     [
-                      [
-                        '#',
-                        getText('name'),
-                        getText('phone'),
-                        getText('joinDate'),
-                        getText('type'),
-                        getText('capital'),
-                        getText('weightedCapital'),
-                        getText('initialCapital'),
-                        getText('money'),
-                        getText('effort'),
-                        getText('threshold'),
-                        getText('founding'),
-                        if (_thresholdUnitFilter != -2) getText('threshold'),
-                        if (_foundingUnitFilter != -2) getText('founding'),
-                        if (_effortUnitFilter != -2) ...[getText('effort'), getText('evaluation')]
-                      ],
-                      ...users.map((user) => [
-                            users.indexOf(user) + 1,
-                            user.name,
-                            user.phone,
-                            myDateFormate.format(user.joinDate),
-                            getText(user.type),
-                            user.capital,
-                            user.weightedCapital,
-                            user.initialCapital,
-                            user.money + user.moneyExtern,
-                            user.effort + user.effortExtern,
-                            user.threshold,
-                            user.founding,
-                            if (_thresholdUnitFilter != -2) user.thresholdPerc,
-                            if (_foundingUnitFilter != -2) user.foundingPerc,
-                            if (_effortUnitFilter != -2) ...[user.effortPerc, user.evaluation]
-                          ])
+                      '#',
+                      getText('name'),
+                      getText('phone'),
+                      getText('joinDate'),
+                      getText('type'),
+                      getText('capital'),
+                      getText('weightedCapital'),
+                      getText('initialCapital'),
+                      getText('money'),
+                      getText('effort'),
+                      getText('threshold'),
+                      getText('founding'),
+                      if (_thresholdUnitFilter != -2) getText('threshold'),
+                      if (_foundingUnitFilter != -2) getText('founding'),
+                      if (_effortUnitFilter != -2) ...[getText('effort'), getText('evaluation')]
                     ],
-                  ),
-              icon: Icon(
-                Icons.file_download,
-                color: primaryColor,
-              )),
+                    ...users.map((user) => [
+                          users.indexOf(user) + 1,
+                          user.name,
+                          user.phone,
+                          myDateFormate.format(user.joinDate),
+                          getText(user.type),
+                          user.capital,
+                          user.weightedCapital,
+                          user.initialCapital,
+                          user.money + user.moneyExtern,
+                          user.effort + user.effortExtern,
+                          user.threshold,
+                          user.founding,
+                          if (_thresholdUnitFilter != -2) user.thresholdPerc,
+                          if (_foundingUnitFilter != -2) user.foundingPerc,
+                          if (_effortUnitFilter != -2) ...[user.effortPerc, user.evaluation]
+                        ])
+                  ],
+                ),
+            icon: Icon(
+              Icons.file_download,
+              color: primaryColor,
+            )),
         mySizedBox(context),
         (_controller.text.isNotEmpty ||
                 _type != 'tout' ||

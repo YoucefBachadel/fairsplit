@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 int currentYear = 0;
 int reference = 0;
 double profitability = 0;
-bool namesHidden = false;
 bool isAdmin = false;
 
 Color primaryColor = const Color(0XFF02333c); //0XFF303F9F

@@ -193,9 +193,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
           (userHistory) => DataRow(
             cells: [
               dataCell(context, (usersHistory.indexOf(userHistory) + 1).toString()),
-              dataCell(
-                  context, namesHidden ? userNames.toList().indexOf(userHistory.name).toString() : userHistory.name,
-                  textAlign: namesHidden ? TextAlign.center : TextAlign.start),
+              dataCell(context, userHistory.name, textAlign: TextAlign.start),
               ...[
                 userHistory.year.toString(),
                 userHistory.isMoney ? myCurrency.format(userHistory.startCapital) : '/',
@@ -275,21 +273,9 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
               height: getHeight(context, textFeildHeight),
               width: getWidth(context, .22),
               child: Autocomplete<String>(
-                onSelected: (item) =>
-                    setState(() => _search = namesHidden ? userNames.elementAt(int.parse(item)) : item),
-                optionsBuilder: (textEditingValue) {
-                  if (namesHidden) {
-                    List<String> indexes = [];
-                    for (var ele in userNames) {
-                      if (userNames.toList().indexOf(ele).toString().contains(textEditingValue.text)) {
-                        indexes.add(userNames.toList().indexOf(ele).toString());
-                      }
-                    }
-                    return indexes;
-                  } else {
-                    return userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-                  }
-                },
+                onSelected: (item) => setState(() => _search = item),
+                optionsBuilder: (textEditingValue) =>
+                    userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
                 fieldViewBuilder: (
                   context,
                   textEditingController,
@@ -360,7 +346,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(16.0),
-                                alignment: namesHidden ? Alignment.center : Alignment.centerLeft,
+                                alignment: Alignment.centerLeft,
                                 child: myText(option),
                               ),
                             );
@@ -402,48 +388,47 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
             )
           ],
         ),
-        if (!namesHidden) mySizedBox(context),
-        if (!namesHidden)
-          IconButton(
-              onPressed: () => createExcel(
-                    getText('userHistory'),
+        mySizedBox(context),
+        IconButton(
+            onPressed: () => createExcel(
+                  getText('userHistory'),
+                  [
                     [
-                      [
-                        '#',
-                        getText('name'),
-                        getText('type'),
-                        getText('year'),
-                        getText('startCapital'),
-                        getText('totalIn'),
-                        getText('totalOut'),
-                        getText('moneyProfit'),
-                        getText('effortProfit'),
-                        getText('thresholdProfit'),
-                        getText('foundingProfit'),
-                        getText('totalProfit'),
-                        getText('zakat'),
-                      ],
-                      ...usersHistory.map((user) => [
-                            usersHistory.indexOf(user) + 1,
-                            user.name,
-                            getText(user.type),
-                            user.year,
-                            user.startCapital,
-                            user.totalIn,
-                            user.totalOut,
-                            user.moneyProfit,
-                            user.effortProfit,
-                            user.thresholdProfit,
-                            user.foundingProfit,
-                            user.totalProfit,
-                            user.zakat,
-                          ])
+                      '#',
+                      getText('name'),
+                      getText('type'),
+                      getText('year'),
+                      getText('startCapital'),
+                      getText('totalIn'),
+                      getText('totalOut'),
+                      getText('moneyProfit'),
+                      getText('effortProfit'),
+                      getText('thresholdProfit'),
+                      getText('foundingProfit'),
+                      getText('totalProfit'),
+                      getText('zakat'),
                     ],
-                  ),
-              icon: Icon(
-                Icons.file_download,
-                color: primaryColor,
-              )),
+                    ...usersHistory.map((user) => [
+                          usersHistory.indexOf(user) + 1,
+                          user.name,
+                          getText(user.type),
+                          user.year,
+                          user.startCapital,
+                          user.totalIn,
+                          user.totalOut,
+                          user.moneyProfit,
+                          user.effortProfit,
+                          user.thresholdProfit,
+                          user.foundingProfit,
+                          user.totalProfit,
+                          user.zakat,
+                        ])
+                  ],
+                ),
+            icon: Icon(
+              Icons.file_download,
+              color: primaryColor,
+            )),
         mySizedBox(context),
         (_controller.text.isNotEmpty || _year != 'tout')
             ? IconButton(

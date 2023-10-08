@@ -57,158 +57,171 @@ class _PrintTransactionState extends State<PrintTransaction> {
   @override
   Widget build(BuildContext context) {
     pdf = pw.Document();
+    ScrollController _controller = ScrollController();
     return SizedBox(
       height: getHeight(context, .85),
       width: getWidth(context, .7),
       child: Row(
         children: [
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  mySizedBox(context),
-                  myText('المبلغ بالحروف', isBold: true),
-                  mySizedBox(context),
-                  TextFormField(
-                    initialValue: amountOnLetter,
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.end,
-                    minLines: 1,
-                    maxLines: 2,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.all(12),
-                      border: OutlineInputBorder(
-                        gapPadding: 0,
-                        borderSide: BorderSide(width: 0.5),
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
-                    ),
-                    onChanged: (value) => setState(() => amountOnLetter = value),
-                  ),
-                  mySizedBox(context),
-                  mySizedBox(context),
-                  myText((widget.type == 'in') ? 'مودع اﻷموال' : 'ساحب الأموال', isBold: true),
-                  mySizedBox(context),
-                  TextFormField(
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.all(12),
-                      border: OutlineInputBorder(
-                        gapPadding: 0,
-                        borderSide: BorderSide(width: 0.5),
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
-                    ),
-                    onChanged: (value) => setState(() => user = value),
-                  ),
-                  mySizedBox(context),
-                  mySizedBox(context),
-                  myText((widget.type == 'in') ? 'مستلم اﻷموال' : 'مقدم الأموال', isBold: true),
-                  mySizedBox(context),
-                  Autocomplete<String>(
-                    onSelected: (value) => setState(() => reciver = value),
-                    optionsBuilder: (textEditingValue) =>
-                        recivers.where((element) => element.contains(textEditingValue.text)),
-                    fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) => TextFormField(
-                        controller: textEditingController,
-                        focusNode: focusNode,
-                        style: const TextStyle(fontSize: 18),
-                        textAlign: TextAlign.center,
-                        decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.all(12),
-                          border: OutlineInputBorder(
-                            gapPadding: 0,
-                            borderSide: BorderSide(width: 0.5),
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                        ),
-                        onChanged: (value) => setState(() => reciver = value)),
-                    optionsViewBuilder: (context, onSelected, options) => Align(
-                      alignment: Alignment.topLeft,
-                      child: Material(
-                        elevation: 8.0,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: getWidth(context, .283),
-                          ),
-                          child: ListView.builder(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            itemCount: options.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final String option = options.elementAt(index);
-                              return InkWell(
-                                onTap: () => onSelected(option),
-                                child: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  alignment: Alignment.center,
-                                  child: myText(option),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    controller: _controller,
+                    child: SingleChildScrollView(
+                      controller: _controller,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            mySizedBox(context),
+                            myText('المبلغ بالحروف', isBold: true),
+                            mySizedBox(context),
+                            TextFormField(
+                              initialValue: amountOnLetter,
+                              style: const TextStyle(fontSize: 18),
+                              textAlign: TextAlign.end,
+                              minLines: 1,
+                              maxLines: 2,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.all(12),
+                                border: OutlineInputBorder(
+                                  gapPadding: 0,
+                                  borderSide: BorderSide(width: 0.5),
+                                  borderRadius: BorderRadius.all(Radius.circular(12)),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                              onChanged: (value) => setState(() => amountOnLetter = value),
+                            ),
+                            mySizedBox(context),
+                            mySizedBox(context),
+                            myText((widget.type == 'in') ? 'مودع اﻷموال' : 'ساحب الأموال', isBold: true),
+                            mySizedBox(context),
+                            TextFormField(
+                              style: const TextStyle(fontSize: 18),
+                              textAlign: TextAlign.center,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.all(12),
+                                border: OutlineInputBorder(
+                                  gapPadding: 0,
+                                  borderSide: BorderSide(width: 0.5),
+                                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                                ),
+                              ),
+                              onChanged: (value) => setState(() => user = value),
+                            ),
+                            mySizedBox(context),
+                            mySizedBox(context),
+                            myText((widget.type == 'in') ? 'مستلم اﻷموال' : 'مقدم الأموال', isBold: true),
+                            mySizedBox(context),
+                            Autocomplete<String>(
+                              onSelected: (value) => setState(() => reciver = value),
+                              optionsBuilder: (textEditingValue) =>
+                                  recivers.where((element) => element.contains(textEditingValue.text)),
+                              fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) =>
+                                  TextFormField(
+                                      controller: textEditingController,
+                                      focusNode: focusNode,
+                                      style: const TextStyle(fontSize: 18),
+                                      textAlign: TextAlign.center,
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.all(12),
+                                        border: OutlineInputBorder(
+                                          gapPadding: 0,
+                                          borderSide: BorderSide(width: 0.5),
+                                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                                        ),
+                                      ),
+                                      onChanged: (value) => setState(() => reciver = value)),
+                              optionsViewBuilder: (context, onSelected, options) => Align(
+                                alignment: Alignment.topLeft,
+                                child: Material(
+                                  elevation: 8.0,
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxWidth: getWidth(context, .283),
+                                    ),
+                                    child: ListView.builder(
+                                      padding: EdgeInsets.zero,
+                                      shrinkWrap: true,
+                                      itemCount: options.length,
+                                      itemBuilder: (BuildContext context, int index) {
+                                        final String option = options.elementAt(index);
+                                        return InkWell(
+                                          onTap: () => onSelected(option),
+                                          child: Container(
+                                            padding: const EdgeInsets.all(16.0),
+                                            alignment: Alignment.center,
+                                            child: myText(option),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            mySizedBox(context),
+                            mySizedBox(context),
+                            myText('الوسطاء', isBold: true),
+                            mySizedBox(context),
+                            TextFormField(
+                              style: const TextStyle(fontSize: 18),
+                              textAlign: TextAlign.end,
+                              minLines: 2,
+                              maxLines: 5,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.all(12),
+                                border: OutlineInputBorder(
+                                  gapPadding: 0,
+                                  borderSide: BorderSide(width: 0.5),
+                                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                                ),
+                              ),
+                              onChanged: (value) => setState(() => intermediates = value),
+                            ),
+                            mySizedBox(context),
+                            mySizedBox(context),
+                            myText('ملاحظات', isBold: true),
+                            mySizedBox(context),
+                            TextFormField(
+                              style: const TextStyle(fontSize: 18),
+                              textAlign: TextAlign.end,
+                              minLines: 2,
+                              maxLines: 5,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.all(12),
+                                border: OutlineInputBorder(
+                                  gapPadding: 0,
+                                  borderSide: BorderSide(width: 0.5),
+                                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                                ),
+                              ),
+                              onChanged: (value) => setState(() => notes = value),
+                            ),
+                            mySizedBox(context),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                  mySizedBox(context),
-                  mySizedBox(context),
-                  myText('الوسطاء', isBold: true),
-                  mySizedBox(context),
-                  TextFormField(
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.end,
-                    minLines: 6,
-                    maxLines: 6,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.all(12),
-                      border: OutlineInputBorder(
-                        gapPadding: 0,
-                        borderSide: BorderSide(width: 0.5),
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
-                    ),
-                    onChanged: (value) => setState(() => intermediates = value),
+                ),
+                Container(
+                  child: myButton(
+                    context,
+                    text: 'Imprimer',
+                    icon: Icons.print,
+                    color:
+                        amountOnLetter.isNotEmpty && user.isNotEmpty && reciver.isNotEmpty ? primaryColor : Colors.grey,
+                    enabled: amountOnLetter.isNotEmpty && user.isNotEmpty && reciver.isNotEmpty,
+                    onTap: () => printPdf(context, pdf.save()),
                   ),
-                  mySizedBox(context),
-                  mySizedBox(context),
-                  myText('ملاحظات', isBold: true),
-                  mySizedBox(context),
-                  TextFormField(
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.end,
-                    minLines: 6,
-                    maxLines: 6,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.all(12),
-                      border: OutlineInputBorder(
-                        gapPadding: 0,
-                        borderSide: BorderSide(width: 0.5),
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
-                    ),
-                    onChanged: (value) => setState(() => notes = value),
-                  ),
-                  const Spacer(),
-                  Center(
-                    child: myButton(
-                      context,
-                      text: 'Imprimer',
-                      icon: Icons.print,
-                      color: amountOnLetter.isNotEmpty && user.isNotEmpty && reciver.isNotEmpty
-                          ? primaryColor
-                          : Colors.grey,
-                      enabled: amountOnLetter.isNotEmpty && user.isNotEmpty && reciver.isNotEmpty,
-                      onTap: () => printPdf(context, pdf.save()),
-                    ),
-                  ),
-                  const Spacer(),
-                ],
-              ),
+                ),
+                mySizedBox(context),
+              ],
             ),
           ),
           Container(
@@ -222,7 +235,13 @@ class _PrintTransactionState extends State<PrintTransaction> {
   }
 
   Widget printPage() {
-    final page = pdfPage(build: [
+    pdf.addPage(page());
+    pdf.addPage(page(isLeft: false));
+    return pdfPreview(pdf.save());
+  }
+
+  pw.MultiPage page({bool isLeft = true}) {
+    return pdfPage(build: [
       pw.Row(children: [
         pw.Text((widget.type == 'in') ? 'وصل إيداع' : 'وصل سحب', style: const pw.TextStyle(fontSize: 25)),
         pw.Spacer(),
@@ -275,18 +294,17 @@ class _PrintTransactionState extends State<PrintTransaction> {
               style: const pw.TextStyle(fontSize: 10)),
           pw.Text(reciver),
           pw.SizedBox(height: 16),
-          pw.Text('إمضاء : ', style: const pw.TextStyle(fontSize: 10)),
+          if (isLeft) pw.Text('إمضاء : ', style: const pw.TextStyle(fontSize: 10)),
         ]),
         pw.Spacer(),
         pw.Column(children: [
           pw.Text((widget.type == 'in') ? 'مودع اﻷموال : ' : 'ساحب الأموال : ',
               style: const pw.TextStyle(fontSize: 10)),
           pw.Text(user),
+          pw.SizedBox(height: 16),
+          if (!isLeft) pw.Text('إمضاء : ', style: const pw.TextStyle(fontSize: 10)),
         ]),
       ]),
     ]);
-    pdf.addPage(page);
-    pdf.addPage(page);
-    return pdfPreview(pdf.save());
   }
 }

@@ -207,9 +207,9 @@ class _OtherUsersState extends State<OtherUsers> {
                         ? emptyList()
                         : myScorallable(
                             dataTable(
+                              context,
                               isAscending: _isAscending,
                               sortColumnIndex: _sortColumnIndex,
-                              columnSpacing: 30,
                               columns: columns,
                               rows: rows,
                             ),

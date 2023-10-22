@@ -209,11 +209,11 @@ class _UnitsState extends State<Units> {
                       ? SizedBox(width: getWidth(context, .60), child: emptyList())
                       : myScorallable(
                           dataTable(
+                            context,
                             isAscending: _isAscending,
                             sortColumnIndex: _sortColumnIndex,
                             columns: columns,
                             rows: rows,
-                            columnSpacing: 50,
                           ),
                           _controllerH,
                           _controllerV,

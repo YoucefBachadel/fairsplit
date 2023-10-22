@@ -186,8 +186,8 @@ class _TransactionsState extends State<Transactions> {
           (_reference.isEmpty || trans.reference.contains(_reference)) &&
           (_year == 'tout' || trans.year.toString() == _year) &&
           (_type == 'tout' || trans.type == _type) &&
-          (trans.date.isAfter(_fromDate) || trans.date == _fromDate) &&
-          (trans.date.isBefore(_toDate) || trans.date == _toDate)) {
+          (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
+          (trans.date.isBefore(_toDate) || myDateFormate.format(trans.date) == myDateFormate.format(_toDate))) {
         transactions.add(trans);
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
       }
@@ -209,8 +209,8 @@ class _TransactionsState extends State<Transactions> {
       if ((_reference.isEmpty || trans.reference.contains(_reference)) &&
           (_year == 'tout' || trans.year.toString() == _year) &&
           (_type == 'tout' || trans.type == _type) &&
-          (trans.date.isAfter(_fromDate) || trans.date == _fromDate) &&
-          (trans.date.isBefore(_toDate) || trans.date == _toDate) &&
+          (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
+          (trans.date.isBefore(_toDate) || myDateFormate.format(trans.date) == myDateFormate.format(_toDate)) &&
           trans.isCaisseChanged) {
         transactions.add(trans);
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
@@ -227,8 +227,8 @@ class _TransactionsState extends State<Transactions> {
           (_compt == 'tout' || trans.category == _compt) &&
           (_year == 'tout' || trans.year.toString() == _year) &&
           (_type == 'tout' || trans.type == _type) &&
-          (trans.date.isAfter(_fromDate) || trans.date == _fromDate) &&
-          (trans.date.isBefore(_toDate) || trans.date == _toDate)) {
+          (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
+          (trans.date.isBefore(_toDate) || myDateFormate.format(trans.date) == myDateFormate.format(_toDate))) {
         transactionsSP.add(trans);
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
       }
@@ -243,8 +243,8 @@ class _TransactionsState extends State<Transactions> {
           (_reference.isEmpty || trans.reference.contains(_reference)) &&
           (_year == 'tout' || trans.year.toString() == _year) &&
           (_type == 'tout' || trans.type == _type) &&
-          (trans.date.isAfter(_fromDate) || trans.date == _fromDate) &&
-          (trans.date.isBefore(_toDate) || trans.date == _toDate)) {
+          (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
+          (trans.date.isBefore(_toDate) || myDateFormate.format(trans.date) == myDateFormate.format(_toDate))) {
         loanTransactions.add(trans);
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
       }
@@ -259,8 +259,8 @@ class _TransactionsState extends State<Transactions> {
           (_reference.isEmpty || trans.reference.contains(_reference)) &&
           (_year == 'tout' || trans.year.toString() == _year) &&
           (_type == 'tout' || trans.type == _type) &&
-          (trans.date.isAfter(_fromDate) || trans.date == _fromDate) &&
-          (trans.date.isBefore(_toDate) || trans.date == _toDate)) {
+          (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
+          (trans.date.isBefore(_toDate) || myDateFormate.format(trans.date) == myDateFormate.format(_toDate))) {
         depositTransactions.add(trans);
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
       }
@@ -593,18 +593,16 @@ class _TransactionsState extends State<Transactions> {
 
     List<DataRow> rowsTransCaisse = transactions
         .map((transaction) => DataRow(
-              onSelectChanged: ((value) async => !isAdmin
-                  ? null
-                  : await createDialog(
-                      context,
-                      dismissable: true,
-                      PrintTransaction(
-                        source: transaction.source,
-                        type: transaction.type,
-                        reference: transaction.reference,
-                        amount: transaction.amount,
-                        date: myDateFormate.format(transaction.date),
-                      ))),
+              onSelectChanged: ((value) async => await createDialog(
+                  context,
+                  dismissable: true,
+                  PrintTransaction(
+                    source: transaction.source,
+                    type: transaction.type,
+                    reference: transaction.reference,
+                    amount: transaction.amount,
+                    date: myDateFormate.format(transaction.date),
+                  ))),
               cells: [
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
@@ -862,11 +860,11 @@ class _TransactionsState extends State<Transactions> {
                           ? SizedBox(width: getWidth(context, .60), child: emptyList())
                           : myScorallable(
                               dataTable(
+                                context,
                                 isAscending: _isAscendingTransCaisse,
                                 sortColumnIndex: _sortColumnIndexTransCaisse,
                                 columns: columnsTransCaisse,
                                 rows: rowsTransCaisse,
-                                columnSpacing: 30,
                               ),
                               _searchControllerH,
                               _searchControllerV)
@@ -875,11 +873,11 @@ class _TransactionsState extends State<Transactions> {
                               ? SizedBox(width: getWidth(context, .60), child: emptyList())
                               : myScorallable(
                                   dataTable(
+                                    context,
                                     isAscending: _isAscendingTrans,
                                     sortColumnIndex: _sortColumnIndexTrans,
                                     columns: columnsTrans,
                                     rows: rowsTrans,
-                                    columnSpacing: 30,
                                   ),
                                   _searchControllerH,
                                   _searchControllerV)
@@ -888,11 +886,11 @@ class _TransactionsState extends State<Transactions> {
                                   ? SizedBox(width: getWidth(context, .60), child: emptyList())
                                   : myScorallable(
                                       dataTable(
+                                        context,
                                         isAscending: _isAscendingTransSP,
                                         sortColumnIndex: _sortColumnIndexTransSP,
                                         columns: columnsTransSP,
                                         rows: rowsTransSP,
-                                        columnSpacing: 30,
                                       ),
                                       _searchControllerH,
                                       _searchControllerV)
@@ -901,11 +899,11 @@ class _TransactionsState extends State<Transactions> {
                                       ? SizedBox(width: getWidth(context, .60), child: emptyList())
                                       : myScorallable(
                                           dataTable(
+                                            context,
                                             isAscending: _isAscendingTransLoan,
                                             sortColumnIndex: _sortColumnIndexTransLoan,
                                             columns: columnsTransLoan,
                                             rows: rowsTransLoan,
-                                            columnSpacing: 30,
                                           ),
                                           _searchControllerH,
                                           _searchControllerV)
@@ -914,11 +912,11 @@ class _TransactionsState extends State<Transactions> {
                                           ? SizedBox(width: getWidth(context, .60), child: emptyList())
                                           : myScorallable(
                                               dataTable(
+                                                context,
                                                 isAscending: _isAscendingTransDeposit,
                                                 sortColumnIndex: _sortColumnIndexTransDeposit,
                                                 columns: columnsTransDeposit,
                                                 rows: rowsTransDeposit,
-                                                columnSpacing: 30,
                                               ),
                                               _searchControllerH,
                                               _searchControllerV)

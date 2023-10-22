@@ -152,9 +152,7 @@ class _MyAppState extends State<MyApp> {
     initFont();
   }
 
-  initFont() async {
-    pdfFont = pw.Font.ttf(await rootBundle.load("fonts/pdfFont.ttf"));
-  }
+  initFont() async => pdfFont = pw.Font.ttf(await rootBundle.load("fonts/pdfFont.ttf"));
 
   @override
   Widget build(BuildContext context) {

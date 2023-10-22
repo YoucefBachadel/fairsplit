@@ -465,6 +465,7 @@ class _AddUserState extends State<AddUser> {
                 ? emptyList()
                 : SingleChildScrollView(
                     child: dataTable(
+                      context,
                       columns: [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
                       rows: thresholds
                           .map((e) => DataRow(
@@ -572,6 +573,7 @@ class _AddUserState extends State<AddUser> {
                 ? emptyList()
                 : SingleChildScrollView(
                     child: dataTable(
+                      context,
                       columns: [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
                       rows: foundings
                           .map((e) => DataRow(
@@ -679,6 +681,7 @@ class _AddUserState extends State<AddUser> {
               ? emptyList()
               : SingleChildScrollView(
                   child: dataTable(
+                    context,
                     columns: [getText('unit'), getText('percentage'), getText('evaluation'), '']
                         .map((e) => dataColumn(context, e))
                         .toList(),

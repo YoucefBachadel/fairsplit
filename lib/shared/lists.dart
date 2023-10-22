@@ -1,3 +1,5 @@
+import 'package:fairsplit/shared/constants.dart';
+
 List<String> monthsOfYear = [
   'January',
   'February',
@@ -59,7 +61,7 @@ List<String> selectTransactionType = [
   getText('user'),
   getText('loan'),
   getText('deposit'),
-  getText('allUsers'),
+  if (isAdmin) getText('allUsers'),
 ];
 
 Map<String, String> compts = {

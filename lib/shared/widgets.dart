@@ -253,23 +253,23 @@ DataColumn sortableDataColumn(BuildContext context, String text, Function(int co
   );
 }
 
-DataTable dataTable({
+DataTable dataTable(
+  BuildContext context, {
   required List<DataColumn> columns,
   required List<DataRow> rows,
   bool isAscending = false,
   int? sortColumnIndex = 0,
-  double columnSpacing = 10,
 }) {
   return DataTable(
     sortAscending: isAscending,
     sortColumnIndex: sortColumnIndex,
-    columnSpacing: columnSpacing,
+    columnSpacing: getWidth(context, .008),
+    horizontalMargin: getWidth(context, .008),
     columns: columns,
     rows: rows,
-    dataRowMinHeight: 35,
-    dataRowMaxHeight: 35,
-    headingRowHeight: 30,
-    horizontalMargin: 8,
+    dataRowMinHeight: getHeight(context, .035),
+    dataRowMaxHeight: getHeight(context, .035),
+    headingRowHeight: getHeight(context, .03),
     showCheckboxColumn: false,
     border: TableBorder.all(width: 0.1),
     headingRowColor: MaterialStateProperty.all(Colors.grey[300]),

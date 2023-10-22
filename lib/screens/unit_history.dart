@@ -210,9 +210,9 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
                         ? SizedBox(width: getWidth(context, .60), child: emptyList())
                         : myScorallable(
                             dataTable(
+                              context,
                               isAscending: _isAscending,
                               sortColumnIndex: _sortColumnIndex,
-                              columnSpacing: 20,
                               columns: columns,
                               rows: rows,
                             ),

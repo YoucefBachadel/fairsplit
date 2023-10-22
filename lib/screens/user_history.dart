@@ -240,6 +240,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                         ? SizedBox(width: getWidth(context, .60), child: emptyList())
                         : myScorallable(
                             dataTable(
+                              context,
                               isAscending: _isAscending,
                               sortColumnIndex: _sortColumnIndex,
                               columns: columns,

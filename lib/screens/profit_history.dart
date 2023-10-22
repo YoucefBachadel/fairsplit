@@ -280,6 +280,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                       ? SizedBox(width: getWidth(context, .60), child: emptyList())
                       : myScorallable(
                           dataTable(
+                            context,
                             isAscending: _isAscending,
                             sortColumnIndex: _sortColumnIndex,
                             columns: columns,

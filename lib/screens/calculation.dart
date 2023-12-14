@@ -23,7 +23,7 @@ class Calculation extends StatefulWidget {
 class _CalculationState extends State<Calculation> {
   TextEditingController controller = TextEditingController();
   List<User> moneyUsers = [], globalEffortUsers = [], unitEffortUsers = [], thresholdUsers = [], foundingUsers = [];
-  List<Transaction> transactions = [];
+  List<Transaction> transactions = [], allTransactions = [];
   var transactionsDays = <DateTime>{}; //list of days that containe transactions
   double reserve = 0, caisse = 0, soldeReserve = 0, soldeReserveProfit = 0;
   double unitProfitValue = 0, unitProfitHint = 0;
@@ -62,10 +62,10 @@ class _CalculationState extends State<Calculation> {
       'sql6':
           '''SELECT f.userId,u.name, f.foundingPerc FROM Founding f, Users u WHERE f.unitId = ${widget.unit.unitId} AND f.userId = u.userId;''',
       'sql7': isIntern
-          ? '''SELECT transactionId,userId,userName,date,type,amount FROM Transaction WHERE Month(date) = ${widget.unit.currentMonthOrYear} AND Year(date) = $currentYear;'''
+          ? '''SELECT transactionId,userId,userName,date,type,amount FROM Transaction WHERE date >= '${DateTime(currentYear, widget.unit.currentMonthOrYear, 1)}';'''
           : '''SELECT transactionId,userId,userName,date,type,amount FROM Transaction WHERE Year(date) >= ${widget.unit.currentMonthOrYear};''',
       'sql8': isIntern
-          ? '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Month(date) = ${widget.unit.currentMonthOrYear} AND Year(date) = $currentYear;'''
+          ? '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND date >= '${DateTime(currentYear, widget.unit.currentMonthOrYear, 1)}';'''
           : '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Year(date) >= ${widget.unit.currentMonthOrYear};''',
     });
 
@@ -124,10 +124,14 @@ class _CalculationState extends State<Calculation> {
         type: ele['type'],
         amount: double.parse(ele['amount']),
       );
-      transactions.add(transaction);
+      allTransactions.add(transaction);
 
-      if (isIntern || transaction.date.year == widget.unit.currentMonthOrYear) {
-        // we add the transaction day if it's  unit type is intern or (extern and trasaction year = unit currentMonthOrYear )
+      if ((isIntern &&
+              transaction.date.year == currentYear &&
+              transaction.date.month == widget.unit.currentMonthOrYear) ||
+          (!isIntern && transaction.date.year == widget.unit.currentMonthOrYear)) {
+        //filter the transactions of the calculated month or the calculated year if it is extern
+        transactions.add(transaction);
         transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
       }
     }
@@ -141,9 +145,14 @@ class _CalculationState extends State<Calculation> {
         type: ele['type'],
         amount: double.parse(ele['amount']),
       );
-      transactions.add(transaction);
-      if (isIntern || (!isIntern && transaction.date.year == widget.unit.currentMonthOrYear)) {
-        // we add the transaction day if it's  unit type is intern or (extern and trasaction year = unit currentMonthOrYear )
+      allTransactions.add(transaction);
+
+      if ((isIntern &&
+              transaction.date.year == currentYear &&
+              transaction.date.month == widget.unit.currentMonthOrYear) ||
+          (!isIntern && transaction.date.year == widget.unit.currentMonthOrYear)) {
+        //filter the transactions of the calculated month or the calculated year if it is extern
+        transactions.add(transaction);
         transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
       }
     }
@@ -169,11 +178,12 @@ class _CalculationState extends State<Calculation> {
     });
 
     transactionsDays = SplayTreeSet.from(transactionsDays);
+    allTransactions.sort((tr1, tr2) => tr1.date.compareTo(tr2.date));
     transactions.sort((tr1, tr2) => tr1.date.compareTo(tr2.date));
 
     //reset the users capital to its value in the first day of the month
     for (var user in moneyUsers) {
-      for (var trans in transactions) {
+      for (var trans in allTransactions) {
         if (trans.userId == user.userId) {
           trans.type == 'in' ? user.capital -= trans.amount : user.capital += trans.amount;
         }

@@ -178,7 +178,7 @@ class _CalculationState extends State<Calculation> {
     });
 
     transactionsDays = SplayTreeSet.from(transactionsDays);
-    allTransactions.sort((tr1, tr2) => tr1.date.compareTo(tr2.date));
+    allTransactions.sort((tr1, tr2) => tr2.date.compareTo(tr1.date));
     transactions.sort((tr1, tr2) => tr1.date.compareTo(tr2.date));
 
     //reset the users capital to its value in the first day of the month

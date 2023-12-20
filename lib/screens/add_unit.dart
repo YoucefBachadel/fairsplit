@@ -70,7 +70,7 @@ class _AddUnitState extends State<AddUnit> {
         // sending a post request to the url
         await sqlQuery(insertUrl, {
           'sql1': _unitId == -1
-              ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,calculated,currentMonthOrYear) VALUES ('$name' ,'$_type',$_capital,0, $_reserve , $_donation  ,$_threshold , $_founding , $_effort , $_money , 0, ${_type == 'intern' ? 1 : currentYear});'''
+              ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,currentMonthOrYear) VALUES ('$name' ,'$_type',$_capital,0, $_reserve , $_donation  ,$_threshold , $_founding , $_effort , $_money , ${_type == 'intern' ? 1 : currentYear});'''
               : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
         });
 
@@ -170,18 +170,6 @@ class _AddUnitState extends State<AddUnit> {
                         children: [
                           mySizedBox(context),
                           information(),
-                          // mySizedBox(context),
-                          // SizedBox(
-                          //   width: getWidth(context, .2),
-                          //   child: myTextField(
-                          //     context,
-                          //     width: getWidth(context, .13),
-                          //     onChanged: (text) => password = text,
-                          //     isPassword: true,
-                          //     isCenter: true,
-                          //     hint: getText('password'),
-                          //   ),
-                          // ),
                           mySizedBox(context),
                           myButton(context, onTap: () => save()),
                           mySizedBox(context),

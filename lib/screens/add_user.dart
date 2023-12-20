@@ -76,11 +76,6 @@ class _AddUserState extends State<AddUser> {
     } else {
       setState(() => isLoading = true);
 
-      // var res = await sqlQuery(selectUrl, {
-      //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
-      // });
-
-      // if (res[0][0]['password'] == '1') {
       bool isNew = widget.user.userId == -1;
 
       //chack if the nae exist befor
@@ -157,9 +152,6 @@ class _AddUserState extends State<AddUser> {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
         snackBar(context, isNew ? getMessage('addUser') : getMessage('updateUser'));
       }
-      // } else {
-      //   snackBar(context, getMessage('wrongPassword'), duration: 1);
-      // }
       setState(() => isLoading = false);
     }
   }
@@ -205,7 +197,6 @@ class _AddUserState extends State<AddUser> {
                                 context,
                                 getMessage('deleteUserConfirmation'),
                                 () => deleteUser(widget.user.userId),
-                                // onChanged: (text) => password = text,
                               ),
                             ),
                         icon: const Icon(
@@ -390,24 +381,6 @@ class _AddUserState extends State<AddUser> {
             ),
           ],
         ),
-        // mySizedBox(context),
-        // Row(
-        //   children: [
-        //     Expanded(child: myText(getText('password'))),
-        //     Expanded(
-        //         flex: 4,
-        //         child: Row(
-        //           children: [
-        //             myTextField(
-        //               context,
-        //               width: getWidth(context, .13),
-        //               onChanged: (text) => password = text,
-        //               isPassword: true,
-        //             ),
-        //           ],
-        //         )),
-        //   ],
-        // ),
       ],
     );
   }

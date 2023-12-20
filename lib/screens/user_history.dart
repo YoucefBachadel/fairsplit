@@ -228,7 +228,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         child: Column(
           children: [
             const SizedBox(width: double.minPositive, height: 8.0),
-            serachBar(),
+            searchBar(),
             const SizedBox(width: double.minPositive, height: 8.0),
             SizedBox(width: getWidth(context, .19), child: const Divider()),
             const SizedBox(width: double.minPositive, height: 8.0),
@@ -249,31 +249,34 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                             _controllerH,
                             _controllerV,
                           )),
+            mySizedBox(context),
+            SizedBox(width: getWidth(context, .52), child: const Divider()),
+            mySizedBox(context),
+            const Row(),
           ],
         ),
       ),
     );
   }
 
-  Widget serachBar() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('name'),
-                style: const TextStyle(fontSize: 14),
+  Widget searchBar() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('name'),
+                  style: const TextStyle(fontSize: 14),
+                ),
               ),
-            ),
-            SizedBox(
-              height: getHeight(context, textFeildHeight),
-              width: getWidth(context, .22),
-              child: Autocomplete<String>(
+              Autocomplete<String>(
                 onSelected: (item) => setState(() => _search = item),
                 optionsBuilder: (textEditingValue) =>
                     userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
@@ -284,44 +287,40 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                   onFieldSubmitted,
                 ) {
                   _controller = textEditingController;
-                  return Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : primaryColor),
-                        borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  return SizedBox(
+                    height: getHeight(context, textFeildHeight),
+                    width: getWidth(context, .18),
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: focusNode,
+                      style: const TextStyle(fontSize: 18.0),
+                      onSubmitted: ((value) {
+                        if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
+                          String text =
+                              userNames.firstWhere((item) => item.toLowerCase().contains(value.toLowerCase()));
+                          setState(() {
+                            _controller.text = text;
+                            _search = text;
+                          });
+                        }
+                      }),
+                      decoration: textInputDecoration(
+                        hint: getText('search'),
+                        borderColor: _search.isEmpty ? Colors.grey : primaryColor,
+                        prefixIcon: const Icon(Icons.search, size: 20.0),
+                        suffixIcon: _controller.text.isEmpty
+                            ? null
+                            : IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _controller.clear();
+                                    _search = '';
+                                  });
+                                },
+                                icon: const Icon(Icons.clear, size: 20.0)),
                       ),
-                      child: TextFormField(
-                        controller: _controller,
-                        focusNode: focusNode,
-                        style: const TextStyle(fontSize: 18.0),
-                        onChanged: ((value) => setState(() {})),
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          hintText: getText('search'),
-                          border: const OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            size: 20.0,
-                          ),
-                          suffixIcon: textEditingController.text.isEmpty
-                              ? const SizedBox()
-                              : IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      textEditingController.clear();
-                                      _search = '';
-                                    });
-                                  },
-                                  icon: const Icon(
-                                    Icons.clear,
-                                    size: 20.0,
-                                  )),
-                        ),
-                      ));
+                    ),
+                  );
                 },
                 optionsViewBuilder: (
                   BuildContext context,
@@ -358,93 +357,92 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                   );
                 },
               ),
-            ),
-          ],
-        ),
-        const SizedBox(width: 8.0),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('year'),
-                style: const TextStyle(fontSize: 14),
+            ],
+          ),
+          const SizedBox(width: 8.0),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('year'),
+                  style: const TextStyle(fontSize: 14),
+                ),
               ),
-            ),
-            myDropDown(
-              context,
-              value: _year,
-              color: _year == 'tout' ? Colors.grey : primaryColor,
-              items: [constans['tout'] ?? '', ...years].map((item) {
-                return DropdownMenuItem(
-                  value: item == constans['tout'] ? 'tout' : item,
-                  alignment: AlignmentDirectional.center,
-                  child: Text(item),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() {
-                _year = value.toString();
-              }),
-            )
-          ],
-        ),
-        mySizedBox(context),
-        IconButton(
-            onPressed: () => createExcel(
-                  getText('userHistory'),
-                  [
-                    [
-                      '#',
-                      getText('name'),
-                      getText('type'),
-                      getText('year'),
-                      getText('startCapital'),
-                      getText('totalIn'),
-                      getText('totalOut'),
-                      getText('moneyProfit'),
-                      getText('effortProfit'),
-                      getText('thresholdProfit'),
-                      getText('foundingProfit'),
-                      getText('totalProfit'),
-                      getText('zakat'),
-                    ],
-                    ...usersHistory.map((user) => [
-                          usersHistory.indexOf(user) + 1,
-                          user.name,
-                          getText(user.type),
-                          user.year,
-                          user.startCapital,
-                          user.totalIn,
-                          user.totalOut,
-                          user.moneyProfit,
-                          user.effortProfit,
-                          user.thresholdProfit,
-                          user.foundingProfit,
-                          user.totalProfit,
-                          user.zakat,
-                        ])
-                  ],
-                ),
-            icon: Icon(
-              Icons.file_download,
-              color: primaryColor,
-            )),
-        mySizedBox(context),
-        (_controller.text.isNotEmpty || _year != 'tout')
-            ? IconButton(
-                onPressed: () => setState(() {
-                  _search = '';
-                  _controller.clear();
-                  _year = 'tout';
+              myDropDown(
+                context,
+                value: _year,
+                color: _year == 'tout' ? Colors.grey : primaryColor,
+                items: [constans['tout'] ?? '', ...years].map((item) {
+                  return DropdownMenuItem(
+                    value: item == constans['tout'] ? 'tout' : item,
+                    alignment: AlignmentDirectional.center,
+                    child: Text(item),
+                  );
+                }).toList(),
+                onChanged: (value) => setState(() {
+                  _year = value.toString();
                 }),
-                icon: Icon(
-                  Icons.update,
-                  color: primaryColor,
-                ),
               )
-            : const SizedBox(),
-      ],
+            ],
+          ),
+          mySizedBox(context),
+          IconButton(
+              onPressed: () => createExcel(
+                    getText('userHistory'),
+                    [
+                      [
+                        '#',
+                        getText('name'),
+                        getText('type'),
+                        getText('year'),
+                        getText('startCapital'),
+                        getText('totalIn'),
+                        getText('totalOut'),
+                        getText('moneyProfit'),
+                        getText('effortProfit'),
+                        getText('thresholdProfit'),
+                        getText('foundingProfit'),
+                        getText('totalProfit'),
+                        getText('zakat'),
+                      ],
+                      ...usersHistory.map((user) => [
+                            usersHistory.indexOf(user) + 1,
+                            user.name,
+                            getText(user.type),
+                            user.year,
+                            user.startCapital,
+                            user.totalIn,
+                            user.totalOut,
+                            user.moneyProfit,
+                            user.effortProfit,
+                            user.thresholdProfit,
+                            user.foundingProfit,
+                            user.totalProfit,
+                            user.zakat,
+                          ])
+                    ],
+                  ),
+              icon: Icon(
+                Icons.file_download,
+                color: primaryColor,
+              )),
+          (_search.isNotEmpty || _year != 'tout')
+              ? IconButton(
+                  onPressed: () => setState(() {
+                    _search = '';
+                    _controller.clear();
+                    _year = 'tout';
+                  }),
+                  icon: Icon(
+                    Icons.update,
+                    color: primaryColor,
+                  ),
+                )
+              : const SizedBox(),
+        ],
+      ),
     );
   }
 }

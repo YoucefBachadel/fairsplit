@@ -112,7 +112,6 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                 context,
                                 getMessage('deleteOtherUserConfirmation'),
                                 () => deleteUser(widget.user.userId),
-                                // onChanged: (text) => password = text,
                               ),
                             ),
                         icon: const Icon(
@@ -267,24 +266,6 @@ class _AddOtherUserState extends State<AddOtherUser> {
                               ),
                             ],
                           ),
-                          // mySizedBox(context),
-                          // Row(
-                          //   children: [
-                          //     Expanded(child: myText(getText('password'))),
-                          //     Expanded(
-                          //         flex: 4,
-                          //         child: Row(
-                          //           children: [
-                          //             myTextField(
-                          //               context,
-                          //               width: getWidth(context, .13),
-                          //               onChanged: (text) => password = text,
-                          //               isPassword: true,
-                          //             ),
-                          //           ],
-                          //         )),
-                          //   ],
-                          // ),
                           mySizedBox(context),
                           myButton(context, onTap: () => save()),
                           mySizedBox(context),

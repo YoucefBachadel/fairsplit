@@ -65,6 +65,7 @@ Widget myTextField(
   bool isPassword = false,
   bool isCenter = false,
   required Function(String text) onChanged,
+  Function(String text)? onSubmited,
 }) {
   controller = controller ?? TextEditingController();
   return Container(
@@ -72,9 +73,10 @@ Widget myTextField(
     child: SizedBox(
       height: getHeight(context, textFeildHeight),
       width: width ?? getWidth(context, .06),
-      child: TextFormField(
+      child: TextField(
         controller: controller,
         onChanged: onChanged,
+        onSubmitted: onSubmited ?? (value) {},
         autofocus: autoFocus,
         textAlign: TextAlign.center,
         obscureText: isPassword,
@@ -199,26 +201,40 @@ Widget emptyList() {
   );
 }
 
-InputDecoration textInputDecoration({String hint = '', double padding = 0}) {
+InputDecoration textInputDecoration({
+  String hint = '',
+  Widget? prefixIcon,
+  Widget? suffixIcon,
+  Color borderColor = Colors.black,
+}) {
   return InputDecoration(
     hintText: hint,
-    contentPadding: EdgeInsets.all(padding),
-    filled: true,
-    fillColor: Colors.white,
+    enabledBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: borderColor),
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
+    ),
     border: const OutlineInputBorder(
       borderSide: BorderSide(),
       borderRadius: BorderRadius.all(Radius.circular(12)),
     ),
+    prefixIcon: prefixIcon,
+    suffixIcon: suffixIcon,
   );
 }
 
-DataCell dataCell(BuildContext context, String text, {TextAlign textAlign = TextAlign.center}) {
+DataCell dataCell(
+  BuildContext context,
+  String text, {
+  TextAlign textAlign = TextAlign.center,
+  TextDirection textDirection = TextDirection.ltr,
+}) {
   return DataCell(
     SizedBox(
       width: double.infinity,
       child: Text(
         text,
         textAlign: textAlign,
+        textDirection: textDirection,
         overflow: TextOverflow.ellipsis,
         style: Theme.of(context).textTheme.bodyMedium,
       ),

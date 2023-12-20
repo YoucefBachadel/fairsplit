@@ -309,10 +309,7 @@ class _UsersState extends State<Users> {
     List<DataRow> rows = users
         .map((user) => DataRow(
               onLongPress: () {
-                context.read<Filter>().change(
-                      transactionCategory: 'users',
-                      search: user.name,
-                    );
+                context.read<Filter>().change(transactionCategory: 'users', search: user.name);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
               },
               onSelectChanged: (value) async => await createDialog(
@@ -484,27 +481,24 @@ class _UsersState extends State<Users> {
   }
 
   Widget searchBar() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('name'),
-                style: const TextStyle(fontSize: 14),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('name'),
+                  style: const TextStyle(fontSize: 14),
+                ),
               ),
-            ),
-            SizedBox(
-              height: getHeight(context, textFeildHeight),
-              width: getWidth(context, .22),
-              child: Autocomplete<String>(
-                onSelected: (item) => setState(() {
-                  _search = item;
-                }),
+              Autocomplete<String>(
+                onSelected: (item) => setState(() => _search = item),
                 optionsBuilder: (textEditingValue) {
                   return userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase()));
                 },
@@ -515,38 +509,40 @@ class _UsersState extends State<Users> {
                   onFieldSubmitted,
                 ) {
                   _controller = textEditingController;
-                  return Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : primaryColor),
-                        borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  return SizedBox(
+                    height: getHeight(context, textFeildHeight),
+                    width: getWidth(context, .18),
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: focusNode,
+                      style: const TextStyle(fontSize: 18.0),
+                      onSubmitted: ((value) {
+                        if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
+                          String text =
+                              userNames.firstWhere((item) => item.toLowerCase().contains(value.toLowerCase()));
+                          setState(() {
+                            _controller.text = text;
+                            _search = text;
+                          });
+                        }
+                      }),
+                      decoration: textInputDecoration(
+                        hint: getText('search'),
+                        borderColor: _search.isEmpty ? Colors.grey : primaryColor,
+                        prefixIcon: const Icon(Icons.search, size: 20.0),
+                        suffixIcon: _controller.text.isEmpty
+                            ? null
+                            : IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _controller.clear();
+                                    _search = '';
+                                  });
+                                },
+                                icon: const Icon(Icons.clear, size: 20.0)),
                       ),
-                      child: TextFormField(
-                        controller: _controller,
-                        focusNode: focusNode,
-                        style: const TextStyle(fontSize: 18.0),
-                        onChanged: ((value) => setState(() {})),
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          hintText: getText('search'),
-                          border: const OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                          prefixIcon: const Icon(Icons.search, size: 20.0),
-                          suffixIcon: textEditingController.text.isEmpty
-                              ? const SizedBox()
-                              : IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      textEditingController.clear();
-                                      _search = '';
-                                    });
-                                  },
-                                  icon: const Icon(Icons.clear, size: 20.0)),
-                        ),
-                      ));
+                    ),
+                  );
                 },
                 optionsViewBuilder: (
                   BuildContext context,
@@ -559,7 +555,7 @@ class _UsersState extends State<Users> {
                       elevation: 8.0,
                       child: ConstrainedBox(
                         constraints:
-                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .22)),
+                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .18)),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,
@@ -581,205 +577,204 @@ class _UsersState extends State<Users> {
                   );
                 },
               ),
-            ),
-          ],
-        ),
-        mySizedBox(context),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('type'),
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-            myDropDown(
-              context,
-              value: _type,
-              color: _type == 'tout' ? Colors.grey : primaryColor,
-              items: usersTypesSearch.entries.map((item) {
-                return DropdownMenuItem(
-                  value: getKeyFromValue(item.value),
-                  alignment: AlignmentDirectional.center,
-                  child: Text(item.value),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _type = value.toString();
-                });
-              },
-            ),
-          ],
-        ),
-        mySizedBox(context),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('threshold'),
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-            myDropDown(
-              context,
-              value: _thresholdUnitFilter,
-              width: getWidth(context, .14),
-              color: _thresholdUnitFilter == -2 ? Colors.grey : primaryColor,
-              items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
-                return DropdownMenuItem(
-                  value: item.unitId,
-                  alignment: AlignmentDirectional.center,
-                  child: Text(item.name),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _thresholdUnitFilter = int.parse(value.toString());
-                });
-              },
-            )
-          ],
-        ),
-        mySizedBox(context),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('founding'),
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-            myDropDown(
-              context,
-              value: _foundingUnitFilter,
-              width: getWidth(context, .14),
-              color: _foundingUnitFilter == -2 ? Colors.grey : primaryColor,
-              items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
-                return DropdownMenuItem(
-                  value: item.unitId,
-                  alignment: AlignmentDirectional.center,
-                  child: Text(item.name),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _foundingUnitFilter = int.parse(value.toString());
-                });
-              },
-            )
-          ],
-        ),
-        mySizedBox(context),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('effort'),
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-            myDropDown(
-              context,
-              value: _effortUnitFilter,
-              width: getWidth(context, .14),
-              color: _effortUnitFilter == -2 ? Colors.grey : primaryColor,
-              items: ([
-                        Unit(unitId: -2, name: constans['tout'] ?? ''),
-                        Unit(unitId: -1, name: constans['global'] ?? '')
-                      ] +
-                      units)
-                  .map((item) {
-                return DropdownMenuItem(
-                  value: item.unitId,
-                  alignment: AlignmentDirectional.center,
-                  child: Text(item.name),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _effortUnitFilter = int.parse(value.toString());
-                });
-              },
-            )
-          ],
-        ),
-        mySizedBox(context),
-        IconButton(
-            onPressed: () => createExcel(
-                  getText('users'),
-                  [
-                    [
-                      '#',
-                      getText('name'),
-                      getText('phone'),
-                      getText('joinDate'),
-                      getText('type'),
-                      getText('capital'),
-                      getText('weightedCapital'),
-                      getText('initialCapital'),
-                      getText('money'),
-                      getText('effort'),
-                      getText('threshold'),
-                      getText('founding'),
-                      if (_thresholdUnitFilter != -2) getText('threshold'),
-                      if (_foundingUnitFilter != -2) getText('founding'),
-                      if (_effortUnitFilter != -2) ...[getText('effort'), getText('evaluation')]
-                    ],
-                    ...users.map((user) => [
-                          users.indexOf(user) + 1,
-                          user.name,
-                          user.phone,
-                          myDateFormate.format(user.joinDate),
-                          getText(user.type),
-                          user.capital,
-                          user.weightedCapital,
-                          user.initialCapital,
-                          user.money + user.moneyExtern,
-                          user.effort + user.effortExtern,
-                          user.threshold,
-                          user.founding,
-                          if (_thresholdUnitFilter != -2) user.thresholdPerc,
-                          if (_foundingUnitFilter != -2) user.foundingPerc,
-                          if (_effortUnitFilter != -2) ...[user.effortPerc, user.evaluation]
-                        ])
-                  ],
+            ],
+          ),
+          mySizedBox(context),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('type'),
+                  style: const TextStyle(fontSize: 14),
                 ),
-            icon: Icon(
-              Icons.file_download,
-              color: primaryColor,
-            )),
-        mySizedBox(context),
-        (_controller.text.isNotEmpty ||
-                _type != 'tout' ||
-                _thresholdUnitFilter != -2 ||
-                _foundingUnitFilter != -2 ||
-                _effortUnitFilter != -2)
-            ? IconButton(
-                onPressed: () => setState(() {
-                  _search = '';
-                  _controller.clear();
-                  _type = 'tout';
-                  _thresholdUnitFilter = -2;
-                  _foundingUnitFilter = -2;
-                  _effortUnitFilter = -2;
-                  if (_sortColumnIndex! > 8) _sortColumnIndex = 1;
-                }),
-                icon: Icon(
-                  Icons.update,
-                  color: primaryColor,
+              ),
+              myDropDown(
+                context,
+                value: _type,
+                color: _type == 'tout' ? Colors.grey : primaryColor,
+                items: usersTypesSearch.entries.map((item) {
+                  return DropdownMenuItem(
+                    value: getKeyFromValue(item.value),
+                    alignment: AlignmentDirectional.center,
+                    child: Text(item.value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _type = value.toString();
+                  });
+                },
+              ),
+            ],
+          ),
+          mySizedBox(context),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('threshold'),
+                  style: const TextStyle(fontSize: 14),
                 ),
+              ),
+              myDropDown(
+                context,
+                value: _thresholdUnitFilter,
+                width: getWidth(context, .14),
+                color: _thresholdUnitFilter == -2 ? Colors.grey : primaryColor,
+                items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
+                  return DropdownMenuItem(
+                    value: item.unitId,
+                    alignment: AlignmentDirectional.center,
+                    child: Text(item.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _thresholdUnitFilter = int.parse(value.toString());
+                  });
+                },
               )
-            : const SizedBox(),
-      ],
+            ],
+          ),
+          mySizedBox(context),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('founding'),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              myDropDown(
+                context,
+                value: _foundingUnitFilter,
+                width: getWidth(context, .14),
+                color: _foundingUnitFilter == -2 ? Colors.grey : primaryColor,
+                items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
+                  return DropdownMenuItem(
+                    value: item.unitId,
+                    alignment: AlignmentDirectional.center,
+                    child: Text(item.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _foundingUnitFilter = int.parse(value.toString());
+                  });
+                },
+              )
+            ],
+          ),
+          mySizedBox(context),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('effort'),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              myDropDown(
+                context,
+                value: _effortUnitFilter,
+                width: getWidth(context, .14),
+                color: _effortUnitFilter == -2 ? Colors.grey : primaryColor,
+                items: ([
+                          Unit(unitId: -2, name: constans['tout'] ?? ''),
+                          Unit(unitId: -1, name: constans['global'] ?? '')
+                        ] +
+                        units)
+                    .map((item) {
+                  return DropdownMenuItem(
+                    value: item.unitId,
+                    alignment: AlignmentDirectional.center,
+                    child: Text(item.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _effortUnitFilter = int.parse(value.toString());
+                  });
+                },
+              )
+            ],
+          ),
+          mySizedBox(context),
+          IconButton(
+              onPressed: () => createExcel(
+                    getText('users'),
+                    [
+                      [
+                        '#',
+                        getText('name'),
+                        getText('phone'),
+                        getText('joinDate'),
+                        getText('type'),
+                        getText('capital'),
+                        getText('weightedCapital'),
+                        getText('initialCapital'),
+                        getText('money'),
+                        getText('effort'),
+                        getText('threshold'),
+                        getText('founding'),
+                        if (_thresholdUnitFilter != -2) getText('threshold'),
+                        if (_foundingUnitFilter != -2) getText('founding'),
+                        if (_effortUnitFilter != -2) ...[getText('effort'), getText('evaluation')]
+                      ],
+                      ...users.map((user) => [
+                            users.indexOf(user) + 1,
+                            user.name,
+                            user.phone,
+                            myDateFormate.format(user.joinDate),
+                            getText(user.type),
+                            user.capital,
+                            user.weightedCapital,
+                            user.initialCapital,
+                            user.money + user.moneyExtern,
+                            user.effort + user.effortExtern,
+                            user.threshold,
+                            user.founding,
+                            if (_thresholdUnitFilter != -2) user.thresholdPerc,
+                            if (_foundingUnitFilter != -2) user.foundingPerc,
+                            if (_effortUnitFilter != -2) ...[user.effortPerc, user.evaluation]
+                          ])
+                    ],
+                  ),
+              icon: Icon(
+                Icons.file_download,
+                color: primaryColor,
+              )),
+          (_controller.text.isNotEmpty ||
+                  _type != 'tout' ||
+                  _thresholdUnitFilter != -2 ||
+                  _foundingUnitFilter != -2 ||
+                  _effortUnitFilter != -2)
+              ? IconButton(
+                  onPressed: () => setState(() {
+                    _search = '';
+                    _controller.clear();
+                    _type = 'tout';
+                    _thresholdUnitFilter = -2;
+                    _foundingUnitFilter = -2;
+                    _effortUnitFilter = -2;
+                    if (_sortColumnIndex! > 8) _sortColumnIndex = 1;
+                  }),
+                  icon: Icon(
+                    Icons.update,
+                    color: primaryColor,
+                  ),
+                )
+              : const SizedBox(),
+        ],
+      ),
     );
   }
 }

@@ -6,9 +6,10 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:http/http.dart' as http;
 
 int currentYear = 0;
-int reference = 0;
 double profitability = 0;
 bool isAdmin = false;
+String transactionFilterYear = 'tout';
+var years = <String>{};
 
 Color primaryColor = const Color(0XFF02333c); //0XFF303F9F
 Color secondaryColor = const Color(0XFF08535d);

@@ -44,7 +44,6 @@ class _UnitsState extends State<Units> {
         effortPerc: double.parse(ele['effortPerc']),
         thresholdPerc: double.parse(ele['thresholdPerc']),
         foundingPerc: double.parse(ele['foundingPerc']),
-        calculated: ele['calculated'] == '1',
         currentMonthOrYear: int.parse(ele['currentMonthOrYear']),
       ));
       totalCapital += double.parse(ele['capital']);
@@ -85,29 +84,6 @@ class _UnitsState extends State<Units> {
         units.sort((a, b) =>
             _isAscending ? a.profitability.compareTo(b.profitability) : b.profitability.compareTo(a.profitability));
         break;
-      // case 5:
-      //   units.sort(
-      //       (a, b) => _isAscending ? a.reservePerc.compareTo(b.reservePerc) : b.reservePerc.compareTo(a.reservePerc));
-      //   break;
-      // case 6:
-      //   units.sort((a, b) =>
-      //       _isAscending ? a.donationPerc.compareTo(b.donationPerc) : b.donationPerc.compareTo(a.donationPerc));
-      //   break;
-      // case 7:
-      //   units.sort((a, b) => _isAscending ? a.moneyPerc.compareTo(b.moneyPerc) : b.moneyPerc.compareTo(a.moneyPerc));
-      //   break;
-      // case 8:
-      //   units
-      //       .sort((a, b) => _isAscending ? a.effortPerc.compareTo(b.effortPerc) : b.effortPerc.compareTo(a.effortPerc));
-      //   break;
-      // case 9:
-      //   units.sort((a, b) =>
-      //       _isAscending ? a.thresholdPerc.compareTo(b.thresholdPerc) : b.thresholdPerc.compareTo(a.thresholdPerc));
-      //   break;
-      // case 10:
-      //   units.sort((a, b) =>
-      //       _isAscending ? a.foundingPerc.compareTo(b.foundingPerc) : b.foundingPerc.compareTo(a.foundingPerc));
-      //   break;
     }
   }
 
@@ -129,12 +105,6 @@ class _UnitsState extends State<Units> {
         '${getText('capital')} %',
         getText('profit'),
         '${getText('profitability')} %',
-        // '${getText('reserve')} %',
-        // '${getText('donation')} %',
-        // '${getText('money')} %',
-        // '${getText('effort')} %',
-        // '${getText('threshold')} %',
-        // '${getText('founding')} %',
       ]
           .map((e) => sortableDataColumn(
                 context,
@@ -160,17 +130,15 @@ class _UnitsState extends State<Units> {
                 dataCell(context, myCurrency.format(unit.profit), textAlign: TextAlign.end),
                 dataCell(context, (unit.profitability * 100).toStringAsFixed(2)),
                 ...[
-                  // unit.reservePerc,
-                  // unit.donationPerc,
-                  // unit.moneyPerc,
-                  // unit.effortPerc,
-                  // unit.thresholdPerc,
-                  // unit.foundingPerc,
-                  unit.type == 'extern' ? unit.currentMonthOrYear : monthsOfYear[unit.currentMonthOrYear - 1],
+                  unit.type == 'extern'
+                      ? unit.currentMonthOrYear
+                      : unit.currentMonthOrYear == 13
+                          ? '-'
+                          : monthsOfYear[unit.currentMonthOrYear - 1],
                 ].map((e) => dataCell(context, e.toString())).toList(),
                 if (isAdmin)
                   DataCell(
-                    unit.calculated
+                    unit.currentMonthOrYear == 13
                         ? const Center(child: Icon(Icons.done))
                         : IconButton(
                             onPressed: () => createDialog(context, Calculation(unit: unit), dismissable: false),

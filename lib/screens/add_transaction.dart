@@ -121,6 +121,7 @@ class _AddTransactionState extends State<AddTransaction> {
   bool isLoading = true;
   int selectedTransactionType = 0;
   String _password = ''; // used for all users Transaction;
+  int reference = 0;
 
   List<User> users = [];
   List<OtherUser> loanUsers = [], depositUsers = [];
@@ -208,6 +209,10 @@ class _AddTransactionState extends State<AddTransaction> {
       _testsChecked = false;
       snackBar(context, getMessage('soldeCaisseZero'));
     } else {
+      //get the current reference
+      var res = await sqlQuery(selectUrl, {'sql1': 'SELECT reference FROM Settings'});
+      reference = int.parse(res[0][0]['reference']);
+
       if (selectedTransactionType == 0) {
         //special trnasaction
         double _solde = 0;
@@ -238,11 +243,10 @@ class _AddTransactionState extends State<AddTransaction> {
           //update the setting caisse
           await sqlQuery(insertUrl, {
             'sql1':
-                '''INSERT INTO TransactionSP (reference,year,category,date,type,amount,solde,soldeCaisse,note) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , $currentYear , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note' );''',
+                '''INSERT INTO TransactionSP (reference,category,date,type,amount,solde,soldeCaisse,note) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note');''',
             'sql2':
                 '''UPDATE Settings SET $category = $_solde , caisse = $_soldeCaisse , reference = ${reference + 1};''',
           });
-          reference++;
         }
       } else if (selectedTransactionType == 4) {
         //all Users transaction
@@ -251,7 +255,7 @@ class _AddTransactionState extends State<AddTransaction> {
         double _totalUsersCapital = 0, _userAmount = 0, _soldeUser = 0;
         String usersSQL = 'INSERT INTO Users(userId, capital) VALUES ';
         String transactionsSQL =
-            'INSERT INTO Transaction (reference,userId,userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ';
+            'INSERT INTO Transaction (reference,userId,userName,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ';
 
         //get money users
         for (var user in users) {
@@ -273,7 +277,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             usersSQL += '(${user.userId}, $_soldeUser),';
             transactionsSQL +=
-                '''('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${user.userId},'${user.name}',$currentYear , '$date' , '$type' ,${_userAmount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' ),''';
+                '''('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${user.userId} , '${user.name}' , '$date' , '$type' ,${_userAmount.abs()} , $_soldeUser , $_soldeCaisse , '$note' , '${numberToArabicWords(_userAmount.abs().toInt())} دينار' , '' , '' , '' ),''';
             reference++;
           }
 
@@ -339,11 +343,10 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO Transaction (reference,userId,userName,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${selectedUser.userId},'${selectedUser.name}',$currentYear , '$date' , '$type' ,${_amount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' );''',
+                    '''INSERT INTO Transaction (reference,userId,userName,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${selectedUser.userId},'${selectedUser.name}', '$date' , '$type' ,${_amount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' , '' , '' , '' , '' );''',
                 'sql2': '''UPDATE Users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};''',
                 'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse , reference = ${reference + 1};'''
               });
-              reference++;
             }
           } else {
             _testsChecked = false;
@@ -366,12 +369,11 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO TransactionOthers (reference,userName,category,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}', 'loan', $currentYear , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' );''',
+                    '''INSERT INTO TransactionOthers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}', 'loan' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' , '' , '' , '' , '' );''',
                 'sql2':
                     '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
                 'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse , reference = ${reference + 1};'''
               });
-              reference++;
             }
           } else {
             _testsChecked = false;
@@ -395,12 +397,11 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO TransactionOthers (reference,userName,category,year,date,type,amount,soldeUser,soldeCaisse,note) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}','deposit',$currentYear , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' );''',
+                    '''INSERT INTO TransactionOthers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}','deposit' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' , '' , '' , '' , '' );''',
                 'sql2':
                     '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
                 'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse , reference = ${reference + 1};''',
               });
-              reference++;
             }
           } else {
             _testsChecked = false;
@@ -417,23 +418,21 @@ class _AddTransactionState extends State<AddTransaction> {
   }
 
   void done(double amount) async {
-    if (selectedTransactionType != 4) {
+    if ([1, 2, 3].contains(selectedTransactionType)) {
       await createDialog(
         context,
         dismissable: isAdmin,
-        // const SelectTransactionCategoty(),
         PrintTransaction(
-          source: (selectedTransactionType == 012)
-              ? 'special'
-              : (selectedTransactionType == 1)
-                  ? 'user'
-                  : (selectedTransactionType == 2)
-                      ? 'loan'
-                      : 'deposit',
+          source: (selectedTransactionType == 1)
+              ? 'user'
+              : (selectedTransactionType == 2)
+                  ? 'loan'
+                  : 'deposit',
           type: type,
-          reference: '${date.year % 100}/${(reference - 1).toString().padLeft(4, '0')}',
+          reference: '${date.year % 100}/${(reference).toString().padLeft(4, '0')}',
           amount: amount,
           date: myDateFormate.format(date),
+          isFirst: true,
         ),
       );
     }
@@ -745,38 +744,19 @@ class _AddTransactionState extends State<AddTransaction> {
                                       children: [
                                         ToggleSwitch(
                                           minWidth: getWidth(context, .064),
-                                          minHeight: getHeight(context, .045),
+                                          minHeight: getHeight(context, textFeildHeight),
                                           borderWidth: 1,
-                                          initialLabelIndex: type == 'out' ? 0 : 1,
-                                          borderColor: const [Colors.grey],
-                                          cornerRadius: 12.0,
                                           icons: const [Icons.remove, Icons.add],
+                                          inactiveBgColor: Colors.white,
+                                          borderColor: const [Colors.black],
                                           activeBgColors: [
                                             [Colors.red[800]!],
                                             [Colors.green[800]!]
                                           ],
-                                          activeFgColor: Colors.white,
-                                          inactiveBgColor: Colors.white,
-                                          inactiveFgColor: Colors.black,
+                                          initialLabelIndex: type == 'out' ? 0 : 1,
                                           labels: [getText('out'), getText('in')],
                                           onToggle: (index) => setState(() => type = index == 0 ? 'out' : 'in'),
                                         ),
-                                        // Container(
-                                        //   alignment: Alignment.centerLeft,
-                                        //   child: myDropDown(
-                                        //     context,
-                                        //     value: type,
-                                        //     width: getWidth(context, .13),
-                                        //     items: transactionsTypes.entries.map((item) {
-                                        //       return DropdownMenuItem(
-                                        //         value: getKeyFromValue(item.value),
-                                        //         alignment: AlignmentDirectional.center,
-                                        //         child: Text(item.value),
-                                        //       );
-                                        //     }).toList(),
-                                        //     onChanged: (value) => setState(() => type = value.toString()),
-                                        //   ),
-                                        // ),
                                         mySizedBox(context),
                                         if (selectedTransactionType != 4 &&
                                             !(selectedTransactionType == 0 && category == 'caisse'))
@@ -927,6 +907,7 @@ class _AddTransactionState extends State<AddTransaction> {
                                     maxLength: 350,
                                     minLines: 2,
                                     maxLines: 5,
+                                    textDirection: TextDirection.rtl,
                                     decoration: InputDecoration(
                                       hintText: getText('note'),
                                       contentPadding: const EdgeInsets.all(8),

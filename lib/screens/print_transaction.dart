@@ -11,6 +11,12 @@ class PrintTransaction extends StatefulWidget {
   final String reference;
   final double amount;
   final String date;
+  final bool isFirst; //true only after insert new transaction to update the reciver/...
+  final String reciver;
+  final String amountOnLetter;
+  final String intermediates;
+  final String printingNotes;
+
   const PrintTransaction({
     super.key,
     required this.source,
@@ -18,6 +24,11 @@ class PrintTransaction extends StatefulWidget {
     required this.reference,
     required this.amount,
     required this.date,
+    this.reciver = '',
+    this.amountOnLetter = '',
+    this.intermediates = '',
+    this.printingNotes = '',
+    this.isFirst = false,
   });
 
   @override
@@ -28,11 +39,12 @@ class _PrintTransactionState extends State<PrintTransaction> {
   late pw.Document pdf;
   String amountOnLetter = '';
   String intermediates = '';
-  String notes = '';
+  String printingNotes = '';
   String user = '';
   String reciver = '';
   late String amountType;
   List<String> recivers = [];
+  bool isPrinting = false;
 
   void loadRecivers() async {
     for (var item in (await sqlQuery(reciversUrl, {}))['data']) {
@@ -43,7 +55,14 @@ class _PrintTransactionState extends State<PrintTransaction> {
   @override
   void initState() {
     loadRecivers();
-    amountOnLetter = '${numberToArabicWords(widget.amount.toInt())} دينار';
+    if (widget.isFirst) {
+      amountOnLetter = '${numberToArabicWords(widget.amount.toInt())} دينار';
+    } else {
+      reciver = widget.reciver;
+      amountOnLetter = widget.amountOnLetter;
+      intermediates = widget.intermediates;
+      printingNotes = widget.printingNotes;
+    }
     amountType = (widget.source == 'loan' && widget.type == 'in')
         ? 'رد للسلف'
         : (widget.source == 'loan' && widget.type == 'out')
@@ -78,9 +97,10 @@ class _PrintTransactionState extends State<PrintTransaction> {
                           TextFormField(
                             initialValue: amountOnLetter,
                             style: const TextStyle(fontSize: 18),
-                            textAlign: TextAlign.end,
+                            textAlign: TextAlign.start,
                             minLines: 1,
                             maxLines: 2,
+                            textDirection: TextDirection.rtl,
                             decoration: const InputDecoration(
                               contentPadding: EdgeInsets.all(12),
                               border: OutlineInputBorder(
@@ -98,6 +118,7 @@ class _PrintTransactionState extends State<PrintTransaction> {
                           TextFormField(
                             style: const TextStyle(fontSize: 18),
                             textAlign: TextAlign.center,
+                            textDirection: TextDirection.rtl,
                             decoration: const InputDecoration(
                               contentPadding: EdgeInsets.all(12),
                               border: OutlineInputBorder(
@@ -116,21 +137,25 @@ class _PrintTransactionState extends State<PrintTransaction> {
                             onSelected: (value) => setState(() => reciver = value),
                             optionsBuilder: (textEditingValue) =>
                                 recivers.where((element) => element.contains(textEditingValue.text)),
-                            fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) =>
-                                TextFormField(
-                                    controller: textEditingController,
-                                    focusNode: focusNode,
-                                    style: const TextStyle(fontSize: 18),
-                                    textAlign: TextAlign.center,
-                                    decoration: const InputDecoration(
-                                      contentPadding: EdgeInsets.all(12),
-                                      border: OutlineInputBorder(
-                                        gapPadding: 0,
-                                        borderSide: BorderSide(width: 0.5),
-                                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                                      ),
-                                    ),
-                                    onChanged: (value) => setState(() => reciver = value)),
+                            fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                              textEditingController.text = reciver;
+                              return TextFormField(
+                                controller: textEditingController,
+                                focusNode: focusNode,
+                                textDirection: TextDirection.rtl,
+                                style: const TextStyle(fontSize: 18),
+                                textAlign: TextAlign.center,
+                                decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.all(12),
+                                  border: OutlineInputBorder(
+                                    gapPadding: 0,
+                                    borderSide: BorderSide(width: 0.5),
+                                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                                  ),
+                                ),
+                                onChanged: (value) => setState(() => reciver = value),
+                              );
+                            },
                             optionsViewBuilder: (context, onSelected, options) => Align(
                               alignment: Alignment.topLeft,
                               child: Material(
@@ -164,10 +189,12 @@ class _PrintTransactionState extends State<PrintTransaction> {
                           myText('الوسطاء', isBold: true),
                           mySizedBox(context),
                           TextFormField(
+                            initialValue: intermediates,
                             style: const TextStyle(fontSize: 18),
-                            textAlign: TextAlign.end,
+                            textAlign: TextAlign.start,
                             minLines: 2,
                             maxLines: 5,
+                            textDirection: TextDirection.rtl,
                             decoration: const InputDecoration(
                               contentPadding: EdgeInsets.all(12),
                               border: OutlineInputBorder(
@@ -183,10 +210,12 @@ class _PrintTransactionState extends State<PrintTransaction> {
                           myText('ملاحظات', isBold: true),
                           mySizedBox(context),
                           TextFormField(
+                            initialValue: printingNotes,
                             style: const TextStyle(fontSize: 18),
-                            textAlign: TextAlign.end,
+                            textAlign: TextAlign.start,
                             minLines: 2,
                             maxLines: 5,
+                            textDirection: TextDirection.rtl,
                             decoration: const InputDecoration(
                               contentPadding: EdgeInsets.all(12),
                               border: OutlineInputBorder(
@@ -195,7 +224,7 @@ class _PrintTransactionState extends State<PrintTransaction> {
                                 borderRadius: BorderRadius.all(Radius.circular(12)),
                               ),
                             ),
-                            onChanged: (value) => setState(() => notes = value),
+                            onChanged: (value) => setState(() => printingNotes = value),
                           ),
                           mySizedBox(context),
                         ],
@@ -208,10 +237,21 @@ class _PrintTransactionState extends State<PrintTransaction> {
                     context,
                     text: 'Imprimer',
                     icon: Icons.print,
+                    isLoading: isPrinting,
                     color:
                         amountOnLetter.isNotEmpty && user.isNotEmpty && reciver.isNotEmpty ? primaryColor : Colors.grey,
                     enabled: amountOnLetter.isNotEmpty && user.isNotEmpty && reciver.isNotEmpty,
-                    onTap: () => printPdf(context, pdf.save()),
+                    onTap: () async {
+                      setState(() => isPrinting = true);
+                      if (widget.isFirst) {
+                        await sqlQuery(insertUrl, {
+                          'sql1':
+                              '''UPDATE ${widget.source == 'user' ? 'transaction' : 'transactionothers'} SET amountOnLetter = '$amountOnLetter', intermediates = '$intermediates', printingNotes = '$printingNotes', reciver = '$reciver' WHERE reference = '${widget.reference}\''''
+                        });
+                      }
+
+                      printPdf(context, pdf.save());
+                    },
                   ),
                 ),
                 mySizedBox(context),
@@ -276,10 +316,10 @@ class _PrintTransactionState extends State<PrintTransaction> {
           pw.Text(intermediates),
           pw.SizedBox(height: 16),
         ]),
-      if (notes.isNotEmpty)
+      if (printingNotes.isNotEmpty)
         pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
           pw.Text('ملاحظات أخرى :'),
-          pw.Text(notes),
+          pw.Text(printingNotes),
           pw.SizedBox(height: 16),
         ]),
       pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [

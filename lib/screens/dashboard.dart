@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:fairsplit/models/unit.dart';
 import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
@@ -46,12 +48,14 @@ class _DashboardState extends State<Dashboard> {
           (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
-          s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear , s.reference FROM Settings s;''',
+          s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;''',
       'sql2': 'SELECT name,profitability FROM units;',
+      'sql3':
+          'SELECT DISTINCT(Year(date)) AS year FROM transaction UNION SELECT DISTINCT(Year(date)) AS year FROM transactionothers UNION SELECT DISTINCT(Year(date)) AS year FROM transactionsp;',
     });
     var data = res[0][0];
     currentYear = int.parse(data['currentYear']);
-    reference = int.parse(data['reference']);
+    transactionFilterYear = currentYear.toString();
     profitability = double.parse(data['profitability']);
     caisse = double.parse(data['caisse']);
     reserve = double.parse(data['reserve']);
@@ -70,6 +74,11 @@ class _DashboardState extends State<Dashboard> {
         profitability: double.parse(unit['profitability']) * 100,
       ));
     }
+
+    for (var ele in res[2]) {
+      years.add(ele['year'].toString());
+    }
+    years = SplayTreeSet.from(years, (a, b) => b.compareTo(a));
 
     setState(() => isLoadingData = false);
   }

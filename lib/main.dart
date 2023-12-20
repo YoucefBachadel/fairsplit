@@ -19,11 +19,6 @@ import 'screens/unit_history.dart';
 import 'shared/constants.dart';
 import 'shared/widgets.dart';
 
-// textTheme: GoogleFonts.gothicA1TextTheme(),
-// textTheme: GoogleFonts.gothicA1TextTheme(),
-// textTheme: GoogleFonts.itimTextTheme(),
-// textTheme: GoogleFonts.comicNeueTextTheme(),
-
 void main() {
   runApp(
     MultiProvider(
@@ -64,8 +59,6 @@ void main() {
   doWhenWindowReady(() {
     const initialSize = Size(1800, 950);
     appWindow.minSize = initialSize;
-    // appWindow.size = initialSize;
-    // appWindow.alignment = Alignment.center;
     appWindow.title = "FairSplit";
     appWindow.maximize();
     appWindow.show();
@@ -274,66 +267,61 @@ class _MyAppState extends State<MyApp> {
       setState(() => isLoading = false);
     }
 
-    return RawKeyboardListener(
-      focusNode: FocusNode(),
-      onKey: (event) {
-        if (event.isKeyPressed(LogicalKeyboardKey.enter)) onTap();
-      },
-      child: Container(
-        height: getHeight(context, .20),
-        width: getWidth(context, .20),
-        decoration: BoxDecoration(
-          color: scaffoldColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: primaryColor),
-        ),
-        child: Column(
-          children: [
-            Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  color: primaryColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20.0),
-                    topRight: Radius.circular(20.0),
-                  )),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      getText('password'),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 20.0),
-                    ),
+    return Container(
+      height: getHeight(context, .20),
+      width: getWidth(context, .20),
+      decoration: BoxDecoration(
+        color: scaffoldColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: primaryColor),
+      ),
+      child: Column(
+        children: [
+          Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+                color: primaryColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
+                )),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    getText('password'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 20.0),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  myTextField(
-                    context,
-                    width: getWidth(context, .18),
-                    onChanged: (text) => _password = text,
-                    autoFocus: true,
-                    isPassword: true,
-                    isCenter: true,
-                  ),
-                  myButton(
-                    context,
-                    noIcon: true,
-                    text: getText('confirm'),
-                    isLoading: isLoading,
-                    onTap: onTap,
-                  ),
-                ],
-              ),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                myTextField(
+                  context,
+                  width: getWidth(context, .18),
+                  onChanged: (text) => _password = text,
+                  onSubmited: (value) => onTap(),
+                  autoFocus: true,
+                  isPassword: true,
+                  isCenter: true,
+                ),
+                myButton(
+                  context,
+                  noIcon: true,
+                  text: getText('confirm'),
+                  isLoading: isLoading,
+                  onTap: onTap,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

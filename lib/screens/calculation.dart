@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'package:fairsplit/models/transaction.dart';
 import 'package:fairsplit/shared/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../main.dart';
 import '../shared/functions.dart';
@@ -164,18 +163,15 @@ class _CalculationState extends State<Calculation> {
 
     //if is intern unit we add the first day of the current month and next month
     //if is extern unit we add the first day of janury of the current year and next year
-    transactionsDays.addAll({
-      DateTime(
-        !isIntern ? widget.unit.currentMonthOrYear : currentYear,
-        !isIntern ? 1 : widget.unit.currentMonthOrYear,
-        1,
-      ),
-      DateTime(
-        !isIntern ? widget.unit.currentMonthOrYear + 1 : currentYear,
-        !isIntern ? 1 : widget.unit.currentMonthOrYear + 1,
-        1,
-      ),
-    });
+    transactionsDays.addAll(isIntern
+        ? {
+            DateTime(currentYear, widget.unit.currentMonthOrYear, 1),
+            DateTime(currentYear, widget.unit.currentMonthOrYear + 1, 1),
+          }
+        : {
+            DateTime(widget.unit.currentMonthOrYear, 1, 1),
+            DateTime(widget.unit.currentMonthOrYear + 1, 1, 1),
+          });
 
     transactionsDays = SplayTreeSet.from(transactionsDays);
     allTransactions.sort((tr1, tr2) => tr2.date.compareTo(tr1.date));
@@ -238,8 +234,7 @@ class _CalculationState extends State<Calculation> {
     for (var i = 0; i < transactionsDays.length - 1; i++) {
       //loop the list of transactions in the selected day
       //for the transactions list we loop all the list if unit type is intern else we loop only the transactions of currentMonthOrYear
-      for (var caTrans
-          in transactions.where((element) => (isIntern || element.date.year == widget.unit.currentMonthOrYear))) {
+      for (var caTrans in transactions) {
         if (DateTime(caTrans.date.year, caTrans.date.month, caTrans.date.day) == transactionsDays.elementAt(i)) {
           // get the user of the transaction
           User caTransUser = moneyUsers.firstWhere((user) => user.userId == caTrans.userId);
@@ -323,14 +318,6 @@ class _CalculationState extends State<Calculation> {
     thresholdSQL += ' ON DUPLICATE KEY UPDATE threshold = threshold + VALUES(threshold);';
     foundingSQL += ' ON DUPLICATE KEY UPDATE founding = founding + VALUES(founding);';
 
-    int nextMonthOrYear = !isIntern
-        ? widget.unit.currentMonthOrYear + 1
-        : widget.unit.currentMonthOrYear == 12
-            ? 1
-            : widget.unit.currentMonthOrYear + 1;
-
-    int calculated = !isIntern || nextMonthOrYear == 1 ? 1 : 0;
-
     int counter = 1;
     Map<String, String> params = {};
     if (moneyUsers.isNotEmpty) {
@@ -354,7 +341,7 @@ class _CalculationState extends State<Calculation> {
       counter++;
     }
     params['sql$counter'] =
-        ''' UPDATE Units SET profit = profit + $unitProfitValue, profitability = profitability + $profitability,  calculated = $calculated, currentMonthOrYear = $nextMonthOrYear  WHERE unitId = ${widget.unit.unitId}; ''';
+        ''' UPDATE Units SET profit = profit + $unitProfitValue, profitability = profitability + $profitability, currentMonthOrYear = ${widget.unit.currentMonthOrYear++}  WHERE unitId = ${widget.unit.unitId}; ''';
     counter++;
     params['sql$counter'] =
         '''INSERT INTO ProfitHistory(name, year, month, profit,profitability,unitProfitability,weightedCapital, reserve,reserveProfit, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',${!isIntern ? widget.unit.currentMonthOrYear : currentYear},${!isIntern ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,$profitability,${caMoney / widget.unit.capital},${caMoney / profitability},$caReserve,$caReserveMoneyProfit,$caDonation,$caMoney,$caEffort,$caThreshold,$caFounding);''';
@@ -475,46 +462,42 @@ class _CalculationState extends State<Calculation> {
                         child: Row(
                           children: [
                             Expanded(
-                              child: RawKeyboardListener(
-                                focusNode: FocusNode(),
-                                onKey: (event) {
-                                  if (event.isKeyPressed(LogicalKeyboardKey.enter) && !iscalculated) {
-                                    try {
-                                      unitProfitValue = double.parse(_unitProfitValue);
-                                      calculate();
-                                    } catch (e) {
-                                      snackBar(context, 'number only !!!');
-                                    }
-                                  }
-                                },
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    myTextField(
-                                      context,
-                                      controller: controller,
-                                      hint: myCurrency.format(unitProfitHint),
-                                      width: getWidth(context, .25),
-                                      onChanged: ((text) => _unitProfitValue = text),
-                                      // isNumberOnly: true,
-                                      autoFocus: true,
-                                      enabled: !iscalculated,
-                                    ),
-                                    if (!iscalculated)
-                                      IconButton(
-                                        icon: Icon(Icons.play_arrow, color: secondaryColor),
-                                        hoverColor: Colors.transparent,
-                                        onPressed: () {
-                                          try {
-                                            unitProfitValue = double.parse(_unitProfitValue);
-                                            calculate();
-                                          } catch (e) {
-                                            snackBar(context, 'number only !!!');
-                                          }
-                                        },
-                                      )
-                                  ],
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  myTextField(
+                                    context,
+                                    controller: controller,
+                                    hint: myCurrency.format(unitProfitHint),
+                                    width: getWidth(context, .25),
+                                    onChanged: ((text) => _unitProfitValue = text),
+                                    autoFocus: true,
+                                    onSubmited: ((text) {
+                                      if (!iscalculated) {
+                                        try {
+                                          unitProfitValue = double.parse(_unitProfitValue);
+                                          calculate();
+                                        } catch (e) {
+                                          snackBar(context, 'number only !!!');
+                                        }
+                                      }
+                                    }),
+                                    enabled: !iscalculated,
+                                  ),
+                                  if (!iscalculated)
+                                    IconButton(
+                                      icon: Icon(Icons.play_arrow, color: secondaryColor),
+                                      hoverColor: Colors.transparent,
+                                      onPressed: () {
+                                        try {
+                                          unitProfitValue = double.parse(_unitProfitValue);
+                                          calculate();
+                                        } catch (e) {
+                                          snackBar(context, 'number only !!!');
+                                        }
+                                      },
+                                    )
+                                ],
                               ),
                             ),
                             !iscalculated

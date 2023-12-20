@@ -236,24 +236,23 @@ class _OtherUsersState extends State<OtherUsers> {
   }
 
   Widget searchBar() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('name'),
-                style: const TextStyle(fontSize: 14),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('name'),
+                  style: const TextStyle(fontSize: 14),
+                ),
               ),
-            ),
-            SizedBox(
-              height: getHeight(context, textFeildHeight),
-              width: getWidth(context, .22),
-              child: Autocomplete<String>(
+              Autocomplete<String>(
                 onSelected: (item) => setState(() {
                   _search = item;
                 }),
@@ -267,38 +266,40 @@ class _OtherUsersState extends State<OtherUsers> {
                   onFieldSubmitted,
                 ) {
                   _controller = textEditingController;
-                  return Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: _controller.text.isEmpty ? Colors.grey : primaryColor),
-                        borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  return SizedBox(
+                    height: getHeight(context, textFeildHeight),
+                    width: getWidth(context, .18),
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: focusNode,
+                      style: const TextStyle(fontSize: 18.0),
+                      onSubmitted: ((value) {
+                        if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
+                          String text =
+                              userNames.firstWhere((item) => item.toLowerCase().contains(value.toLowerCase()));
+                          setState(() {
+                            _controller.text = text;
+                            _search = text;
+                          });
+                        }
+                      }),
+                      decoration: textInputDecoration(
+                        hint: getText('search'),
+                        borderColor: _search.isEmpty ? Colors.grey : primaryColor,
+                        prefixIcon: const Icon(Icons.search, size: 20.0),
+                        suffixIcon: _controller.text.isEmpty
+                            ? null
+                            : IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _controller.clear();
+                                    _search = '';
+                                  });
+                                },
+                                icon: const Icon(Icons.clear, size: 20.0)),
                       ),
-                      child: TextFormField(
-                        controller: _controller,
-                        focusNode: focusNode,
-                        style: const TextStyle(fontSize: 18.0),
-                        onChanged: ((value) => setState(() {})),
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          hintText: getText('search'),
-                          border: const OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                          prefixIcon: const Icon(Icons.search, size: 20.0),
-                          suffixIcon: textEditingController.text.isEmpty
-                              ? const SizedBox()
-                              : IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      textEditingController.clear();
-                                      _search = '';
-                                    });
-                                  },
-                                  icon: const Icon(Icons.clear, size: 20.0)),
-                        ),
-                      ));
+                    ),
+                  );
                 },
                 optionsViewBuilder: (
                   BuildContext context,
@@ -333,69 +334,68 @@ class _OtherUsersState extends State<OtherUsers> {
                   );
                 },
               ),
-            ),
-          ],
-        ),
-        mySizedBox(context),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('type'),
-                style: const TextStyle(fontSize: 14),
+            ],
+          ),
+          mySizedBox(context),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('type'),
+                  style: const TextStyle(fontSize: 14),
+                ),
               ),
-            ),
-            myDropDown(
-              context,
-              value: _type,
-              color: _type == 'tout' ? Colors.grey : primaryColor,
-              items: otherUsersTypesSearch.entries.map((item) {
-                return DropdownMenuItem(
-                  value: getKeyFromValue(item.value),
-                  alignment: AlignmentDirectional.center,
-                  child: Text(item.value),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() => context.read<Filter>().change(loanDeposit: value.toString())),
-            ),
-          ],
-        ),
-        mySizedBox(context),
-        IconButton(
-            onPressed: () => createExcel(
-                  getText('otherUsers'),
-                  [
-                    ['#', getText('name'), getText('type'), getText('amount'), getText('rest')],
-                    ...users.map((user) => [
-                          users.indexOf(user) + 1,
-                          user.name,
-                          getText(user.type),
-                          user.amount,
-                          user.rest,
-                        ]),
-                  ],
-                ),
-            icon: Icon(
-              Icons.file_download,
-              color: primaryColor,
-            )),
-        mySizedBox(context),
-        (_controller.text.isNotEmpty || _type != 'tout')
-            ? IconButton(
-                onPressed: () => setState(() {
-                  _search = '';
-                  _controller.clear();
-                  context.read<Filter>().resetFilter();
-                }),
-                icon: Icon(
-                  Icons.update,
-                  color: primaryColor,
-                ),
-              )
-            : const SizedBox(),
-      ],
+              myDropDown(
+                context,
+                value: _type,
+                color: _type == 'tout' ? Colors.grey : primaryColor,
+                items: otherUsersTypesSearch.entries.map((item) {
+                  return DropdownMenuItem(
+                    value: getKeyFromValue(item.value),
+                    alignment: AlignmentDirectional.center,
+                    child: Text(item.value),
+                  );
+                }).toList(),
+                onChanged: (value) => setState(() => context.read<Filter>().change(loanDeposit: value.toString())),
+              ),
+            ],
+          ),
+          mySizedBox(context),
+          IconButton(
+              onPressed: () => createExcel(
+                    getText('otherUsers'),
+                    [
+                      ['#', getText('name'), getText('type'), getText('amount'), getText('rest')],
+                      ...users.map((user) => [
+                            users.indexOf(user) + 1,
+                            user.name,
+                            getText(user.type),
+                            user.amount,
+                            user.rest,
+                          ]),
+                    ],
+                  ),
+              icon: Icon(
+                Icons.file_download,
+                color: primaryColor,
+              )),
+          (_search.isNotEmpty || _type != 'tout')
+              ? IconButton(
+                  onPressed: () => setState(() {
+                    _search = '';
+                    _controller.clear();
+                    context.read<Filter>().resetFilter();
+                  }),
+                  icon: Icon(
+                    Icons.update,
+                    color: primaryColor,
+                  ),
+                )
+              : const SizedBox(),
+        ],
+      ),
     );
   }
 }

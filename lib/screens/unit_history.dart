@@ -219,6 +219,10 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
                             _controllerH,
                             _controllerV,
                           )),
+            mySizedBox(context),
+            SizedBox(width: getWidth(context, .52), child: const Divider()),
+            mySizedBox(context),
+            const Row(),
           ],
         ),
       ),
@@ -226,121 +230,123 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
   }
 
   Widget searchBar() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('name'),
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-            myDropDown(
-              context,
-              value: _name,
-              width: getWidth(context, .16),
-              color: _name == 'tout' ? Colors.grey : primaryColor,
-              items: [constans['tout'] ?? '', ...names].map((item) {
-                return DropdownMenuItem(
-                  value: item == constans['tout'] ? 'tout' : item,
-                  alignment: AlignmentDirectional.center,
-                  child: Text(item),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() {
-                _name = value.toString();
-              }),
-            )
-          ],
-        ),
-        const SizedBox(width: 8.0),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                getText('year'),
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-            myDropDown(
-              context,
-              value: _year,
-              color: _year == 'tout' ? Colors.grey : primaryColor,
-              items: [constans['tout'] ?? '', ...years].map((item) {
-                return DropdownMenuItem(
-                  value: item == constans['tout'] ? 'tout' : item,
-                  alignment: AlignmentDirectional.center,
-                  child: Text(item),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() {
-                _year = value.toString();
-              }),
-            )
-          ],
-        ),
-        mySizedBox(context),
-        IconButton(
-            onPressed: () => createExcel(
-                  getText('unitHistory'),
-                  [
-                    [
-                      '#',
-                      getText('name'),
-                      getText('year'),
-                      getText('rawProfit'),
-                      getText('reserve'),
-                      getText('donation'),
-                      getText('netProfit'),
-                      getText('money'),
-                      getText('effort'),
-                      getText('threshold'),
-                      getText('founding'),
-                      getText('capital'),
-                      getText('profitability'),
-                    ],
-                    ...unitsHistory.map((unit) => [
-                          unitsHistory.indexOf(unit) + 1,
-                          unit.name,
-                          unit.year,
-                          unit.rawProfit,
-                          unit.reserve,
-                          unit.donation,
-                          unit.netProfit,
-                          unit.money,
-                          unit.effort,
-                          unit.threshold,
-                          unit.founding,
-                          unit.capital,
-                          (unit.profitability * 100).toStringAsFixed(2),
-                        ])
-                  ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('name'),
+                  style: const TextStyle(fontSize: 14),
                 ),
-            icon: Icon(
-              Icons.file_download,
-              color: primaryColor,
-            )),
-        mySizedBox(context),
-        (_name != 'tout' || _year != 'tout')
-            ? IconButton(
-                onPressed: () => setState(() {
-                  _name = 'tout';
-                  _year = 'tout';
+              ),
+              myDropDown(
+                context,
+                value: _name,
+                width: getWidth(context, .16),
+                color: _name == 'tout' ? Colors.grey : primaryColor,
+                items: [constans['tout'] ?? '', ...names].map((item) {
+                  return DropdownMenuItem(
+                    value: item == constans['tout'] ? 'tout' : item,
+                    alignment: AlignmentDirectional.center,
+                    child: Text(item),
+                  );
+                }).toList(),
+                onChanged: (value) => setState(() {
+                  _name = value.toString();
                 }),
-                icon: Icon(
-                  Icons.update,
-                  color: primaryColor,
-                ),
               )
-            : const SizedBox(),
-      ],
+            ],
+          ),
+          const SizedBox(width: 8.0),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  getText('year'),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              myDropDown(
+                context,
+                value: _year,
+                color: _year == 'tout' ? Colors.grey : primaryColor,
+                items: [constans['tout'] ?? '', ...years].map((item) {
+                  return DropdownMenuItem(
+                    value: item == constans['tout'] ? 'tout' : item,
+                    alignment: AlignmentDirectional.center,
+                    child: Text(item),
+                  );
+                }).toList(),
+                onChanged: (value) => setState(() {
+                  _year = value.toString();
+                }),
+              )
+            ],
+          ),
+          mySizedBox(context),
+          IconButton(
+              onPressed: () => createExcel(
+                    getText('unitHistory'),
+                    [
+                      [
+                        '#',
+                        getText('name'),
+                        getText('year'),
+                        getText('rawProfit'),
+                        getText('reserve'),
+                        getText('donation'),
+                        getText('netProfit'),
+                        getText('money'),
+                        getText('effort'),
+                        getText('threshold'),
+                        getText('founding'),
+                        getText('capital'),
+                        getText('profitability'),
+                      ],
+                      ...unitsHistory.map((unit) => [
+                            unitsHistory.indexOf(unit) + 1,
+                            unit.name,
+                            unit.year,
+                            unit.rawProfit,
+                            unit.reserve,
+                            unit.donation,
+                            unit.netProfit,
+                            unit.money,
+                            unit.effort,
+                            unit.threshold,
+                            unit.founding,
+                            unit.capital,
+                            (unit.profitability * 100).toStringAsFixed(2),
+                          ])
+                    ],
+                  ),
+              icon: Icon(
+                Icons.file_download,
+                color: primaryColor,
+              )),
+          (_name != 'tout' || _year != 'tout')
+              ? IconButton(
+                  onPressed: () => setState(() {
+                    _name = 'tout';
+                    _year = 'tout';
+                  }),
+                  icon: Icon(
+                    Icons.update,
+                    color: primaryColor,
+                  ),
+                )
+              : const SizedBox(),
+        ],
+      ),
     );
   }
 

@@ -4,14 +4,18 @@ class Transaction {
   int userId;
   String userName;
   String source; //used for all caisse transactions inTransactions users-specials-loan-deposit-caisse
-  int year;
   String type;
   DateTime date;
   double amount;
   double soldeUser;
   double soldeCaisse;
   String note;
+  String reciver;
+  String amountOnLetter;
+  String intermediates;
+  String printingNotes;
   bool isCaisseChanged; // used to filter the transaction that didn't change soled caisse in caisse traansactions
+  bool printable; //used to prevant onTap in transactions category caisse
 
   Transaction({
     required this.transactionId,
@@ -19,13 +23,17 @@ class Transaction {
     this.userId = 0,
     this.userName = '',
     this.source = 'user',
-    this.year = 0,
     required this.date,
     required this.type,
     required this.amount,
     this.soldeUser = 0,
     this.soldeCaisse = 0,
     this.note = '',
+    this.reciver = '',
+    this.amountOnLetter = '',
+    this.intermediates = '',
+    this.printingNotes = '',
     this.isCaisseChanged = true,
+    this.printable = true,
   });
 }

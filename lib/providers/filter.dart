@@ -1,3 +1,4 @@
+import 'package:fairsplit/shared/constants.dart';
 import 'package:flutter/material.dart';
 
 class Filter with ChangeNotifier {
@@ -21,6 +22,7 @@ class Filter with ChangeNotifier {
     _compt = 'tout';
     _search = '';
     _loanDeposit = 'tout';
+    transactionFilterYear = currentYear.toString();
     notifyListeners();
   }
 

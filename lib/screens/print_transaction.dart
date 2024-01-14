@@ -297,7 +297,7 @@ class _PrintTransactionState extends State<PrintTransaction> {
       ]),
       pw.Divider(thickness: .1),
       pw.Row(children: [
-        pw.Expanded(flex: 4, child: pw.Text(myCurrency.format(widget.amount))),
+        pw.Expanded(flex: 4, child: pw.Text(myCurrency(widget.amount))),
         pw.Expanded(child: pw.Text('المبلغ باﻷرقام : ', style: const pw.TextStyle(fontSize: 10))),
       ]),
       pw.Row(children: [

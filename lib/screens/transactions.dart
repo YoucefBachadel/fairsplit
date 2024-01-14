@@ -50,8 +50,8 @@ class _TransactionsState extends State<Transactions> {
   DateTime _fromDate = DateTime.now();
   DateTime _toDate = DateTime.now();
 
-  int? _sortColumnIndexTrans = 3;
-  bool _isAscendingTrans = false;
+  int? _sortColumnIndexTransUser = 3;
+  bool _isAscendingTransUser = false;
   int? _sortColumnIndexTransCaisse = 4;
   bool _isAscendingTransCaisse = false;
   int? _sortColumnIndexTransSP = 3;
@@ -68,14 +68,18 @@ class _TransactionsState extends State<Transactions> {
   void loadData() async {
     _year = transactionFilterYear;
 
-    var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT * FROM Transaction ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};''',
-      'sql2': 'SELECT * FROM TransactionSP ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};',
-      'sql3': 'SELECT * FROM TransactionOthers ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};',
-    });
+    var params = {
+      'sql1': '''SELECT * FROM transaction ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};''',
+      'sql2': 'SELECT * FROM transactionsp ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};',
+      'sql3': 'SELECT * FROM transactionothers ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};',
+      'sql4': 'SELECT * FROM transactiontemp;',
+    };
+
+    var res = await sqlQuery(selectUrl, params);
     var dataTransaction = res[0];
     var dataTransactionSP = res[1];
     var dataTransactionOther = res[2];
+    var dataTransactionTemp = res[3];
 
     for (var ele in dataTransaction) {
       allTransactions.add(Transaction(
@@ -168,6 +172,54 @@ class _TransactionsState extends State<Transactions> {
       allCaisseTransactions.add(trans);
     }
 
+    for (var ele in dataTransactionTemp) {
+      if (int.parse(ele['userId']) == -1) {
+        allTransactionsSP.add(TransactionSP(
+          reference: ele['reference'],
+          transactionId: int.parse(ele['transactionId']),
+          category: ele['userName'],
+          type: ele['type'],
+          date: DateTime.parse(ele['date']),
+          amount: double.parse(ele['amount']),
+          solde: 0,
+          note: ele['note'],
+        ));
+
+        allCaisseTransactions.add(Transaction(
+            reference: ele['reference'],
+            transactionId: int.parse(ele['transactionId']),
+            userName: (int.parse(ele['userId']) == -1) ? getText(ele['userName']) : ele['userName'],
+            source: getText((int.parse(ele['userId']) == -1) ? ele['userName'] : 'user'),
+            date: DateTime.parse(ele['date']),
+            type: ele['type'],
+            amount: double.parse(ele['amount']),
+            soldeCaisse: double.parse(ele['soldeCaisse']),
+            note: ele['note'],
+            printable: false));
+      } else {
+        Transaction trans = Transaction(
+          reference: ele['reference'],
+          transactionId: int.parse(ele['transactionId']),
+          userName: ele['userName'],
+          date: DateTime.parse(ele['date']),
+          type: ele['type'],
+          amount: double.parse(ele['amount']),
+          soldeUser: 0,
+          soldeCaisse: double.parse(ele['soldeCaisse']),
+          note: ele['note'],
+          reciver: ele['reciver'],
+          amountOnLetter: ele['amountOnLetter'],
+          intermediates: ele['intermediates'],
+          printingNotes: ele['printingNotes'],
+        );
+
+        allTransactions.add(trans);
+        allCaisseTransactions.add(trans);
+
+        userNames.add(ele['userName']);
+      }
+    }
+
     if (userNames.isNotEmpty) userNames = SplayTreeSet.from(userNames);
     if (loanNames.isNotEmpty) loanNames = SplayTreeSet.from(loanNames);
     if (depositNames.isNotEmpty) depositNames = SplayTreeSet.from(depositNames);
@@ -180,7 +232,7 @@ class _TransactionsState extends State<Transactions> {
     setState(() => isloading = false);
   }
 
-  void filterTransaction() {
+  void filterTransactionUser() {
     transactions.clear();
     for (var trans in allTransactions) {
       if ((_search.isEmpty || trans.userName == _search) &&
@@ -193,7 +245,7 @@ class _TransactionsState extends State<Transactions> {
       }
     }
 
-    onSortTrans();
+    onSortTransUser();
   }
 
   void filterTransactionCaisse() {
@@ -264,27 +316,27 @@ class _TransactionsState extends State<Transactions> {
     onSortTransDeposit();
   }
 
-  void onSortTrans() {
-    switch (_sortColumnIndexTrans) {
+  void onSortTransUser() {
+    switch (_sortColumnIndexTransUser) {
       case 2:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTrans ? tr2.userName.compareTo(tr1.userName) : tr1.userName.compareTo(tr2.userName);
+          return !_isAscendingTransUser ? tr2.userName.compareTo(tr1.userName) : tr1.userName.compareTo(tr2.userName);
         });
         break;
       case 3:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTrans ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
+          return !_isAscendingTransUser ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
         });
         break;
       case 5:
-        transactions.sort(
-            (tr1, tr2) => !_isAscendingTrans ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
-        transactions.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
+        transactions.sort((a, b) => _isAscendingTransUser
+            ? (a.type == 'in' ? a.amount : double.infinity).compareTo(b.type == 'in' ? b.amount : double.infinity)
+            : (b.type == 'in' ? b.amount : -double.infinity).compareTo(a.type == 'in' ? a.amount : -double.infinity));
         break;
       case 6:
-        transactions.sort(
-            (tr1, tr2) => !_isAscendingTrans ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
-        transactions.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
+        transactions.sort((a, b) => _isAscendingTransUser
+            ? (a.type == 'out' ? a.amount : double.infinity).compareTo(b.type == 'out' ? b.amount : double.infinity)
+            : (b.type == 'out' ? b.amount : -double.infinity).compareTo(a.type == 'out' ? a.amount : -double.infinity));
         break;
     }
   }
@@ -302,14 +354,14 @@ class _TransactionsState extends State<Transactions> {
         });
         break;
       case 6:
-        transactions.sort((tr1, tr2) =>
-            !_isAscendingTransCaisse ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
-        transactions.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
+        transactions.sort((a, b) => _isAscendingTransCaisse
+            ? (a.type == 'in' ? a.amount : double.infinity).compareTo(b.type == 'in' ? b.amount : double.infinity)
+            : (b.type == 'in' ? b.amount : -double.infinity).compareTo(a.type == 'in' ? a.amount : -double.infinity));
         break;
       case 7:
-        transactions.sort((tr1, tr2) =>
-            !_isAscendingTransCaisse ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
-        transactions.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
+        transactions.sort((a, b) => _isAscendingTransCaisse
+            ? (a.type == 'out' ? a.amount : double.infinity).compareTo(b.type == 'out' ? b.amount : double.infinity)
+            : (b.type == 'out' ? b.amount : -double.infinity).compareTo(a.type == 'out' ? a.amount : -double.infinity));
         break;
     }
   }
@@ -322,16 +374,14 @@ class _TransactionsState extends State<Transactions> {
         });
         break;
       case 5:
-        transactionsSP.sort((tr1, tr2) {
-          return !_isAscendingTransSP ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount);
-        });
-        transactionsSP.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
+        transactionsSP.sort((a, b) => _isAscendingTransSP
+            ? (a.type == 'in' ? a.amount : double.infinity).compareTo(b.type == 'in' ? b.amount : double.infinity)
+            : (b.type == 'in' ? b.amount : -double.infinity).compareTo(a.type == 'in' ? a.amount : -double.infinity));
         break;
       case 6:
-        transactionsSP.sort((tr1, tr2) {
-          return !_isAscendingTransSP ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount);
-        });
-        transactionsSP.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
+        transactionsSP.sort((a, b) => _isAscendingTransSP
+            ? (a.type == 'out' ? a.amount : double.infinity).compareTo(b.type == 'out' ? b.amount : double.infinity)
+            : (b.type == 'out' ? b.amount : -double.infinity).compareTo(a.type == 'out' ? a.amount : -double.infinity));
         break;
     }
   }
@@ -349,14 +399,14 @@ class _TransactionsState extends State<Transactions> {
         });
         break;
       case 5:
-        loanTransactions.sort(
-            (tr1, tr2) => !_isAscendingTransLoan ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
-        loanTransactions.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
+        loanTransactions.sort((a, b) => _isAscendingTransLoan
+            ? (a.type == 'in' ? a.amount : double.infinity).compareTo(b.type == 'in' ? b.amount : double.infinity)
+            : (b.type == 'in' ? b.amount : -double.infinity).compareTo(a.type == 'in' ? a.amount : -double.infinity));
         break;
       case 6:
-        loanTransactions.sort(
-            (tr1, tr2) => !_isAscendingTransLoan ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
-        loanTransactions.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
+        loanTransactions.sort((a, b) => _isAscendingTransLoan
+            ? (a.type == 'out' ? a.amount : double.infinity).compareTo(b.type == 'out' ? b.amount : double.infinity)
+            : (b.type == 'out' ? b.amount : -double.infinity).compareTo(a.type == 'out' ? a.amount : -double.infinity));
         break;
     }
   }
@@ -376,14 +426,14 @@ class _TransactionsState extends State<Transactions> {
         });
         break;
       case 5:
-        depositTransactions.sort((tr1, tr2) =>
-            !_isAscendingTransDeposit ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
-        depositTransactions.sort((tr1, tr2) => tr1.type.compareTo(tr2.type));
+        depositTransactions.sort((a, b) => _isAscendingTransDeposit
+            ? (a.type == 'in' ? a.amount : double.infinity).compareTo(b.type == 'in' ? b.amount : double.infinity)
+            : (b.type == 'in' ? b.amount : -double.infinity).compareTo(a.type == 'in' ? a.amount : -double.infinity));
         break;
       case 6:
-        depositTransactions.sort((tr1, tr2) =>
-            !_isAscendingTransDeposit ? tr2.amount.compareTo(tr1.amount) : tr1.amount.compareTo(tr2.amount));
-        depositTransactions.sort((tr1, tr2) => tr2.type.compareTo(tr1.type));
+        depositTransactions.sort((a, b) => _isAscendingTransDeposit
+            ? (a.type == 'out' ? a.amount : double.infinity).compareTo(b.type == 'out' ? b.amount : double.infinity)
+            : (b.type == 'out' ? b.amount : -double.infinity).compareTo(a.type == 'out' ? a.amount : -double.infinity));
         break;
     }
   }
@@ -407,7 +457,7 @@ class _TransactionsState extends State<Transactions> {
     if (transactionCategory == 'caisse') {
       filterTransactionCaisse();
     } else if (transactionCategory == 'users') {
-      filterTransaction();
+      filterTransactionUser();
     } else if (transactionCategory == 'specials') {
       filterTransactionSP();
     } else if (transactionCategory == 'loans') {
@@ -459,30 +509,30 @@ class _TransactionsState extends State<Transactions> {
           context,
           getText('name'),
           (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTrans = columnIndex;
-                _isAscendingTrans = ascending;
+                _sortColumnIndexTransUser = columnIndex;
+                _isAscendingTransUser = ascending;
               })),
       sortableDataColumn(
           context,
           getText('date'),
           (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTrans = columnIndex;
-                _isAscendingTrans = ascending;
+                _sortColumnIndexTransUser = columnIndex;
+                _isAscendingTransUser = ascending;
               })),
       dataColumn(context, getText('type')),
       sortableDataColumn(
           context,
           getText('in'),
           (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTrans = columnIndex;
-                _isAscendingTrans = ascending;
+                _sortColumnIndexTransUser = columnIndex;
+                _isAscendingTransUser = ascending;
               })),
       sortableDataColumn(
           context,
           getText('out'),
           (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTrans = columnIndex;
-                _isAscendingTrans = ascending;
+                _sortColumnIndexTransUser = columnIndex;
+                _isAscendingTransUser = ascending;
               })),
       dataColumn(context, getText('soldeUser')),
       dataColumn(context, getText('note')),
@@ -612,11 +662,11 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, getText(transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
-                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
-                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.soldeCaisse), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.soldeCaisse), textAlign: TextAlign.end),
                 DataCell(ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
                   child: Align(
@@ -659,11 +709,11 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, transaction.userName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
-                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
-                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.soldeUser), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.soldeUser), textAlign: TextAlign.end),
                 DataCell(ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
                   child: Align(
@@ -690,11 +740,11 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, getText(transaction.category), textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
-                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
-                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.solde), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.solde), textAlign: TextAlign.end),
                 DataCell(ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
                   child: Align(
@@ -737,11 +787,11 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, transaction.userName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
-                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
-                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.soldeUser), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.soldeUser), textAlign: TextAlign.end),
                 DataCell(ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
                   child: Align(
@@ -784,11 +834,11 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, transaction.userName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
-                dataCell(context, transaction.type == 'in' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
-                dataCell(context, transaction.type == 'out' ? myCurrency.format(transaction.amount) : '/',
-                    textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
-                dataCell(context, myCurrency.format(transaction.soldeUser), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
+                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.soldeUser), textAlign: TextAlign.end),
                 DataCell(ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
                   child: Align(
@@ -855,8 +905,8 @@ class _TransactionsState extends State<Transactions> {
                               : myScorallable(
                                   dataTable(
                                     context,
-                                    isAscending: _isAscendingTrans,
-                                    sortColumnIndex: _sortColumnIndexTrans,
+                                    isAscending: _isAscendingTransUser,
+                                    sortColumnIndex: _sortColumnIndexTransUser,
                                     columns: columnsTrans,
                                     rows: rowsTrans,
                                   ),
@@ -908,11 +958,11 @@ class _TransactionsState extends State<Transactions> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              myText('${getText('totalIn')} :      ${myCurrency.format(totalIn)}'),
+              myText('${getText('totalIn')} :      ${myCurrency(totalIn)}'),
               SizedBox(width: getWidth(context, .05)),
-              myText('${getText('totalOut')} :      ${myCurrency.format(totalOut)}'),
+              myText('${getText('totalOut')} :      ${myCurrency(totalOut)}'),
               SizedBox(width: getWidth(context, .05)),
-              myText('${getText('total')} :      ${myCurrency.format(totalIn - totalOut)}'),
+              myText('${getText('total')} :      ${myCurrency(totalIn - totalOut)}'),
             ],
           ),
           mySizedBox(context),
@@ -1157,6 +1207,7 @@ class _TransactionsState extends State<Transactions> {
                   final DateTime? selected = await showDatePicker(
                     context: context,
                     initialDate: _fromDate,
+                    initialEntryMode: DatePickerEntryMode.input,
                     firstDate: _year == 'tout' ? DateTime(int.parse(years.last)) : DateTime(int.parse(_year)),
                     lastDate: _toDate,
                   );
@@ -1202,6 +1253,7 @@ class _TransactionsState extends State<Transactions> {
                     context: context,
                     initialDate: _toDate,
                     firstDate: _fromDate,
+                    initialEntryMode: DatePickerEntryMode.input,
                     lastDate: _year == 'tout'
                         ? DateTime(int.parse(years.first) + 1).subtract(const Duration(seconds: 1))
                         : DateTime(int.parse(_year) + 1).subtract(const Duration(seconds: 1)),
@@ -1290,8 +1342,8 @@ class _TransactionsState extends State<Transactions> {
                               getText(trans.source),
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '/',
-                              trans.type == 'out' ? trans.amount : '/',
+                              trans.type == 'in' ? trans.amount : '-',
+                              trans.type == 'out' ? trans.amount : '-',
                               trans.soldeCaisse,
                               trans.note,
                             ])
@@ -1302,8 +1354,8 @@ class _TransactionsState extends State<Transactions> {
                               trans.userName,
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '/',
-                              trans.type == 'out' ? trans.amount : '/',
+                              trans.type == 'in' ? trans.amount : '-',
+                              trans.type == 'out' ? trans.amount : '-',
                               trans.soldeUser,
                               trans.note,
                             ])
@@ -1314,8 +1366,8 @@ class _TransactionsState extends State<Transactions> {
                               trans.category,
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '/',
-                              trans.type == 'out' ? trans.amount : '/',
+                              trans.type == 'in' ? trans.amount : '-',
+                              trans.type == 'out' ? trans.amount : '-',
                               trans.solde,
                               trans.note,
                             ])
@@ -1326,8 +1378,8 @@ class _TransactionsState extends State<Transactions> {
                               trans.userName,
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '/',
-                              trans.type == 'out' ? trans.amount : '/',
+                              trans.type == 'in' ? trans.amount : '-',
+                              trans.type == 'out' ? trans.amount : '-',
                               trans.soldeUser,
                               trans.note,
                             ])
@@ -1338,8 +1390,8 @@ class _TransactionsState extends State<Transactions> {
                               trans.userName,
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '/',
-                              trans.type == 'out' ? trans.amount : '/',
+                              trans.type == 'in' ? trans.amount : '-',
+                              trans.type == 'out' ? trans.amount : '-',
                               trans.soldeUser,
                               trans.note,
                             ])
@@ -1361,7 +1413,7 @@ class _TransactionsState extends State<Transactions> {
                 );
               },
             ),
-          if (_searchController.text.isNotEmpty ||
+          if (_search.isNotEmpty ||
               _reference.isNotEmpty ||
               _compt != 'tout' ||
               _type != 'tout' ||
@@ -1500,9 +1552,9 @@ class _TransactionsState extends State<Transactions> {
           'name': trans.userName,
           'source': trans.source,
           'date': myDateFormate.format(trans.date),
-          'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
-          'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
-          'solde': myCurrency.format(trans.soldeCaisse)
+          'in': myCurrency(trans.type == 'in' ? trans.amount : 0),
+          'out': myCurrency(trans.type == 'out' ? trans.amount : 0),
+          'solde': myCurrency(trans.soldeCaisse)
         });
       }).toList();
     } else if (transactionCategory == 'users') {
@@ -1510,9 +1562,9 @@ class _TransactionsState extends State<Transactions> {
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
         data.add({
           'date': myDateFormate.format(trans.date),
-          'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
-          'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
-          'solde': myCurrency.format(trans.soldeUser)
+          'in': myCurrency(trans.type == 'in' ? trans.amount : 0),
+          'out': myCurrency(trans.type == 'out' ? trans.amount : 0),
+          'solde': myCurrency(trans.soldeUser)
         });
       }).toList();
     } else if (transactionCategory == 'loans') {
@@ -1520,9 +1572,9 @@ class _TransactionsState extends State<Transactions> {
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
         data.add({
           'date': myDateFormate.format(trans.date),
-          'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
-          'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
-          'solde': myCurrency.format(trans.soldeUser)
+          'in': myCurrency(trans.type == 'in' ? trans.amount : 0),
+          'out': myCurrency(trans.type == 'out' ? trans.amount : 0),
+          'solde': myCurrency(trans.soldeUser)
         });
       }).toList();
     } else if (transactionCategory == 'deposits') {
@@ -1530,9 +1582,9 @@ class _TransactionsState extends State<Transactions> {
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
         data.add({
           'date': myDateFormate.format(trans.date),
-          'in': trans.type == 'in' ? myCurrency.format(trans.amount) : '/',
-          'out': trans.type == 'out' ? myCurrency.format(trans.amount) : '/',
-          'solde': myCurrency.format(trans.soldeUser)
+          'in': myCurrency(trans.type == 'in' ? trans.amount : 0),
+          'out': myCurrency(trans.type == 'out' ? trans.amount : 0),
+          'solde': myCurrency(trans.soldeUser)
         });
       }).toList();
     }
@@ -1597,18 +1649,18 @@ class _TransactionsState extends State<Transactions> {
             pw.Container(
                 child: pw.Row(children: [
               pw.Expanded(child: pw.Text('Total in:', textAlign: pw.TextAlign.left)),
-              pw.Text(myCurrency.format(totalIn)),
+              pw.Text(myCurrency(totalIn)),
             ])),
             pw.Container(
                 child: pw.Row(children: [
               pw.Expanded(child: pw.Text('Total out:', textAlign: pw.TextAlign.left)),
-              pw.Text(myCurrency.format(totalOut)),
+              pw.Text(myCurrency(totalOut)),
             ])),
             pw.Divider(),
             pw.Container(
                 child: pw.Row(children: [
               pw.Expanded(child: pw.Text('Total:', textAlign: pw.TextAlign.left)),
-              pw.Text(myCurrency.format(totalIn - totalOut)),
+              pw.Text(myCurrency(totalIn - totalOut)),
             ])),
             pw.SizedBox(height: 2),
             pw.Container(height: 1, color: PdfColors.grey400),

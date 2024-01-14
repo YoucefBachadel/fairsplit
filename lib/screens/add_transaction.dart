@@ -199,6 +199,8 @@ class _AddTransactionState extends State<AddTransaction> {
 
   void save() async {
     bool _testsChecked = true; //used to test if rest is >= 0 and prevent navigation to main screen
+    bool isNewYear = date.year !=
+        currentYear; //true after 1 jan befor passage so user and reserve transaction will be stored in tempTransac
     double _amount = double.parse(amount);
     double _soldeCaisse = caisse;
 
@@ -242,10 +244,11 @@ class _AddTransactionState extends State<AddTransaction> {
           //update the setting category
           //update the setting caisse
           await sqlQuery(insertUrl, {
-            'sql1':
-                '''INSERT INTO TransactionSP (reference,category,date,type,amount,solde,soldeCaisse,note) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note');''',
+            'sql1': ((category == 'reserve' || category == 'reserveProfit') && isNewYear)
+                ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'$category' , '$date' , '$type' ,${_amount.abs()} ,$_soldeCaisse , '$note','','','','');'''
+                : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note');''',
             'sql2':
-                '''UPDATE Settings SET $category = $_solde , caisse = $_soldeCaisse , reference = ${reference + 1};''',
+                '''UPDATE settings SET $category = $_solde , caisse = $_soldeCaisse , reference = ${reference + 1};''',
           });
         }
       } else if (selectedTransactionType == 4) {
@@ -253,9 +256,9 @@ class _AddTransactionState extends State<AddTransaction> {
 
         List<User> moneyUsers = [];
         double _totalUsersCapital = 0, _userAmount = 0, _soldeUser = 0;
-        String usersSQL = 'INSERT INTO Users(userId, capital) VALUES ';
+        String usersSQL = 'INSERT INTO users(userId, capital) VALUES ';
         String transactionsSQL =
-            'INSERT INTO Transaction (reference,userId,userName,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ';
+            'INSERT INTO ${isNewYear ? 'transactiontemp' : 'transaction'} (reference,userId,userName,date,type,amount,${isNewYear ? '' : ' soldeUser,'}soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ';
 
         //get money users
         for (var user in users) {
@@ -277,7 +280,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             usersSQL += '(${user.userId}, $_soldeUser),';
             transactionsSQL +=
-                '''('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${user.userId} , '${user.name}' , '$date' , '$type' ,${_userAmount.abs()} , $_soldeUser , $_soldeCaisse , '$note' , '${numberToArabicWords(_userAmount.abs().toInt())} دينار' , '' , '' , '' ),''';
+                '''('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${user.userId} , '${user.name}' , '$date' , '$type' ,${_userAmount.abs()} , ${isNewYear ? '' : '$_soldeUser,'} $_soldeCaisse , '$note' , '${numberToArabicWords(_userAmount.abs().toInt())} دينار' , '' , '' , '' ),''';
             reference++;
           }
 
@@ -294,8 +297,7 @@ class _AddTransactionState extends State<AddTransaction> {
           await sqlQuery(insertUrl, {
             'sql1': transactionsSQL,
             'sql2': usersSQL,
-            'sql3': '''UPDATE Settings SET reference = $reference;''',
-            // 'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse ;''',
+            'sql3': '''UPDATE settings SET reference = $reference;''',
           });
         }
       } else {
@@ -343,9 +345,9 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO Transaction (reference,userId,userName,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${selectedUser.userId},'${selectedUser.name}', '$date' , '$type' ,${_amount.abs()} ,$_soldeUser, $_soldeCaisse , '$note' , '' , '' , '' , '' );''',
-                'sql2': '''UPDATE Users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};''',
-                'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse , reference = ${reference + 1};'''
+                    '''INSERT INTO ${isNewYear ? 'transactiontemp' : 'transaction'} (reference,userId,userName,date,type,amount,${isNewYear ? '' : 'soldeUser,'}soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${selectedUser.userId},'${selectedUser.name}', '$date' , '$type' ,${_amount.abs()} ,${isNewYear ? '' : '$_soldeUser,'} $_soldeCaisse , '$note' , '${numberToArabicWords(_amount.abs().toInt())} دينار' , '' , '' , '' );''',
+                'sql2': '''UPDATE users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};''',
+                'sql3': '''UPDATE settings SET caisse = $_soldeCaisse , reference = ${reference + 1};'''
               });
             }
           } else {
@@ -369,10 +371,10 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO TransactionOthers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}', 'loan' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' , '' , '' , '' , '' );''',
+                    '''INSERT INTO transactionothers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}', 'loan' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' , '' , '' , '' , '' );''',
                 'sql2':
-                    '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
-                'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse , reference = ${reference + 1};'''
+                    '''UPDATE otherusers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
+                'sql3': '''UPDATE settings SET caisse = $_soldeCaisse , reference = ${reference + 1};'''
               });
             }
           } else {
@@ -397,10 +399,10 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO TransactionOthers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}','deposit' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' , '' , '' , '' , '' );''',
+                    '''INSERT INTO transactionothers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}','deposit' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' , '' , '' , '' , '' );''',
                 'sql2':
-                    '''UPDATE OtherUsers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
-                'sql3': '''UPDATE Settings SET caisse = $_soldeCaisse , reference = ${reference + 1};''',
+                    '''UPDATE otherusers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
+                'sql3': '''UPDATE settings SET caisse = $_soldeCaisse , reference = ${reference + 1};''',
               });
             }
           } else {
@@ -760,7 +762,7 @@ class _AddTransactionState extends State<AddTransaction> {
                                         mySizedBox(context),
                                         if (selectedTransactionType != 4 &&
                                             !(selectedTransactionType == 0 && category == 'caisse'))
-                                          myText('${getText('caisse')} :   ${myCurrency.format(caisse)}'),
+                                          myText('${getText('caisse')} :   ${myCurrency(caisse)}'),
                                       ],
                                     ),
                                   ),
@@ -780,7 +782,8 @@ class _AddTransactionState extends State<AddTransaction> {
                                             isNumberOnly: true,
                                             autoFocus: widget.sourceTab != 'tr' || selectedTransactionType == 4,
                                             onChanged: (value) => amount = value,
-                                            hint: myCurrency.format(double.parse(amount)),
+                                            onSubmited: (value) => setState(() {}),
+                                            hint: myCurrency(double.parse(amount)),
                                           ),
                                           mySizedBox(context),
                                           InkWell(
@@ -812,13 +815,13 @@ class _AddTransactionState extends State<AddTransaction> {
                                             }),
                                             child: (selectedTransactionType == 0)
                                                 ? myText(
-                                                    '${getText('solde')} :   ${myCurrency.format(category == 'caisse' ? caisse : category == 'reserve' ? reserve : category == 'reserveProfit' ? reserveProfit : category == 'donation' ? donation : zakat)}')
+                                                    '${getText('solde')} :   ${myCurrency(category == 'caisse' ? caisse : category == 'reserve' ? reserve : category == 'reserveProfit' ? reserveProfit : category == 'donation' ? donation : zakat)}')
                                                 : (selectedTransactionType == 1)
                                                     ? myText(
-                                                        '${getText('capital')} :   ${myCurrency.format(selectedUserCapital)}')
+                                                        '${getText('capital')} :   ${myCurrency(selectedUserCapital)}')
                                                     : (selectedTransactionType == 4)
                                                         ? const SizedBox()
-                                                        : myText('${getText('rest')} :   ${myCurrency.format(rest)}'),
+                                                        : myText('${getText('rest')} :   ${myCurrency(rest)}'),
                                           )
                                         ],
                                       )),

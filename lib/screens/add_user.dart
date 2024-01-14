@@ -40,11 +40,6 @@ class _AddUserState extends State<AddUser> {
   void deleteUser(int userId) async {
     setState(() => isLoading = true);
     Navigator.pop(context);
-    // var res = await sqlQuery(selectUrl, {
-    //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
-    // });
-
-    // if (res[0][0]['password'] == '1') {
     await sqlQuery(insertUrl, {
       'sql1': 'DELETE FROM Threshold WHERE userId = $userId',
       'sql2': 'DELETE FROM Founding WHERE userId = $userId',
@@ -54,9 +49,6 @@ class _AddUserState extends State<AddUser> {
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
     snackBar(context, getMessage('deleteUser'));
-    // } else {
-    //   snackBar(context, getMessage('wrongPassword'), duration: 1);
-    // }
 
     setState(() => isLoading = false);
   }
@@ -189,21 +181,20 @@ class _AddUserState extends State<AddUser> {
             alignment: Alignment.center,
             child: Row(
               children: [
-                widget.user.userId != -1 && widget.user.capital == 0
-                    ? IconButton(
-                        onPressed: () => createDialog(
+                if (widget.user.userId != -1 && widget.user.capital == 0)
+                  IconButton(
+                      onPressed: () => createDialog(
+                            context,
+                            delteConfirmation(
                               context,
-                              delteConfirmation(
-                                context,
-                                getMessage('deleteUserConfirmation'),
-                                () => deleteUser(widget.user.userId),
-                              ),
+                              getMessage('deleteUserConfirmation'),
+                              () => deleteUser(widget.user.userId),
                             ),
-                        icon: const Icon(
-                          Icons.delete_forever,
-                          color: Colors.white,
-                        ))
-                    : const SizedBox(),
+                          ),
+                      icon: const Icon(
+                        Icons.delete_forever,
+                        color: Colors.white,
+                      )),
                 Expanded(
                   child: Text(
                     widget.user.userId == -1 ? getText('user') : name,
@@ -246,19 +237,18 @@ class _AddUserState extends State<AddUser> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(child: information()),
-                            isEffort
-                                ? SizedBox(height: getHeight(context, .25), child: const VerticalDivider(width: 50))
-                                : const SizedBox(),
-                            isEffort ? monthsDetail() : const SizedBox(),
+                            if (efforts.isNotEmpty)
+                              SizedBox(height: getHeight(context, .25), child: const VerticalDivider(width: 50)),
+                            if (efforts.isNotEmpty) monthsDetail(),
                           ],
                         ),
                         const Spacer(),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            isEffort ? effortDetail() : const SizedBox(),
-                            isMoney ? thresholdDetail() : const SizedBox(),
-                            isMoney ? foundingDetail() : const SizedBox(),
+                            if (isEffort) effortDetail(),
+                            if (isMoney) thresholdDetail(),
+                            if (isMoney) foundingDetail(),
                           ],
                         ),
                         const SizedBox(height: 16.0),
@@ -348,6 +338,7 @@ class _AddUserState extends State<AddUser> {
                       final DateTime? selected = await showDatePicker(
                         context: context,
                         initialDate: joinDate,
+                        initialEntryMode: DatePickerEntryMode.input,
                         firstDate: DateTime(1900, 01, 01, 00, 00, 00),
                         lastDate: DateTime.now(),
                       );
@@ -408,24 +399,23 @@ class _AddUserState extends State<AddUser> {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
-                thresholds.length == allUnits.length
-                    ? const SizedBox()
-                    : IconButton(
-                        onPressed: () {
-                          final _allIds = allUnits.map((e) => e.unitId).toSet();
-                          final _thresholdsIds = thresholds.map((e) => e.unitId).toSet();
-                          final _filteredIds = _allIds.difference(_thresholdsIds);
-                          createDialog(
-                            context,
-                            unitSelect(2,
-                                units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
-                          );
-                        },
-                        icon: Icon(
-                          Icons.add,
-                          color: primaryColor,
-                        ),
-                      ),
+                if (thresholds.length != allUnits.length)
+                  IconButton(
+                    onPressed: () {
+                      final _allIds = allUnits.map((e) => e.unitId).toSet();
+                      final _thresholdsIds = thresholds.map((e) => e.unitId).toSet();
+                      final _filteredIds = _allIds.difference(_thresholdsIds);
+                      createDialog(
+                        context,
+                        unitSelect(2,
+                            units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
+                      );
+                    },
+                    icon: Icon(
+                      Icons.add,
+                      color: primaryColor,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -516,24 +506,22 @@ class _AddUserState extends State<AddUser> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
-              foundings.length == allUnits.length
-                  ? const SizedBox()
-                  : IconButton(
-                      onPressed: () {
-                        final _allIds = allUnits.map((e) => e.unitId).toSet();
-                        final _foundingsIds = foundings.map((e) => e.unitId).toSet();
-                        final _filteredIds = _allIds.difference(_foundingsIds);
-                        createDialog(
-                          context,
-                          unitSelect(3,
-                              units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
-                        );
-                      },
-                      icon: Icon(
-                        Icons.add,
-                        color: primaryColor,
-                      ),
-                    ),
+              if (foundings.length != allUnits.length)
+                IconButton(
+                  onPressed: () {
+                    final _allIds = allUnits.map((e) => e.unitId).toSet();
+                    final _foundingsIds = foundings.map((e) => e.unitId).toSet();
+                    final _filteredIds = _allIds.difference(_foundingsIds);
+                    createDialog(
+                      context,
+                      unitSelect(3, units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.add,
+                    color: primaryColor,
+                  ),
+                ),
             ],
           ),
         ),
@@ -829,24 +817,23 @@ class _AddUserState extends State<AddUser> {
             ],
           ),
           mySizedBox(context),
-          type == 1
-              ? Row(
-                  children: [
-                    Expanded(child: myText(getText('evaluation'))),
-                    Expanded(
-                      flex: 3,
-                      child: myTextField(
-                        context,
-                        hint: evaluation.toString(),
-                        onChanged: ((text) {
-                          _evaluation = text;
-                        }),
-                        isNumberOnly: true,
-                      ),
-                    ),
-                  ],
-                )
-              : const SizedBox(),
+          if (type == 1)
+            Row(
+              children: [
+                Expanded(child: myText(getText('evaluation'))),
+                Expanded(
+                  flex: 3,
+                  child: myTextField(
+                    context,
+                    hint: evaluation.toString(),
+                    onChanged: ((text) {
+                      _evaluation = text;
+                    }),
+                    isNumberOnly: true,
+                  ),
+                ),
+              ],
+            ),
           mySizedBox(context),
           myButton(
             context,

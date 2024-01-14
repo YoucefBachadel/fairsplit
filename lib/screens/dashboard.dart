@@ -37,13 +37,6 @@ class _DashboardState extends State<Dashboard> {
   void locadData() async {
     var res = await sqlQuery(selectUrl, {
       'sql1':
-          // '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,
-          // (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
-          // (SELECT SUM(amount) FROM Transaction WHERE type = 'in' AND year = s.currentYear) as totalIn,
-          // (SELECT SUM(amount) FROM Transaction WHERE type = 'out' AND year = s.currentYear) as totalOut,
-          // (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
-          // (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
-          // s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;'''
           '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,
           (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
@@ -51,7 +44,7 @@ class _DashboardState extends State<Dashboard> {
           s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;''',
       'sql2': 'SELECT name,profitability FROM units;',
       'sql3':
-          'SELECT DISTINCT(Year(date)) AS year FROM transaction UNION SELECT DISTINCT(Year(date)) AS year FROM transactionothers UNION SELECT DISTINCT(Year(date)) AS year FROM transactionsp;',
+          'SELECT DISTINCT(Year(date)) AS year FROM transaction UNION SELECT DISTINCT(Year(date)) AS year FROM transactionothers UNION SELECT DISTINCT(Year(date)) AS year FROM transactionsp UNION SELECT DISTINCT(Year(date)) AS year FROM transactiontemp;',
     });
     var data = res[0][0];
     currentYear = int.parse(data['currentYear']);
@@ -61,8 +54,8 @@ class _DashboardState extends State<Dashboard> {
     reserve = double.parse(data['reserve']);
     donation = double.parse(data['donation']);
     zakat = double.parse(data['zakat']);
-    // totalIn = double.parse(data['totalIn'] ?? '0');
-    // totalOut = double.parse(data['totalOut'] ?? '0');
+    totalIn = double.parse(data['totalIn'] ?? '0');
+    totalOut = double.parse(data['totalOut'] ?? '0');
     totalLoan = double.parse(data['totalLoan'] ?? '0');
     totalDeposit = double.parse(data['totalDeposit'] ?? '0');
     totalProfit = double.parse(data['totalProfit'] ?? '0');
@@ -74,6 +67,7 @@ class _DashboardState extends State<Dashboard> {
         profitability: double.parse(unit['profitability']) * 100,
       ));
     }
+    units.sort((a, b) => b.profitability.compareTo(a.profitability));
 
     for (var ele in res[2]) {
       years.add(ele['year'].toString());
@@ -99,11 +93,11 @@ class _DashboardState extends State<Dashboard> {
               children: [
                 Row(
                   children: [
-                    [getText('caisse'), myCurrency.format(caisse), 'caisse'],
-                    [getText('reserve'), myCurrency.format(reserve), 'reserve'],
-                    [getText('reserveProfit'), myCurrency.format(reserveProfit), 'reserveProfit'],
-                    [getText('donation'), myCurrency.format(donation), 'donation'],
-                    [getText('zakat'), myCurrency.format(zakat), 'zakat'],
+                    [getText('caisse'), myCurrency(caisse), 'caisse'],
+                    [getText('reserve'), myCurrency(reserve), 'reserve'],
+                    [getText('reserveProfit'), myCurrency(reserveProfit), 'reserveProfit'],
+                    [getText('donation'), myCurrency(donation), 'donation'],
+                    [getText('zakat'), myCurrency(zakat), 'zakat'],
                   ]
                       .map((e) => boxCard(
                             e[0],
@@ -148,16 +142,16 @@ class _DashboardState extends State<Dashboard> {
                         child: Column(children: [
                           ...[
                             [getText('profitability'), (profitability * 100).toStringAsFixed(2)],
-                            [getText('totalProfit'), myCurrency.format(totalProfit)],
-                            // [getText('totalIn'), myCurrency.format(totalIn)],
-                            // [getText('totalOut'), myCurrency.format(totalOut)],
-                            // [getText('totalLoan'), myCurrency.format(totalLoan)],
-                            // [getText('totalDeposit'), myCurrency.format(totalDeposit)],
-                            // [getText('reserveProfit'), myCurrency.format(reserveProfit)],
+                            [getText('totalProfit'), myCurrency(totalProfit)],
+                            // [getText('totalIn'), myCurrency(totalIn)],
+                            // [getText('totalOut'), myCurrency(totalOut)],
+                            // [getText('totalLoan'), myCurrency(totalLoan)],
+                            // [getText('totalDeposit'), myCurrency(totalDeposit)],
+                            // [getText('reserveProfit'), myCurrency(reserveProfit)],
                           ].map((e) => boxCard(e[0], e[1], false)).toList(),
                           ...[
-                            [getText('totalLoan'), myCurrency.format(totalLoan), '2', 'loan'],
-                            [getText('totalDeposit'), myCurrency.format(totalDeposit), '3', 'deposit'],
+                            [getText('totalLoan'), myCurrency(totalLoan), '2', 'loan'],
+                            [getText('totalDeposit'), myCurrency(totalDeposit), '3', 'deposit'],
                           ]
                               .map((e) => boxCard(
                                     e[0],
@@ -248,7 +242,7 @@ class _DashboardState extends State<Dashboard> {
         },
       ),
       series: [
-        DoughnutSeries<Unit, String>(
+        PieSeries<Unit, String>(
             dataSource: units,
             strokeColor: Colors.white,
             strokeWidth: 1,
@@ -269,119 +263,3 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 }
-
-
-// : Column(
-      //     children: [
-      //       Row(
-      //         children: [
-      //           [getText('caisse'), data['caisse'], const Color(0xbbb19c97), true],
-      //           [getText('reserve'), data['reserve'], const Color(0xbbffbf62), true],
-      //           [getText('donation'), data['donation'], const Color(0xbbD3A4F8), true],
-      //           [getText('zakat'), data['zakat'], const Color(0xbba1fcf5), true],
-      //         ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-      //       ),
-      //       Row(
-      //         children: [
-      //           [getText('capitalUsers'), data['capitalUsers'], const Color(0xbbcdf6f2), false],
-      //           [getText('capitalUnits'), data['capitalUnits'], const Color(0xbb5a80fb), false],
-      //           [getText('totalIn'), data['totalIn'], const Color(0xbbc4a471), false],
-      //           [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
-      //         ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-      //       ),
-      //       Row(
-      //         children: [
-      //           [getText(''), '0', const Color(0xbbcdf6f2), false],
-      //           [getText(''), '0', const Color(0xbb5a80fb), false],
-      //           [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
-      //           [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
-      //         ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-      //       ),
-      //     ],
-      //   ),
-
-
-
-
-
-
-// Expanded(
-//                         child: Column(
-//                       children: [
-//                         Row(
-//                           children: [
-//                             [getText('totalIn'), data['totalIn'], const Color(0xbbc4a471), false],
-//                             [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
-//                           ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-//                         ),
-//                         Row(
-//                           children: [
-//                             [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
-//                             [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
-//                           ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-//                         ),
-//                         Row(
-//                           children: [
-//                             [getText('capitalUsers'), data['capitalUsers'], const Color(0xbbcdf6f2), false],
-//                             [getText('capitalUnits'), data['capitalUnits'], const Color(0xbb5a80fb), false],
-//                           ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-//                         ),
-//                       ],
-//                     )),
-
-
-
-
-// Column(
-//               children: [
-//                 Row(
-//                   children: [
-//                     [getText('caisse'), data['caisse'], const Color(0xbbb19c97), true],
-//                     [getText('reserve'), data['reserve'], const Color(0xbbffbf62), true],
-//                     [getText('donation'), data['donation'], const Color(0xbbD3A4F8), true],
-//                     [getText('zakat'), data['zakat'], const Color(0xbba1fcf5), true],
-//                   ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-//                 ),
-//                 Row(
-//                   children: [
-//                     [getText('totalIn'), data['totalIn'], const Color(0xbbc4a471), false],
-//                     [getText('totalOut'), data['totalOut'], const Color(0xbb0e737e), false],
-//                     [getText('totalLoan'), data['totalLoan'], const Color(0xbbc4a471), false],
-//                     [getText('totalDeposit'), data['totalDeposit'], const Color(0xbb0e737e), false],
-//                   ].map((e) => boxCard(e[0], double.parse(e[1]), e[2], clicable: e[3])).toList(),
-//                 ),
-//                 Expanded(
-//                     child: Row(
-//                   children: [
-//                     Expanded(
-//                       child: Container(
-//                         margin: const EdgeInsets.all(8.0),
-//                         padding: const EdgeInsets.all(8.0),
-//                         decoration: BoxDecoration(
-//                             color: Colors.white,
-//                             borderRadius: const BorderRadius.all(Radius.circular(20)),
-//                             boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
-//                             border: Border.all(color: primaryColor, width: .5)),
-//                       ),
-//                     ),
-//                     Expanded(
-//                       child: Container(
-//                         margin: const EdgeInsets.all(8.0),
-//                         padding: const EdgeInsets.all(8.0),
-//                         decoration: BoxDecoration(
-//                             color: Colors.white,
-//                             borderRadius: const BorderRadius.all(Radius.circular(20)),
-//                             boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
-//                             border: Border.all(color: primaryColor, width: .5)),
-//                       ),
-//                     ),
-//                   ],
-//                 ))
-//               ],
-//             ),
-
-
-
-
-
-

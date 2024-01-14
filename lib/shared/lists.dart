@@ -196,10 +196,10 @@ Map<String, String> messages = {
   'updateUser': 'User updated successfully',
   'deleteUser': 'User deleted successfully',
   'deleteUserConfirmation':
-      'Are you sure you want to delete this user, once deleted all related information will be deleted as well',
+      'Are you sure you want to delete this user, once deleted all related information will be deleted too',
   'deleteOtherUserConfirmation': 'Are you sure you want to delete this user!!',
   'deleteUnitConfitmation':
-      'Are you sure you want to delete this unit, once deleted all related information will be deleted as well',
+      'Are you sure you want to delete this unit, once deleted all related information will be deleted too',
   'addUnit': 'Unit added successfully',
   'updateUnit': 'Unit updated successfully',
   'deleteUnit': 'Unit deleted successfully',

@@ -277,11 +277,7 @@ class _UsersState extends State<Users> {
           _isAscending = ascending;
         }),
       ),
-      ...[
-        // getText('joinDate'),
-        // getText('phone'),
-        getText('type'),
-      ].map((e) => dataColumn(context, e)),
+      dataColumn(context, getText('type')),
       ...[
         getText('capital'),
         getText('weightedCapital'),
@@ -326,43 +322,41 @@ class _UsersState extends State<Users> {
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, user.name, textAlign: TextAlign.start),
-                // dataCell(context, myDateFormate.format(user.joinDate)),
-                // dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
                 dataCell(
                   context,
-                  user.type == 'effort' ? '/' : myCurrency.format(user.capital),
-                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  myCurrency(user.capital),
+                  textAlign: TextAlign.end,
                 ),
                 dataCell(
                   context,
-                  user.type == 'effort' ? '/' : myCurrency.format(user.weightedCapital),
-                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  myCurrency(user.weightedCapital),
+                  textAlign: TextAlign.end,
                 ),
                 dataCell(
                   context,
-                  user.type == 'effort' ? '/' : myCurrency.format(user.initialCapital),
-                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  myCurrency(user.initialCapital),
+                  textAlign: TextAlign.end,
                 ),
                 dataCell(
                   context,
-                  user.type == 'effort' ? '/' : myCurrency.format(user.money + user.moneyExtern),
-                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  myCurrency(user.money + user.moneyExtern),
+                  textAlign: TextAlign.end,
                 ),
                 dataCell(
                   context,
-                  user.type == 'effort' ? '/' : myCurrency.format(user.threshold),
-                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  myCurrency(user.threshold),
+                  textAlign: TextAlign.end,
                 ),
                 dataCell(
                   context,
-                  user.type == 'effort' ? '/' : myCurrency.format(user.founding),
-                  textAlign: user.type == 'effort' ? TextAlign.center : TextAlign.end,
+                  myCurrency(user.founding),
+                  textAlign: TextAlign.end,
                 ),
                 dataCell(
                   context,
-                  user.type == 'money' ? '/' : myCurrency.format(user.effort + user.effortExtern),
-                  textAlign: user.type == 'money' ? TextAlign.center : TextAlign.end,
+                  myCurrency(user.effort + user.effortExtern),
+                  textAlign: TextAlign.end,
                 ),
                 if (_thresholdUnitFilter != -2)
                   dataCell(
@@ -453,22 +447,22 @@ class _UsersState extends State<Users> {
               children: [
                 Column(
                   children: [
-                    totalItem(context, getText('capital'), myCurrency.format(tcapital)),
-                    totalItem(context, getText('initialCapital'), myCurrency.format(tinitialCapital)),
+                    totalItem(context, getText('capital'), myCurrency(tcapital)),
+                    totalItem(context, getText('initialCapital'), myCurrency(tinitialCapital)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('money'), myCurrency.format(tmoney)),
-                    totalItem(context, getText('effort'), myCurrency.format(teffort)),
+                    totalItem(context, getText('money'), myCurrency(tmoney)),
+                    totalItem(context, getText('effort'), myCurrency(teffort)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('threshold'), myCurrency.format(tthreshold)),
-                    totalItem(context, getText('founding'), myCurrency.format(tfounding)),
+                    totalItem(context, getText('threshold'), myCurrency(tthreshold)),
+                    totalItem(context, getText('founding'), myCurrency(tfounding)),
                   ],
                 ),
               ],

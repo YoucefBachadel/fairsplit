@@ -32,7 +32,8 @@ dynamic sqlQuery(Uri uri, dynamic params) async {
   return jsonDecode(res.body);
 }
 
-NumberFormat myCurrency = NumberFormat.currency(symbol: '', customPattern: '#,##0.00', locale: 'fr_FR');
+String myCurrency(double amount) =>
+    amount == 0 ? '-' : (NumberFormat.currency(symbol: '', customPattern: '#,##0.00', locale: 'fr_FR')).format(amount);
 
 String dateFormat(DateTime date) => DateFormat('dd-MM-yyyy').format(date);
 

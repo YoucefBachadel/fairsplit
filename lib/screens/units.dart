@@ -125,9 +125,9 @@ class _UnitsState extends State<Units> {
               cells: [
                 dataCell(context, unit.name, textAlign: TextAlign.start),
                 dataCell(context, getText(unit.type), textAlign: TextAlign.start),
-                dataCell(context, myCurrency.format(unit.capital), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(unit.capital), textAlign: TextAlign.end),
                 dataCell(context, (unit.capital * 100 / totalCapital).toStringAsFixed(2)),
-                dataCell(context, myCurrency.format(unit.profit), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(unit.profit), textAlign: TextAlign.end),
                 dataCell(context, (unit.profitability * 100).toStringAsFixed(2)),
                 ...[
                   unit.type == 'extern'
@@ -203,7 +203,7 @@ class _UnitsState extends State<Units> {
                         totalItem(context, getText('count'), internCount.toString()),
                         totalItem(context, getText('percentage'),
                             '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
-                        totalItem(context, getText('capital'), myCurrency.format(internCapital)),
+                        totalItem(context, getText('capital'), myCurrency(internCapital)),
                       ],
                     ),
                     SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
@@ -215,14 +215,14 @@ class _UnitsState extends State<Units> {
                         totalItem(context, getText('count'), externCount.toString()),
                         totalItem(context, getText('percentage'),
                             '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
-                        totalItem(context, getText('capital'), myCurrency.format(externCapital)),
+                        totalItem(context, getText('capital'), myCurrency(externCapital)),
                       ],
                     ),
                   ],
                 ),
                 mySizedBox(context),
                 SizedBox(width: getWidth(context, .4), child: const Divider()),
-                myText('${getText('totalCapital')}            :            ${myCurrency.format(totalCapital)}'),
+                myText('${getText('totalCapital')}            :            ${myCurrency(totalCapital)}'),
                 mySizedBox(context),
               ],
             )

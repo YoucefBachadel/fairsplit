@@ -78,10 +78,10 @@ Widget myTextField(
         onChanged: onChanged,
         onSubmitted: onSubmited ?? (value) {},
         autofocus: autoFocus,
-        textAlign: TextAlign.center,
         obscureText: isPassword,
         enabled: enabled,
-        style: const TextStyle(fontSize: 22),
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 18),
         decoration: textInputDecoration(hint: hint),
         inputFormatters: [isNumberOnly ? DecimalTextInputFormatter() : FilteringTextInputFormatter.deny(r'')],
       ),
@@ -105,7 +105,6 @@ Widget myDropDown(
   Color color = Colors.grey,
 }) {
   return Container(
-    alignment: Alignment.center,
     height: getHeight(context, textFeildHeight),
     width: width ?? getWidth(context, .08),
     decoration: BoxDecoration(
@@ -113,18 +112,15 @@ Widget myDropDown(
       border: Border.all(color: color),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
     ),
-    child: DropdownButtonFormField(
-      style: const TextStyle(fontSize: 18, color: Colors.black),
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton(
+        style: const TextStyle(fontSize: 18, color: Colors.black, overflow: TextOverflow.ellipsis),
+        value: value,
+        isExpanded: true,
+        items: items,
+        onChanged: onChanged,
+        itemHeight: null,
       ),
-      value: value,
-      isExpanded: true,
-      items: items,
-      onChanged: onChanged,
     ),
   );
 }
@@ -162,19 +158,6 @@ Widget delteConfirmation(
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineSmall,
         ),
-        // if (authontication) mySizedBox(context),
-        // if (authontication)
-        //   SizedBox(
-        //     width: getWidth(context, .2),
-        //     child: myTextField(
-        //       context,
-        //       width: getWidth(context, .18),
-        //       onChanged: onChanged,
-        //       isPassword: true,
-        //       isCenter: true,
-        //       hint: getText('password'),
-        //     ),
-        //   ),
         mySizedBox(context),
         myButton(
           context,
@@ -287,12 +270,9 @@ DataTable dataTable(
     dataRowMaxHeight: getHeight(context, .035),
     headingRowHeight: getHeight(context, .03),
     showCheckboxColumn: false,
-    border: TableBorder.all(width: 0.1),
+    border: TableBorder.all(width: 0.2, color: Colors.black),
     headingRowColor: MaterialStateProperty.all(Colors.grey[300]),
-    headingTextStyle: const TextStyle(
-      color: Colors.black,
-      fontWeight: FontWeight.w600,
-    ),
+    headingTextStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
   );
 }
 

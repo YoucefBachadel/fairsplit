@@ -19,16 +19,10 @@ class _AddUnitState extends State<AddUnit> {
   late String name, capital, reserve, donation, money, effort, threshold, founding;
   late bool isExtern;
   bool isLoading = false;
-  // String password = '';
 
   void deleteUnit(int unitId) async {
     setState(() => isLoading = true);
     Navigator.pop(context);
-    // var res = await sqlQuery(selectUrl, {
-    //   'sql1': '''SELECT IF(admin = '$password' ,1,0) AS password FROM settings;''',
-    // });
-
-    // if (res[0][0]['password'] == '1') {
     await sqlQuery(insertUrl, {
       'sql1': 'DELETE FROM Threshold WHERE unitId = $unitId',
       'sql2': 'DELETE FROM Founding WHERE unitId = $unitId',
@@ -38,9 +32,6 @@ class _AddUnitState extends State<AddUnit> {
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
     snackBar(context, getMessage('deleteUnit'));
-    // } else {
-    //   snackBar(context, getMessage('wrongPassword'), duration: 1);
-    // }
 
     setState(() => isLoading = false);
   }
@@ -48,14 +39,11 @@ class _AddUnitState extends State<AddUnit> {
   void save() async {
     if (name == '') {
       snackBar(context, getMessage('emptyName'), duration: 5);
+    } else if (double.parse(capital) == 0) {
+      snackBar(context, getMessage('capitalZero'));
     } else {
       setState(() => isLoading = true);
 
-      // var res = await sqlQuery(selectUrl, {
-      //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
-      // });
-
-      // if (res[0][0]['password'] == '1') {
       try {
         int _unitId = widget.unit.unitId;
         String _type = isExtern ? 'extern' : 'intern';
@@ -79,9 +67,6 @@ class _AddUnitState extends State<AddUnit> {
       } catch (e) {
         snackBar(context, getMessage('checkData'), duration: 5);
       }
-      // } else {
-      //   snackBar(context, getMessage('wrongPassword'), duration: 1);
-      // }
 
       setState(() => isLoading = false);
     }
@@ -120,7 +105,6 @@ class _AddUnitState extends State<AddUnit> {
                                 context,
                                 getMessage('deleteUnitConfitmation'),
                                 () => deleteUnit(widget.unit.unitId),
-                                // onChanged: (text) => password = text,
                                 isLoading: isLoading,
                               ),
                             ),
@@ -210,7 +194,7 @@ class _AddUnitState extends State<AddUnit> {
                 flex: 4,
                 child: myTextField(
                   context,
-                  hint: myCurrency.format(double.parse(capital)),
+                  hint: myCurrency(double.parse(capital)),
                   width: getWidth(context, .22),
                   isNumberOnly: true,
                   onChanged: (value) => capital = value,
@@ -340,7 +324,6 @@ class _AddUnitState extends State<AddUnit> {
         ),
         mySizedBox(context),
         const Divider(),
-        mySizedBox(context),
       ],
     );
   }

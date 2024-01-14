@@ -235,18 +235,18 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                 context,
                 profit.month == 0 ? '/' : monthsOfYear.elementAt(profit.month - 1),
               ),
-              dataCell(context, myCurrency.format(profit.profit), textAlign: TextAlign.end),
+              dataCell(context, myCurrency(profit.profit), textAlign: TextAlign.end),
               dataCell(context, (profit.profitability * 100).toStringAsFixed(2)),
               dataCell(context, (profit.unitProfitability * 100).toStringAsFixed(2)),
               ...[
-                myCurrency.format(profit.weightedCapital),
-                myCurrency.format(profit.reserve),
-                myCurrency.format(profit.reserveProfit),
-                myCurrency.format(profit.donation),
-                myCurrency.format(profit.money),
-                myCurrency.format(profit.effort),
-                myCurrency.format(profit.threshold),
-                myCurrency.format(profit.founding),
+                myCurrency(profit.weightedCapital),
+                myCurrency(profit.reserve),
+                myCurrency(profit.reserveProfit),
+                myCurrency(profit.donation),
+                myCurrency(profit.money),
+                myCurrency(profit.effort),
+                myCurrency(profit.threshold),
+                myCurrency(profit.founding),
               ].map((e) => dataCell(context, e, textAlign: TextAlign.end)).toList(),
             ],
           ),
@@ -298,7 +298,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
               children: [
                 Column(
                   children: [
-                    totalItem(context, getText('profit'), myCurrency.format(tprofit)),
+                    totalItem(context, getText('profit'), myCurrency(tprofit)),
                     totalItem(context, getText('profitability'), '${(tprofitability * 100).toStringAsFixed(2)} %'),
                     totalItem(
                         context, getText('unitProfitability'), '${(tunitProfitability * 100).toStringAsFixed(2)} %'),
@@ -307,18 +307,18 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                 SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('reserve'), myCurrency.format(treserve)),
-                    totalItem(context, getText('reserveProfit'), myCurrency.format(treserveProfit)),
-                    totalItem(context, getText('donation'), myCurrency.format(tdonation)),
+                    totalItem(context, getText('reserve'), myCurrency(treserve)),
+                    totalItem(context, getText('reserveProfit'), myCurrency(treserveProfit)),
+                    totalItem(context, getText('donation'), myCurrency(tdonation)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('money'), myCurrency.format(tmoney)),
-                    totalItem(context, getText('effort'), myCurrency.format(teffort)),
-                    totalItem(context, getText('threshold'), myCurrency.format(tthreshold)),
-                    totalItem(context, getText('founding'), myCurrency.format(tfounding)),
+                    totalItem(context, getText('money'), myCurrency(tmoney)),
+                    totalItem(context, getText('effort'), myCurrency(teffort)),
+                    totalItem(context, getText('threshold'), myCurrency(tthreshold)),
+                    totalItem(context, getText('founding'), myCurrency(tfounding)),
                   ],
                 ),
               ],

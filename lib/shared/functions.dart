@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:decimal/decimal.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,9 +10,6 @@ import 'package:printing/printing.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart';
 import 'package:universal_html/html.dart' show AnchorElement;
 import 'package:flutter/foundation.dart' show kIsWeb;
-
-addDecimal(double a, double b) => (Decimal.parse(a.toString()) + Decimal.parse(b.toString())).toDouble();
-subDecimal(double a, double b) => (Decimal.parse(a.toString()) - Decimal.parse(b.toString())).toDouble();
 
 void snackBar(BuildContext context, String message, {int duration = 3}) {
   ScaffoldMessenger.of(context)

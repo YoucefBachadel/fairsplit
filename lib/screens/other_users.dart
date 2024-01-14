@@ -133,10 +133,7 @@ class _OtherUsersState extends State<OtherUsers> {
         .map((user) => DataRow(
               color: user.isUserWithCapital ? MaterialStatePropertyAll(Colors.red[100]) : null,
               onLongPress: () {
-                context.read<Filter>().change(
-                      transactionCategory: '${user.type}s',
-                      search: user.name,
-                    );
+                context.read<Filter>().change(transactionCategory: '${user.type}s', search: user.name);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
               },
               onSelectChanged: (value) async => await createDialog(
@@ -158,8 +155,8 @@ class _OtherUsersState extends State<OtherUsers> {
                 // dataCell(context, myDateFormate.format(user.joinDate)),
                 // dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
-                dataCell(context, myCurrency.format(user.amount), textAlign: TextAlign.end),
-                dataCell(context, myCurrency.format(user.rest), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(user.amount), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(user.rest), textAlign: TextAlign.end),
                 if (isAdmin)
                   DataCell(IconButton(
                     onPressed: () => _newUser(context, user),
@@ -223,9 +220,9 @@ class _OtherUsersState extends State<OtherUsers> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              myText('${getText('totalLoan')} :      ${myCurrency.format(totalLoan)}'),
+              myText('${getText('totalLoan')} :      ${myCurrency(totalLoan)}'),
               SizedBox(width: getWidth(context, .05)),
-              myText('${getText('totalDeposit')} :      ${myCurrency.format(totalDeposit)}'),
+              myText('${getText('totalDeposit')} :      ${myCurrency(totalDeposit)}'),
               SizedBox(width: getWidth(context, .05)),
             ],
           ),

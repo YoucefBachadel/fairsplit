@@ -665,6 +665,7 @@ class _CalculationState extends State<Calculation> {
       '',
       getText('name'),
       getText('initialCapital'),
+      getText('capital'),
       getText('weightedCapital'),
       getText('profit')
     ].map((e) => dataColumn(context, e)).toList();
@@ -674,6 +675,7 @@ class _CalculationState extends State<Calculation> {
             dataCell(context, (moneyUsers.indexOf(user) + 1).toString()),
             dataCell(context, user.name, textAlign: TextAlign.start),
             dataCell(context, myCurrency(user.initialCapital), textAlign: TextAlign.end),
+            dataCell(context, myCurrency(user.capital), textAlign: TextAlign.end),
             dataCell(context, myCurrency(profitability == 0 ? 0 : user.money / profitability),
                 textAlign: TextAlign.end),
             dataCell(context, myCurrency(user.money), textAlign: TextAlign.end),
@@ -684,7 +686,40 @@ class _CalculationState extends State<Calculation> {
         ? emptyList()
         : Column(
             children: [
-              myText('${getText('money')}  :  ${myCurrency(caMoney)} '),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  myText('${getText('money')}  :  ${myCurrency(caMoney)} '),
+                  mySizedBox(context),
+                  if (caMoney != 0)
+                    IconButton(
+                        onPressed: () => createExcel(
+                              '${widget.unit.name} *** ${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : '${monthsOfYear[widget.unit.currentMonthOrYear - 1]} $currentYear'}',
+                              [
+                                [
+                                  '#',
+                                  getText('name'),
+                                  getText('initialCapital'),
+                                  getText('capital'),
+                                  getText('weightedCapital'),
+                                  getText('profit')
+                                ],
+                                ...moneyUsers.map((user) => [
+                                      moneyUsers.indexOf(user) + 1,
+                                      user.name,
+                                      user.initialCapital,
+                                      user.capital,
+                                      profitability == 0 ? 0 : user.money / profitability,
+                                      user.money,
+                                    ])
+                              ],
+                            ),
+                        icon: Icon(
+                          Icons.file_download,
+                          color: primaryColor,
+                        )),
+                ],
+              ),
               mySizedBox(context),
               dataTable(context, columns: column, rows: rows),
             ],

@@ -179,9 +179,7 @@ class _AddUnitState extends State<AddUnit> {
                 context,
                 hint: name,
                 width: getWidth(context, .22),
-                onChanged: ((text) {
-                  name = text;
-                }),
+                onChanged: ((text) => name = text),
               ),
             ),
           ],

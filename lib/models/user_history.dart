@@ -1,5 +1,8 @@
+import 'package:fairsplit/shared/constants.dart';
+
 class UserHistory {
   String name;
+  String realName;
   int year;
   String type;
   double startCapital;
@@ -27,8 +30,7 @@ class UserHistory {
     required this.effortProfit,
     required this.totalProfit,
     required this.zakat,
-  }) {
-    isMoney = type == 'money' || type == 'both';
-    isEffort = type == 'effort' || type == 'both';
-  }
+  })  : realName = realUserNames[name] ?? name,
+        isMoney = type == 'money' || type == 'both',
+        isEffort = type == 'effort' || type == 'both';
 }

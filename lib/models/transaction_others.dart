@@ -1,7 +1,10 @@
+import 'package:fairsplit/shared/constants.dart';
+
 class TransactionOther {
   int transactionId;
   String reference;
   String userName;
+  String realUserName;
   String category;
   String type;
   DateTime date;
@@ -17,7 +20,7 @@ class TransactionOther {
   TransactionOther({
     required this.transactionId,
     required this.reference,
-    this.userName = '',
+    required this.userName,
     required this.category,
     required this.date,
     required this.type,
@@ -25,9 +28,9 @@ class TransactionOther {
     required this.soldeUser,
     required this.soldeCaisse,
     required this.note,
-    this.reciver = '',
-    this.amountOnLetter = '',
-    this.intermediates = '',
-    this.printingNotes = '',
-  });
+    required this.reciver,
+    required this.amountOnLetter,
+    required this.intermediates,
+    required this.printingNotes,
+  }) : realUserName = realUserNames[userName] ?? userName;
 }

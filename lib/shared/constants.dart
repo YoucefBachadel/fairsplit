@@ -10,6 +10,7 @@ double profitability = 0;
 bool isAdmin = false;
 String transactionFilterYear = 'tout';
 var years = <String>{};
+Map<String, String> realUserNames = {};
 
 Color primaryColor = const Color(0XFF02333c); //0XFF303F9F
 Color secondaryColor = const Color(0XFF08535d);

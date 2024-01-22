@@ -82,7 +82,7 @@ class _TransactionsState extends State<Transactions> {
     var dataTransactionTemp = res[3];
 
     for (var ele in dataTransaction) {
-      allTransactions.add(Transaction(
+      Transaction trans = Transaction(
         reference: ele['reference'],
         transactionId: int.parse(ele['transactionId']),
         userName: ele['userName'],
@@ -96,12 +96,12 @@ class _TransactionsState extends State<Transactions> {
         amountOnLetter: ele['amountOnLetter'],
         intermediates: ele['intermediates'],
         printingNotes: ele['printingNotes'],
-      ));
+      );
+      allTransactions.add(trans);
+      allCaisseTransactions.add(trans);
 
-      userNames.add(ele['userName']);
+      userNames.add(trans.realUserName);
     }
-
-    allCaisseTransactions.addAll(allTransactions);
 
     for (var ele in dataTransactionSP) {
       allTransactionsSP.add(TransactionSP(
@@ -113,19 +113,28 @@ class _TransactionsState extends State<Transactions> {
         amount: double.parse(ele['amount']),
         solde: double.parse(ele['solde']),
         note: ele['note'],
+        reciver: ele['reciver'],
+        amountOnLetter: ele['amountOnLetter'],
+        intermediates: ele['intermediates'],
+        printingNotes: ele['printingNotes'],
       ));
 
       allCaisseTransactions.add(Transaction(
-          reference: ele['reference'],
-          transactionId: int.parse(ele['transactionId']),
-          userName: getText(ele['category']),
-          source: ele['category'],
-          date: DateTime.parse(ele['date']),
-          type: ele['type'],
-          amount: double.parse(ele['amount']),
-          soldeCaisse: double.parse(ele['soldeCaisse']),
-          note: ele['note'],
-          printable: false));
+        reference: ele['reference'],
+        transactionId: int.parse(ele['transactionId']),
+        userName: getText(ele['category']),
+        source: ele['category'],
+        date: DateTime.parse(ele['date']),
+        type: ele['type'],
+        amount: double.parse(ele['amount']),
+        soldeUser: double.parse(ele['solde']),
+        soldeCaisse: double.parse(ele['soldeCaisse']),
+        note: ele['note'],
+        reciver: ele['reciver'],
+        amountOnLetter: ele['amountOnLetter'],
+        intermediates: ele['intermediates'],
+        printingNotes: ele['printingNotes'],
+      ));
     }
 
     for (var ele in dataTransactionOther) {
@@ -153,6 +162,7 @@ class _TransactionsState extends State<Transactions> {
         date: other.date,
         type: other.type,
         amount: other.amount,
+        soldeUser: other.soldeUser,
         soldeCaisse: other.soldeCaisse,
         note: other.note,
         reciver: ele['reciver'],
@@ -163,10 +173,10 @@ class _TransactionsState extends State<Transactions> {
 
       if (other.category == 'loan') {
         allLoanTransactions.add(other);
-        loanNames.add(other.userName);
+        loanNames.add(other.realUserName);
       } else {
         allDepositTransactions.add(other);
-        depositNames.add(other.userName);
+        depositNames.add(other.realUserName);
       }
 
       allCaisseTransactions.add(trans);
@@ -183,19 +193,28 @@ class _TransactionsState extends State<Transactions> {
           amount: double.parse(ele['amount']),
           solde: 0,
           note: ele['note'],
+          reciver: ele['reciver'],
+          amountOnLetter: ele['amountOnLetter'],
+          intermediates: ele['intermediates'],
+          printingNotes: ele['printingNotes'],
         ));
 
         allCaisseTransactions.add(Transaction(
-            reference: ele['reference'],
-            transactionId: int.parse(ele['transactionId']),
-            userName: (int.parse(ele['userId']) == -1) ? getText(ele['userName']) : ele['userName'],
-            source: getText((int.parse(ele['userId']) == -1) ? ele['userName'] : 'user'),
-            date: DateTime.parse(ele['date']),
-            type: ele['type'],
-            amount: double.parse(ele['amount']),
-            soldeCaisse: double.parse(ele['soldeCaisse']),
-            note: ele['note'],
-            printable: false));
+          reference: ele['reference'],
+          transactionId: int.parse(ele['transactionId']),
+          userName: (int.parse(ele['userId']) == -1) ? getText(ele['userName']) : ele['userName'],
+          source: (int.parse(ele['userId']) == -1) ? ele['userName'] : 'user',
+          date: DateTime.parse(ele['date']),
+          type: ele['type'],
+          amount: double.parse(ele['amount']),
+          soldeUser: 0,
+          soldeCaisse: double.parse(ele['soldeCaisse']),
+          note: ele['note'],
+          reciver: ele['reciver'],
+          amountOnLetter: ele['amountOnLetter'],
+          intermediates: ele['intermediates'],
+          printingNotes: ele['printingNotes'],
+        ));
       } else {
         Transaction trans = Transaction(
           reference: ele['reference'],
@@ -216,7 +235,7 @@ class _TransactionsState extends State<Transactions> {
         allTransactions.add(trans);
         allCaisseTransactions.add(trans);
 
-        userNames.add(ele['userName']);
+        userNames.add(trans.realUserName);
       }
     }
 
@@ -235,7 +254,7 @@ class _TransactionsState extends State<Transactions> {
   void filterTransactionUser() {
     transactions.clear();
     for (var trans in allTransactions) {
-      if ((_search.isEmpty || trans.userName == _search) &&
+      if ((_search.isEmpty || trans.realUserName == _search) &&
           (_reference.isEmpty || trans.reference.contains(_reference)) &&
           (_type == 'tout' || trans.type == _type) &&
           (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
@@ -289,7 +308,7 @@ class _TransactionsState extends State<Transactions> {
   void filterTransactionLoan() {
     loanTransactions.clear();
     for (var trans in allLoanTransactions) {
-      if ((_search.isEmpty || trans.userName == _search) &&
+      if ((_search.isEmpty || trans.realUserName == _search) &&
           (_reference.isEmpty || trans.reference.contains(_reference)) &&
           (_type == 'tout' || trans.type == _type) &&
           (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
@@ -304,7 +323,7 @@ class _TransactionsState extends State<Transactions> {
   void filterTransactionDeposit() {
     depositTransactions.clear();
     for (var trans in allDepositTransactions) {
-      if ((_search.isEmpty || trans.userName == _search) &&
+      if ((_search.isEmpty || trans.realUserName == _search) &&
           (_reference.isEmpty || trans.reference.contains(_reference)) &&
           (_type == 'tout' || trans.type == _type) &&
           (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
@@ -320,7 +339,9 @@ class _TransactionsState extends State<Transactions> {
     switch (_sortColumnIndexTransUser) {
       case 2:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTransUser ? tr2.userName.compareTo(tr1.userName) : tr1.userName.compareTo(tr2.userName);
+          return !_isAscendingTransUser
+              ? tr2.realUserName.compareTo(tr1.realUserName)
+              : tr1.realUserName.compareTo(tr2.realUserName);
         });
         break;
       case 3:
@@ -345,7 +366,9 @@ class _TransactionsState extends State<Transactions> {
     switch (_sortColumnIndexTransCaisse) {
       case 2:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTransCaisse ? tr2.userName.compareTo(tr1.userName) : tr1.userName.compareTo(tr2.userName);
+          return !_isAscendingTransCaisse
+              ? tr2.realUserName.compareTo(tr1.realUserName)
+              : tr1.realUserName.compareTo(tr2.realUserName);
         });
         break;
       case 4:
@@ -390,7 +413,9 @@ class _TransactionsState extends State<Transactions> {
     switch (_sortColumnIndexTransLoan) {
       case 2:
         loanTransactions.sort((tr1, tr2) {
-          return !_isAscendingTransLoan ? tr2.userName.compareTo(tr1.userName) : tr1.userName.compareTo(tr2.userName);
+          return !_isAscendingTransLoan
+              ? tr2.realUserName.compareTo(tr1.realUserName)
+              : tr1.realUserName.compareTo(tr2.realUserName);
         });
         break;
       case 3:
@@ -416,8 +441,8 @@ class _TransactionsState extends State<Transactions> {
       case 2:
         depositTransactions.sort((tr1, tr2) {
           return !_isAscendingTransDeposit
-              ? tr2.userName.compareTo(tr1.userName)
-              : tr1.userName.compareTo(tr2.userName);
+              ? tr2.realUserName.compareTo(tr1.realUserName)
+              : tr1.realUserName.compareTo(tr2.realUserName);
         });
         break;
       case 3:
@@ -639,26 +664,26 @@ class _TransactionsState extends State<Transactions> {
 
     List<DataRow> rowsTransCaisse = transactions
         .map((transaction) => DataRow(
-              onSelectChanged: ((value) async => transaction.printable
-                  ? await createDialog(
-                      context,
-                      dismissable: true,
-                      PrintTransaction(
-                        source: transaction.source,
-                        type: transaction.type,
-                        reference: transaction.reference,
-                        amount: transaction.amount,
-                        date: myDateFormate.format(transaction.date),
-                        reciver: transaction.reciver,
-                        amountOnLetter: transaction.amountOnLetter,
-                        intermediates: transaction.intermediates,
-                        printingNotes: transaction.printingNotes,
-                      ))
-                  : null),
+              onSelectChanged: ((value) async => await createDialog(
+                  context,
+                  dismissable: true,
+                  PrintTransaction(
+                    source: transaction.source,
+                    type: transaction.type,
+                    reference: transaction.reference,
+                    user: transaction.realUserName,
+                    amount: transaction.amount,
+                    solde: transaction.soldeUser,
+                    date: myDateFormate.format(transaction.date),
+                    reciver: transaction.reciver,
+                    amountOnLetter: transaction.amountOnLetter,
+                    intermediates: transaction.intermediates,
+                    printingNotes: transaction.printingNotes,
+                  ))),
               cells: [
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
-                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
                 dataCell(context, getText(transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
@@ -687,26 +712,26 @@ class _TransactionsState extends State<Transactions> {
         .toList();
     List<DataRow> rowsTrans = transactions
         .map((transaction) => DataRow(
-              onSelectChanged: ((value) async => !isAdmin
-                  ? null
-                  : await createDialog(
-                      context,
-                      dismissable: true,
-                      PrintTransaction(
-                        source: 'user',
-                        type: transaction.type,
-                        reference: transaction.reference,
-                        amount: transaction.amount,
-                        date: myDateFormate.format(transaction.date),
-                        reciver: transaction.reciver,
-                        amountOnLetter: transaction.amountOnLetter,
-                        intermediates: transaction.intermediates,
-                        printingNotes: transaction.printingNotes,
-                      ))),
+              onSelectChanged: ((value) async => await createDialog(
+                  context,
+                  dismissable: true,
+                  PrintTransaction(
+                    source: 'user',
+                    type: transaction.type,
+                    reference: transaction.reference,
+                    user: transaction.realUserName,
+                    amount: transaction.amount,
+                    solde: transaction.soldeUser,
+                    date: myDateFormate.format(transaction.date),
+                    reciver: transaction.reciver,
+                    amountOnLetter: transaction.amountOnLetter,
+                    intermediates: transaction.intermediates,
+                    printingNotes: transaction.printingNotes,
+                  ))),
               cells: [
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
-                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
@@ -734,6 +759,22 @@ class _TransactionsState extends State<Transactions> {
         .toList();
     List<DataRow> rowsTransSP = transactionsSP
         .map((transaction) => DataRow(
+              onSelectChanged: ((value) async => await createDialog(
+                  context,
+                  dismissable: true,
+                  PrintTransaction(
+                    source: 'special',
+                    type: transaction.type,
+                    reference: transaction.reference,
+                    user: getText(transaction.category),
+                    amount: transaction.amount,
+                    solde: transaction.solde,
+                    date: myDateFormate.format(transaction.date),
+                    reciver: transaction.reciver,
+                    amountOnLetter: transaction.amountOnLetter,
+                    intermediates: transaction.intermediates,
+                    printingNotes: transaction.printingNotes,
+                  ))),
               cells: [
                 dataCell(context, (transactionsSP.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
@@ -765,26 +806,26 @@ class _TransactionsState extends State<Transactions> {
         .toList();
     List<DataRow> rowsTransLoan = loanTransactions
         .map((transaction) => DataRow(
-              onSelectChanged: ((value) async => !isAdmin
-                  ? null
-                  : await createDialog(
-                      context,
-                      dismissable: true,
-                      PrintTransaction(
-                        source: 'loan',
-                        type: transaction.type,
-                        reference: transaction.reference,
-                        amount: transaction.amount,
-                        date: myDateFormate.format(transaction.date),
-                        reciver: transaction.reciver,
-                        amountOnLetter: transaction.amountOnLetter,
-                        intermediates: transaction.intermediates,
-                        printingNotes: transaction.printingNotes,
-                      ))),
+              onSelectChanged: ((value) async => await createDialog(
+                  context,
+                  dismissable: true,
+                  PrintTransaction(
+                    source: 'loan',
+                    type: transaction.type,
+                    reference: transaction.reference,
+                    user: transaction.realUserName,
+                    amount: transaction.amount,
+                    solde: transaction.soldeUser,
+                    date: myDateFormate.format(transaction.date),
+                    reciver: transaction.reciver,
+                    amountOnLetter: transaction.amountOnLetter,
+                    intermediates: transaction.intermediates,
+                    printingNotes: transaction.printingNotes,
+                  ))),
               cells: [
                 dataCell(context, (loanTransactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
-                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
@@ -812,26 +853,26 @@ class _TransactionsState extends State<Transactions> {
         .toList();
     List<DataRow> rowsTransDeposit = depositTransactions
         .map((transaction) => DataRow(
-              onSelectChanged: ((value) async => !isAdmin
-                  ? null
-                  : await createDialog(
-                      context,
-                      dismissable: true,
-                      PrintTransaction(
-                        source: 'deposit',
-                        type: transaction.type,
-                        reference: transaction.reference,
-                        amount: transaction.amount,
-                        date: myDateFormate.format(transaction.date),
-                        reciver: transaction.reciver,
-                        amountOnLetter: transaction.amountOnLetter,
-                        intermediates: transaction.intermediates,
-                        printingNotes: transaction.printingNotes,
-                      ))),
+              onSelectChanged: ((value) async => await createDialog(
+                  context,
+                  dismissable: true,
+                  PrintTransaction(
+                    source: 'deposit',
+                    type: transaction.type,
+                    reference: transaction.reference,
+                    user: transaction.realUserName,
+                    amount: transaction.amount,
+                    solde: transaction.soldeUser,
+                    date: myDateFormate.format(transaction.date),
+                    reciver: transaction.reciver,
+                    amountOnLetter: transaction.amountOnLetter,
+                    intermediates: transaction.intermediates,
+                    printingNotes: transaction.printingNotes,
+                  ))),
               cells: [
                 dataCell(context, (depositTransactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
-                dataCell(context, transaction.userName, textAlign: TextAlign.start),
+                dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
@@ -1338,7 +1379,7 @@ class _TransactionsState extends State<Transactions> {
                         ...transactions.map((trans) => [
                               transactions.indexOf(trans) + 1,
                               trans.reference,
-                              trans.userName,
+                              trans.realUserName,
                               getText(trans.source),
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
@@ -1351,7 +1392,7 @@ class _TransactionsState extends State<Transactions> {
                         ...transactions.map((trans) => [
                               transactions.indexOf(trans) + 1,
                               trans.reference,
-                              trans.userName,
+                              trans.realUserName,
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
                               trans.type == 'in' ? trans.amount : '-',
@@ -1375,7 +1416,7 @@ class _TransactionsState extends State<Transactions> {
                         ...loanTransactions.map((trans) => [
                               loanTransactions.indexOf(trans) + 1,
                               trans.reference,
-                              trans.userName,
+                              trans.realUserName,
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
                               trans.type == 'in' ? trans.amount : '-',
@@ -1387,7 +1428,7 @@ class _TransactionsState extends State<Transactions> {
                         ...depositTransactions.map((trans) => [
                               depositTransactions.indexOf(trans) + 1,
                               trans.reference,
-                              trans.userName,
+                              trans.realUserName,
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
                               trans.type == 'in' ? trans.amount : '-',
@@ -1549,7 +1590,7 @@ class _TransactionsState extends State<Transactions> {
       transactions.map((trans) {
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
         data.add({
-          'name': trans.userName,
+          'name': trans.realUserName,
           'source': trans.source,
           'date': myDateFormate.format(trans.date),
           'in': myCurrency(trans.type == 'in' ? trans.amount : 0),

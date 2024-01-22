@@ -56,7 +56,7 @@ class _OtherUsersState extends State<OtherUsers> {
       user.isUserWithCapital = user.type == 'loan' && user.rest != 0 && usersWithCapital.contains(user.name);
       allUsers.add(user);
 
-      userNames.add(ele['name']);
+      userNames.add(user.realName);
     }
 
     setState(() {
@@ -69,7 +69,7 @@ class _OtherUsersState extends State<OtherUsers> {
     totalLoan = 0;
     totalDeposit = 0;
     for (var user in allUsers) {
-      if ((_search.isEmpty || user.name == _search) && (_type == 'tout' || user.type == _type)) {
+      if ((_search.isEmpty || user.realName == _search) && (_type == 'tout' || user.type == _type)) {
         users.add(user);
         user.type == 'loan' ? totalLoan += user.rest : totalDeposit += user.rest;
       }
@@ -81,7 +81,7 @@ class _OtherUsersState extends State<OtherUsers> {
   void onSort() {
     switch (_sortColumnIndex) {
       case 1:
-        users.sort((a, b) => _isAscending ? a.name.compareTo(b.name) : b.name.compareTo(a.name));
+        users.sort((a, b) => _isAscending ? a.realName.compareTo(b.realName) : b.realName.compareTo(a.realName));
         break;
       case 3:
         users.sort((a, b) => _isAscending ? a.amount.compareTo(b.amount) : b.amount.compareTo(a.amount));
@@ -133,7 +133,7 @@ class _OtherUsersState extends State<OtherUsers> {
         .map((user) => DataRow(
               color: user.isUserWithCapital ? MaterialStatePropertyAll(Colors.red[100]) : null,
               onLongPress: () {
-                context.read<Filter>().change(transactionCategory: '${user.type}s', search: user.name);
+                context.read<Filter>().change(transactionCategory: '${user.type}s', search: user.realName);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
               },
               onSelectChanged: (value) async => await createDialog(
@@ -151,7 +151,7 @@ class _OtherUsersState extends State<OtherUsers> {
               ),
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
-                dataCell(context, user.name, textAlign: TextAlign.start),
+                dataCell(context, user.realName, textAlign: TextAlign.start),
                 // dataCell(context, myDateFormate.format(user.joinDate)),
                 // dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
@@ -367,7 +367,7 @@ class _OtherUsersState extends State<OtherUsers> {
                       ['#', getText('name'), getText('type'), getText('amount'), getText('rest')],
                       ...users.map((user) => [
                             users.indexOf(user) + 1,
-                            user.name,
+                            user.realName,
                             getText(user.type),
                             user.amount,
                             user.rest,

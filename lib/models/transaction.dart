@@ -1,8 +1,11 @@
+import 'package:fairsplit/shared/constants.dart';
+
 class Transaction {
   int transactionId;
   String reference;
   int userId;
   String userName;
+  String realUserName;
   String source; //used for all caisse transactions inTransactions users-specials-loan-deposit-caisse
   String type;
   DateTime date;
@@ -15,7 +18,6 @@ class Transaction {
   String intermediates;
   String printingNotes;
   bool isCaisseChanged; // used to filter the transaction that didn't change soled caisse in caisse traansactions
-  bool printable; //used to prevant onTap in transactions category caisse
 
   Transaction({
     required this.transactionId,
@@ -34,6 +36,5 @@ class Transaction {
     this.intermediates = '',
     this.printingNotes = '',
     this.isCaisseChanged = true,
-    this.printable = true,
-  });
+  }) : realUserName = realUserNames[userName] ?? userName;
 }

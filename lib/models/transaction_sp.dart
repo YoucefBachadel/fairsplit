@@ -7,6 +7,10 @@ class TransactionSP {
   double amount;
   double solde;
   String note;
+  String reciver;
+  String amountOnLetter;
+  String intermediates;
+  String printingNotes;
 
   TransactionSP({
     required this.reference,
@@ -17,5 +21,9 @@ class TransactionSP {
     required this.amount,
     required this.solde,
     required this.note,
+    required this.reciver,
+    required this.amountOnLetter,
+    required this.intermediates,
+    required this.printingNotes,
   });
 }

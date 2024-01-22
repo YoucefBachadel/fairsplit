@@ -1,9 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fairsplit/providers/filter.dart';
 import 'package:fairsplit/screens/profit_history.dart';
 import 'package:fairsplit/shared/functions.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -137,7 +141,6 @@ class _MyAppState extends State<MyApp> {
     const UserHistoryScreen(),
     const UnitHistoryScreen(),
   ];
-
   @override
   void initState() {
     super.initState();
@@ -189,12 +192,32 @@ class _MyAppState extends State<MyApp> {
                               )
                               .toList(),
                           const Spacer(flex: 10),
-                          Text(
-                            myDateFormate2.format(DateTime.now()),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.w500,
+                          InkWell(
+                            onTap: (() async {
+                              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                type: FileType.custom,
+                                allowedExtensions: ['txt'],
+                              );
+                              if (result != null) {
+                                File file = File(result.files.single.path!);
+                                String data = await rootBundle.loadString(file.path);
+                                for (var line in const LineSplitter().convert(data)) {
+                                  if (line.isNotEmpty) realUserNames[line.split(';')[0]] = line.split(';')[1];
+                                }
+                              }
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MyApp(index: tabsIndex.keys.elementAt(selectedTab)),
+                                  ));
+                            }),
+                            child: Text(
+                              myDateFormate2.format(DateTime.now()),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                           mySizedBox(context),
@@ -253,13 +276,7 @@ class _MyAppState extends State<MyApp> {
         if (['1', '2'].contains(res[0][0]['password'])) {
           if (res[0][0]['password'] == '2') isAdmin = true;
 
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => MyApp(
-                      index: widget.index == 'first'
-                          ? 'da'
-                          : tabsIndex.keys.firstWhere((key) => tabsIndex[key] == selectedTab))));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'da')));
         } else {
           snackBar(context, getMessage('wrongPassword'), duration: 1);
         }

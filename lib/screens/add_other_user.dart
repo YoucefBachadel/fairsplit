@@ -19,23 +19,14 @@ class _AddOtherUserState extends State<AddOtherUser> {
   late String name, phone;
   late DateTime joinDate;
   bool isLoading = false, isDeposit = false;
-  // String password = '';
 
   void deleteUser(int userId) async {
     setState(() => isLoading = true);
     Navigator.pop(context);
-    // var res = await sqlQuery(selectUrl, {
-    //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
-    // });
-
-    // if (res[0][0]['password'] == '1') {
     await sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
     snackBar(context, getMessage('deleteUser'));
-    // } else {
-    //   snackBar(context, getMessage('wrongPassword'), duration: 1);
-    // }
 
     setState(() => isLoading = false);
   }
@@ -46,11 +37,6 @@ class _AddOtherUserState extends State<AddOtherUser> {
     } else {
       setState(() => isLoading = true);
 
-      // var res = await sqlQuery(selectUrl, {
-      //   'sql1': '''SELECT IF(admin = '$password',1,0) AS password FROM settings;''',
-      // });
-
-      // if (res[0][0]['password'] == '1') {
       bool isNew = widget.user.userId == -1;
       String _type = isDeposit ? 'deposit' : 'loan';
 
@@ -75,9 +61,6 @@ class _AddOtherUserState extends State<AddOtherUser> {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
         snackBar(context, widget.user.userId == -1 ? getMessage('addUser') : getMessage('updateUser'));
       }
-      // } else {
-      //   snackBar(context, getMessage('wrongPassword'), duration: 1);
-      // }
 
       setState(() => isLoading = false);
     }
@@ -203,7 +186,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                   context,
                                   hint: name,
                                   width: getWidth(context, .33),
-                                  onChanged: ((text) => name = text),
+                                  onChanged: (text) => name = text,
                                 ),
                               ),
                             ],

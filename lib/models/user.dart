@@ -7,6 +7,7 @@ import '../models/threshold.dart';
 class User {
   int userId;
   String name;
+  String realName;
   String phone;
   DateTime joinDate;
   String type;
@@ -50,7 +51,8 @@ class User {
     this.effortPerc = 0,
     this.evaluation = 0,
     this.initialCapital = 0,
-  })  : joinDate = joinDate ?? DateTime.now(),
+  })  : realName = realUserNames[name] ?? name,
+        joinDate = joinDate ?? DateTime.now(),
         thresholds = thresholds ?? [],
         foundings = foundings ?? [],
         efforts = efforts ?? [],

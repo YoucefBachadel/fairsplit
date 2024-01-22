@@ -66,8 +66,8 @@ class _UsersState extends State<Users> {
 
     allUsers = toUsers(dataUsers, toThresholds(dataThresholds), toFoundings(dataFoundings), toEfforts(dataEfforts));
 
-    for (var ele in dataUsers) {
-      userNames.add(ele['name']);
+    for (var ele in allUsers) {
+      userNames.add(ele.realName);
     }
     for (var element in dataUnits) {
       units.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
@@ -129,7 +129,7 @@ class _UsersState extends State<Users> {
       }
 
       //to add user it mast contain search name and the type and the three list filter
-      if ((_search.isEmpty || user.name == _search) &&
+      if ((_search.isEmpty || user.realName == _search) &&
           (_type == 'tout' || user.type == _type) &&
           (_thresholdUnitFilter == -2 || _isthresholdFilter) &&
           (_foundingUnitFilter == -2 || _isfoundingFilter) &&
@@ -158,7 +158,7 @@ class _UsersState extends State<Users> {
     switch (_sortColumnIndex) {
       case 1:
         users.sort((tr1, tr2) {
-          return !_isAscending ? tr2.name.compareTo(tr1.name) : tr1.name.compareTo(tr2.name);
+          return !_isAscending ? tr2.realName.compareTo(tr1.realName) : tr1.realName.compareTo(tr2.realName);
         });
         break;
       case 3:
@@ -305,7 +305,7 @@ class _UsersState extends State<Users> {
     List<DataRow> rows = users
         .map((user) => DataRow(
               onLongPress: () {
-                context.read<Filter>().change(transactionCategory: 'users', search: user.name);
+                context.read<Filter>().change(transactionCategory: 'users', search: user.realName);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
               },
               onSelectChanged: (value) async => await createDialog(
@@ -321,7 +321,7 @@ class _UsersState extends State<Users> {
               ),
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
-                dataCell(context, user.name, textAlign: TextAlign.start),
+                dataCell(context, user.realName, textAlign: TextAlign.start),
                 dataCell(context, getText(user.type)),
                 dataCell(
                   context,
@@ -725,7 +725,7 @@ class _UsersState extends State<Users> {
                       ],
                       ...users.map((user) => [
                             users.indexOf(user) + 1,
-                            user.name,
+                            user.realName,
                             user.phone,
                             myDateFormate.format(user.joinDate),
                             getText(user.type),

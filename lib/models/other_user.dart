@@ -1,6 +1,9 @@
+import 'package:fairsplit/shared/constants.dart';
+
 class OtherUser {
   int userId;
   String name;
+  String realName;
   String phone;
   DateTime joinDate;
   String type;
@@ -17,5 +20,6 @@ class OtherUser {
     this.amount = 0,
     this.rest = 0,
     this.isUserWithCapital = false,
-  }) : joinDate = joinDate ?? DateTime.now();
+  })  : realName = realUserNames[name] ?? name,
+        joinDate = joinDate ?? DateTime.now();
 }

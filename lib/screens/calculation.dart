@@ -379,15 +379,15 @@ class _CalculationState extends State<Calculation> {
       if (caReserve != 0) {
         counter++;
         params['sql$counter'] = isNewYear
-            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','','','','');'''
-            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${reserve + caReserve} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}' );''';
+            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs().toInt())} دينار','','','');'''
+            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${reserve + caReserve} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs().toInt())} دينار','','','');''';
         reference++;
       }
       if (caReserveProfit != 0) {
         counter++;
         params['sql$counter'] = isNewYear
-            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','','','','');'''
-            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}' );''';
+            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs().toInt())} دينار','','','');'''
+            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs().toInt())} دينار','','','');''';
         reference++;
       }
       counter++;
@@ -578,10 +578,11 @@ class _CalculationState extends State<Calculation> {
                   ? widget.unit.currentMonthOrYear.toString()
                   : monthsOfYear[widget.unit.currentMonthOrYear - 1]
             },
-            {
-              'key': '${getText('unitProfitability')} %',
-              'val': (caMoney / widget.unit.capital * 100).toStringAsFixed(2)
-            },
+            // {
+            //   'key': '${getText('unitProfitability')} %',
+            //   'val': (caMoney / widget.unit.capital * 100).toStringAsFixed(2)
+            // },
+            {'key': getText('dailyProfit'), 'val': myCurrency(caMoneyProfitPerDay)},
             {'key': '${getText('profitability')} %', 'val': (profitability * 100).toStringAsFixed(2)},
             {'key': '${getText('reserve')} %', 'val': widget.unit.reservePerc.toString()},
             {'key': '${getText('donation')} %', 'val': widget.unit.donationPerc.toString()},
@@ -694,7 +695,7 @@ class _CalculationState extends State<Calculation> {
                   if (caMoney != 0)
                     IconButton(
                         onPressed: () => createExcel(
-                              '${widget.unit.name} *** ${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : '${monthsOfYear[widget.unit.currentMonthOrYear - 1]} $currentYear'}',
+                              '${widget.unit.name} --- ${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : '${monthsOfYear[widget.unit.currentMonthOrYear - 1]} $currentYear'}',
                               [
                                 [
                                   '#',

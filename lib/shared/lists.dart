@@ -188,6 +188,7 @@ Map<String, String> constans = {
   'moneyExtern': 'Money Extern',
   'reference': 'Reference',
   'unitsProfitability': 'Units Profitability',
+  'dailyProfit': 'Daily Profit',
 };
 
 Map<String, String> messages = {
@@ -222,6 +223,4 @@ String getText(String key) => constans[key] ?? '';
 
 String getMessage(String key) => messages[key] ?? '';
 
-String getKeyFromValue(String value) {
-  return constans.keys.firstWhere((key) => constans[key] == value, orElse: () => '');
-}
+String getKeyFromValue(String value) => constans.keys.firstWhere((key) => constans[key] == value, orElse: () => '');

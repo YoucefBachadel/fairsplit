@@ -52,6 +52,9 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
       userNames.add(ele['name']);
       years.add(ele['year']);
     }
+    for (var userHistory in allUsersHistroy) {
+      userNames.add(userHistory.realName);
+    }
 
     userNames = SplayTreeSet.from(userNames);
     years = SplayTreeSet.from(years, (a, b) => b.compareTo(a));
@@ -64,7 +67,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
   void filterHistory() {
     usersHistory.clear();
     for (var userHistory in allUsersHistroy) {
-      if ((_search.isEmpty || userHistory.name == _search) &&
+      if ((_search.isEmpty || userHistory.realName == _search) &&
           (_year == 'tout' || userHistory.year.toString() == _year)) {
         usersHistory.add(userHistory);
       }
@@ -77,7 +80,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
     switch (_sortColumnIndex) {
       case 1:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending ? tr2.name.compareTo(tr1.name) : tr1.name.compareTo(tr2.name);
+          return !_isAscending ? tr2.realName.compareTo(tr1.realName) : tr1.realName.compareTo(tr2.realName);
         });
         break;
       case 2:
@@ -193,7 +196,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
           (userHistory) => DataRow(
             cells: [
               dataCell(context, (usersHistory.indexOf(userHistory) + 1).toString()),
-              dataCell(context, userHistory.name, textAlign: TextAlign.start),
+              dataCell(context, userHistory.realName, textAlign: TextAlign.start),
               ...[
                 userHistory.year.toString(),
                 userHistory.isMoney ? myCurrency(userHistory.startCapital) : '/',
@@ -409,7 +412,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                       ],
                       ...usersHistory.map((user) => [
                             usersHistory.indexOf(user) + 1,
-                            user.name,
+                            user.realName,
                             getText(user.type),
                             user.year,
                             user.startCapital,

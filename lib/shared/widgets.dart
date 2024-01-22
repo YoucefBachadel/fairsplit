@@ -30,7 +30,7 @@ Widget myButton(
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       decoration: BoxDecoration(
-        color: color,
+        color: enabled ? color : Colors.grey,
         borderRadius: BorderRadius.circular(15),
       ),
       alignment: Alignment.center,

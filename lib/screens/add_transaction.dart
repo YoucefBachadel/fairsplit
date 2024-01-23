@@ -128,6 +128,7 @@ class _AddTransactionState extends State<AddTransaction> {
   List<OtherUser> loanUsers = [], depositUsers = [];
   User selectedUser = User();
   OtherUser selectedOtherUser = OtherUser();
+  TextEditingController controller = TextEditingController();
 
   String amountOnLetter = '';
   String intermediates = '';
@@ -524,29 +525,24 @@ class _AddTransactionState extends State<AddTransaction> {
           ),
           mySizedBox(context),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                  color: scaffoldColor,
-                  borderRadius: const BorderRadius.only(
-                    bottomRight: Radius.circular(20.0),
-                    bottomLeft: Radius.circular(20.0),
-                  )),
-              child: isLoading
-                  ? myProgress()
-                  : SingleChildScrollView(
-                      child: Row(
-                        children: [
-                          Flexible(child: transactionInfo()),
-                          mySizedBox(context),
-                          SizedBox(height: getHeight(context, .40), child: const VerticalDivider(thickness: 2)),
-                          mySizedBox(context),
-                          Flexible(child: printingInfo()),
-                        ],
+            child: isLoading
+                ? myProgress()
+                : Center(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            Flexible(child: transactionInfo()),
+                            mySizedBox(context),
+                            SizedBox(height: getHeight(context, .40), child: const VerticalDivider(thickness: 2)),
+                            mySizedBox(context),
+                            Flexible(child: printingInfo()),
+                          ],
+                        ),
                       ),
                     ),
-            ),
+                  ),
           ),
           mySizedBox(context),
           if (!isLoading)
@@ -583,7 +579,6 @@ class _AddTransactionState extends State<AddTransaction> {
   Widget transactionInfo() {
     return Column(
       children: [
-        mySizedBox(context),
         if (selectedTransactionType == 0) // special transaction
           Row(
             children: [
@@ -850,8 +845,6 @@ class _AddTransactionState extends State<AddTransaction> {
                       isNumberOnly: true,
                       autoFocus: widget.sourceTab != 'tr' || selectedTransactionType == 4,
                       onChanged: (value) => amount = value,
-                      onSubmited: (value) => setState(
-                          () => amountOnLetter = '${numberToArabicWords(double.parse(amount).abs().toInt())} دينار'),
                       hint: myCurrency(double.parse(amount)),
                     ),
                     mySizedBox(context),
@@ -991,14 +984,11 @@ class _AddTransactionState extends State<AddTransaction> {
             ),
           ),
         ),
-        mySizedBox(context),
       ],
     );
   }
 
   Widget printingInfo() {
-    TextEditingController controller = TextEditingController();
-    controller.text = amountOnLetter;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -1011,9 +1001,9 @@ class _AddTransactionState extends State<AddTransaction> {
               TextFormField(
                 style: const TextStyle(fontSize: 18),
                 controller: controller,
-                textAlign: TextAlign.center,
                 minLines: 1,
                 maxLines: 2,
+                textAlign: TextAlign.center,
                 textDirection: TextDirection.rtl,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(12),
@@ -1023,8 +1013,10 @@ class _AddTransactionState extends State<AddTransaction> {
                     borderRadius: BorderRadius.all(Radius.circular(12)),
                   ),
                   prefixIcon: IconButton(
-                      onPressed: () => setState(
-                          () => amountOnLetter = '${numberToArabicWords(double.parse(amount).abs().toInt())} دينار'),
+                      onPressed: () => setState(() {
+                            amountOnLetter = '${numberToArabicWords(double.parse(amount).abs().toInt())} دينار';
+                            controller.text = amountOnLetter;
+                          }),
                       icon: Icon(Icons.calculate, color: primaryColor)),
                 ),
                 onChanged: (value) => setState(() => amountOnLetter = value),
@@ -1032,7 +1024,7 @@ class _AddTransactionState extends State<AddTransaction> {
             ],
           ),
         mySizedBox(context),
-        myText((type == 'in') ? 'مستلم اﻷموال' : 'مقدم الأموال'),
+        myText(type == 'in' ? 'مستلم اﻷموال' : 'مقدم الأموال'),
         mySizedBox(context),
         Autocomplete<String>(
           onSelected: (value) => setState(() => reciver = value),
@@ -1084,8 +1076,8 @@ class _AddTransactionState extends State<AddTransaction> {
             ),
           ),
         ),
-        mySizedBox(context),
-        myText('الوسطاء'),
+        // mySizedBox(context),
+        // myText('الوسطاء'),
         mySizedBox(context),
         TextFormField(
           initialValue: intermediates,
@@ -1096,6 +1088,8 @@ class _AddTransactionState extends State<AddTransaction> {
           maxLines: 5,
           textDirection: TextDirection.rtl,
           decoration: const InputDecoration(
+            hintText: 'الوسطاء',
+            hintTextDirection: TextDirection.rtl,
             contentPadding: EdgeInsets.all(12),
             border: OutlineInputBorder(
               gapPadding: 0,
@@ -1105,8 +1099,8 @@ class _AddTransactionState extends State<AddTransaction> {
           ),
           onChanged: (value) => setState(() => intermediates = value),
         ),
-        mySizedBox(context),
-        myText('ملاحظات'),
+        // mySizedBox(context),
+        // myText('ملاحظات'),
         mySizedBox(context),
         TextFormField(
           initialValue: printingNotes,
@@ -1117,7 +1111,9 @@ class _AddTransactionState extends State<AddTransaction> {
           maxLines: 5,
           textDirection: TextDirection.rtl,
           decoration: const InputDecoration(
+            hintText: 'ملاحظات للطباعة',
             contentPadding: EdgeInsets.all(12),
+            hintTextDirection: TextDirection.rtl,
             border: OutlineInputBorder(
               gapPadding: 0,
               borderSide: BorderSide(width: 0.5),

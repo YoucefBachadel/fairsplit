@@ -200,16 +200,16 @@ class _MyAppState extends State<MyApp> {
                               );
                               if (result != null) {
                                 File file = File(result.files.single.path!);
-                                String data = await rootBundle.loadString(file.path);
+                                String data = await file.readAsString();
                                 for (var line in const LineSplitter().convert(data)) {
                                   if (line.isNotEmpty) realUserNames[line.split(';')[0]] = line.split(';')[1];
                                 }
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MyApp(index: tabsIndex.keys.elementAt(selectedTab)),
+                                    ));
                               }
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MyApp(index: tabsIndex.keys.elementAt(selectedTab)),
-                                  ));
                             }),
                             child: Text(
                               myDateFormate2.format(DateTime.now()),

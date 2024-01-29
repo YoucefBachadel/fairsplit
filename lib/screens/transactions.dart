@@ -69,7 +69,7 @@ class _TransactionsState extends State<Transactions> {
     _year = transactionFilterYear;
 
     var params = {
-      'sql1': '''SELECT * FROM transaction ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};''',
+      'sql1': 'SELECT * FROM transaction ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};',
       'sql2': 'SELECT * FROM transactionsp ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};',
       'sql3': 'SELECT * FROM transactionothers ${_year == 'tout' ? '' : '''WHERE Year(date) = '$_year\''''};',
       'sql4': 'SELECT * FROM transactiontemp;',

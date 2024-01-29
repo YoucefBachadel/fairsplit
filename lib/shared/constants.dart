@@ -19,6 +19,7 @@ Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 double textFeildHeight = .05;
 
 late pw.Font pdfFont;
+late pw.Font pdfFontBold;
 
 // String host = 'http://fairsplit.assala.com/php_test';
 String host = 'http://fairsplit.assala.com/php';

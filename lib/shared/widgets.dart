@@ -327,7 +327,7 @@ pw.MultiPage pdfPage({
     pageFormat: pdfPageFormat,
     crossAxisAlignment: pw.CrossAxisAlignment.end,
     textDirection: pw.TextDirection.rtl,
-    theme: pw.ThemeData.withFont(base: pdfFont),
+    theme: pw.ThemeData.withFont(base: pdfFont, bold: pdfFontBold),
     margin: const pw.EdgeInsets.all(25),
     build: (pw.Context context) => build,
   );

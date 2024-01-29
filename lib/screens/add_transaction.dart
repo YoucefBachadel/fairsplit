@@ -297,7 +297,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             usersSQL += '(${user.userId}, $_soldeUser),';
             transactionsSQL +=
-                '''('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${user.userId} , '${user.name}' , '$date' , '$type' ,${_userAmount.abs()} , ${isNewYear ? '' : '$_soldeUser,'} $_soldeCaisse , '$note' , '${numberToArabicWords(_userAmount.abs().toInt())} دينار' , '$intermediates' , '$printingNotes' , '$reciver' ),''';
+                '''('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${user.userId} , '${user.name}' , '$date' , '$type' ,${_userAmount.abs()} , ${isNewYear ? '' : '$_soldeUser,'} $_soldeCaisse , '$note' , '${numberToArabicWords(_userAmount.abs())}' , '$intermediates' , '$printingNotes' , '$reciver' ),''';
             reference++;
           }
 
@@ -1014,7 +1014,7 @@ class _AddTransactionState extends State<AddTransaction> {
                   ),
                   prefixIcon: IconButton(
                       onPressed: () => setState(() {
-                            amountOnLetter = '${numberToArabicWords(double.parse(amount).abs().toInt())} دينار';
+                            amountOnLetter = numberToArabicWords(double.parse(amount).abs());
                             controller.text = amountOnLetter;
                           }),
                       icon: Icon(Icons.calculate, color: primaryColor)),

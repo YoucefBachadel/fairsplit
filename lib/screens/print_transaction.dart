@@ -41,69 +41,101 @@ class PrintTransaction extends StatelessWidget {
                 ? 'وديعة'
                 : 'سحب من وديعة';
     return pdfPage(build: [
-      pw.Row(children: [
-        pw.Text((type == 'in') ? 'وصل إيداع' : 'وصل سحب', style: const pw.TextStyle(fontSize: 25)),
-        pw.Spacer(),
-        pw.SizedBox(
-          width: 200,
-          child: pw.Column(
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            (type == 'in') ? 'وصل إيداع' : 'وصل سحب',
+            style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
+              pw.SizedBox(height: 5),
               pw.Row(children: [
-                pw.Expanded(flex: 4, child: pw.Text(reference)),
-                pw.Expanded(child: pw.Text('وصل رقم : ', style: const pw.TextStyle(fontSize: 10))),
+                data(date),
+                title('التاريخ         '),
               ]),
+              pw.SizedBox(height: 5),
               pw.Row(children: [
-                pw.Expanded(flex: 4, child: pw.Text(date)),
-                pw.Expanded(child: pw.Text('التاريخ : ', style: const pw.TextStyle(fontSize: 10))),
+                data(reference),
+                title('وصل رقم     '),
               ]),
             ],
           ),
+        ],
+      ),
+      pw.SizedBox(height: 12),
+      pw.Container(
+        decoration: pw.BoxDecoration(
+          border: pw.Border.all(width: .1),
+          borderRadius: pw.BorderRadius.circular(12),
         ),
-      ]),
-      pw.Divider(thickness: .1),
-      pw.Row(children: [
-        pw.Expanded(flex: 4, child: pw.Text(myCurrency(amount))),
-        pw.Expanded(child: pw.Text('المبلغ باﻷرقام : ', style: const pw.TextStyle(fontSize: 10))),
-      ]),
-      pw.Row(children: [
-        pw.Expanded(flex: 4, child: pw.Text(amountOnLetter)),
-        pw.Expanded(child: pw.Text('المبلغ بالحروف : ', style: const pw.TextStyle(fontSize: 10))),
-      ]),
-      pw.SizedBox(height: 16),
+        padding: const pw.EdgeInsets.all(8),
+        child: pw.Column(
+          children: [
+            pw.Row(mainAxisAlignment: pw.MainAxisAlignment.end, children: [
+              data(myCurrency(amount)),
+              title('المبلغ باﻷرقام      '),
+            ]),
+            pw.SizedBox(height: 5),
+            pw.Row(mainAxisAlignment: pw.MainAxisAlignment.end, children: [
+              pw.SizedBox(
+                width: 270,
+                child: data(amountOnLetter),
+              ),
+              title('المبلغ بالحروف     '),
+            ]),
+            pw.SizedBox(height: 5),
+            pw.Row(mainAxisAlignment: pw.MainAxisAlignment.end, children: [
+              data(solde == 0 ? '0' : myCurrency(solde)),
+              title('الرصيد الحالي       '),
+            ]),
+          ],
+        ),
+      ),
+      pw.SizedBox(height: 12),
       if (source == 'loan' || source == 'deposit')
         pw.Column(children: [
-          pw.Text('هذا المبلغ عبارة عن $amountType'),
-          pw.SizedBox(height: 16),
+          title('هذا المبلغ عبارة عن $amountType'),
+          pw.SizedBox(height: 12),
         ]),
       if (intermediates.isNotEmpty)
         pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-          pw.Text('للعملية وسطاء هم :'),
-          pw.Text(intermediates),
-          pw.SizedBox(height: 16),
+          title('للعملية وسطاء هم'),
+          data(intermediates),
+          pw.SizedBox(height: 12),
         ]),
       if (printingNotes.isNotEmpty)
         pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-          pw.Text('ملاحظات أخرى :'),
-          pw.Text(printingNotes),
-          pw.SizedBox(height: 16),
+          title('ملاحظات أخرى'),
+          data(printingNotes),
+          pw.SizedBox(height: 12),
         ]),
       pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
         pw.Column(children: [
-          pw.Text((type == 'in') ? 'مستلم اﻷموال : ' : 'مقدم الأموال : ', style: const pw.TextStyle(fontSize: 10)),
-          pw.Text(reciver),
-          pw.SizedBox(height: 16),
-          if (isLeft) pw.Text('إمضاء : ', style: const pw.TextStyle(fontSize: 10)),
+          title((type == 'in') ? 'مستلم اﻷموال' : 'مقدم الأموال'),
+          pw.SizedBox(height: 3),
+          data(reciver),
+          pw.SizedBox(height: 12),
+          if (isLeft) title('إمضاء'),
         ]),
         pw.Spacer(),
         pw.Column(children: [
-          pw.Text((type == 'in') ? 'مودع اﻷموال : ' : 'ساحب الأموال : ', style: const pw.TextStyle(fontSize: 10)),
-          pw.Text(user),
-          pw.SizedBox(height: 16),
-          if (!isLeft) pw.Text('إمضاء : ', style: const pw.TextStyle(fontSize: 10)),
+          title((type == 'in') ? 'مودع اﻷموال' : 'ساحب الأموال'),
+          pw.SizedBox(height: 3),
+          data(user),
+          pw.SizedBox(height: 12),
+          if (!isLeft) title('إمضاء'),
         ]),
       ]),
     ]);
   }
+
+  pw.Text data(String text) => pw.Text(text, style: const pw.TextStyle(fontSize: 10));
+
+  pw.Text title(String text) => pw.Text(text, style: pw.TextStyle(fontWeight: pw.FontWeight.bold));
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +151,7 @@ class PrintTransaction extends StatelessWidget {
           pdfPreview(pdf.save()),
           Positioned(
             bottom: 16,
-            right: 16,
+            right: 20,
             child: FloatingActionButton(
               mini: true,
               onPressed: () => printPdf(context, pdf.save()),

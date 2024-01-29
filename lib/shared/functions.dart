@@ -80,10 +80,35 @@ Future<void> createExcel(String name, List<List<dynamic>> data) async {
   // await file.writeAsBytes(bytes, flush: true);
 }
 
-String numberToArabicWords(int number) {
+String numberToArabicWords(double number) {
+  String result = '${getIntToWord(number.toInt())} دينار';
+
+  String decimalPart = (number.toStringAsFixed(2)).split('.')[1];
+
+  if (decimalPart != '00') {
+    result += ' و ${getIntToWord(int.parse(decimalPart))} سنتيم';
+  }
+
+  return result;
+}
+
+String getIntToWord(int number) {
   final List<String> units = ['صفر', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة'];
 
   final List<String> tens = ['', 'عشرة', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+
+  final List<String> hundreds = [
+    '',
+    'مائة',
+    'مائتان',
+    'ثلاثمائة',
+    'أربعمائة',
+    'خمسمائة',
+    'ستمائة',
+    'سبعمائة',
+    'ثمانمائة',
+    'تسعمائة',
+  ];
 
   if (number >= 0 && number <= 9) {
     return units[number];
@@ -92,7 +117,7 @@ String numberToArabicWords(int number) {
       return tens[number ~/ 10];
     } else {
       return (number == 11)
-          ? 'إحدى عشر'
+          ? 'أحد عشر'
           : (number == 12)
               ? 'إثنا عشر'
               : (number ~/ 10 == 1)
@@ -100,30 +125,26 @@ String numberToArabicWords(int number) {
                   : '${units[number % 10]} و ${tens[number ~/ 10]}';
     }
   } else if (number >= 100 && number <= 999) {
-    String unit = (number ~/ 100 == 1)
-        ? 'مئة'
-        : (number ~/ 100 == 2)
-            ? 'مائتان'
-            : '${units[number ~/ 100]} مئة';
-    return (number % 100 == 0) ? unit : '$unit و ${numberToArabicWords(number % 100)}';
+    String unit = hundreds[number ~/ 100];
+    return (number % 100 == 0) ? unit : '$unit و ${getIntToWord(number % 100)}';
   } else if (number >= 1000 && number <= 999999) {
     String unit = (number ~/ 1000 == 1)
         ? 'ألف'
         : (number ~/ 1000 == 2)
             ? 'ألفين'
             : (number ~/ 1000 <= 10)
-                ? '${numberToArabicWords(number ~/ 1000)} آلاف'
-                : '${numberToArabicWords(number ~/ 1000)} ألف';
-    return (number % 1000 == 0) ? unit : '$unit و ${numberToArabicWords(number % 1000)}';
+                ? '${getIntToWord(number ~/ 1000)} آلاف'
+                : '${getIntToWord(number ~/ 1000)} ألف';
+    return (number % 1000 == 0) ? unit : '$unit و ${getIntToWord(number % 1000)}';
   } else if (number >= 1000000 && number <= 999999999) {
     String unit = (number ~/ 1000000 == 1)
         ? 'مليون'
         : (number ~/ 1000000 == 2)
             ? 'مليونين'
             : (number ~/ 1000000 <= 10)
-                ? '${numberToArabicWords(number ~/ 1000000)} ملايين'
-                : '${numberToArabicWords(number ~/ 1000000)} مليون';
-    return (number % 1000000 == 0) ? unit : '$unit و ${numberToArabicWords(number % 1000000)}';
+                ? '${getIntToWord(number ~/ 1000000)} ملايين'
+                : '${getIntToWord(number ~/ 1000000)} مليون';
+    return (number % 1000000 == 0) ? unit : '$unit و ${getIntToWord(number % 1000000)}';
   }
 
   return 'Number out of range';

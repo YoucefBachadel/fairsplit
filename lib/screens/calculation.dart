@@ -368,7 +368,7 @@ class _CalculationState extends State<Calculation> {
         user.capital += user.money + user.effort;
         if (user.money + user.effort != 0) {
           transactionSQL +=
-              '''('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,${user.userId}, '${user.name}', '${DateTime.now()}' , '$_type' , ${(user.money + user.effort).abs()} ,  ${isNewYear ? '' : '${user.capital},'} $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords((user.money + user.effort).abs().toInt())} دينار','','',''),''';
+              '''('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,${user.userId}, '${user.name}', '${DateTime.now()}' , '$_type' , ${(user.money + user.effort).abs()} ,  ${isNewYear ? '' : '${user.capital},'} $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords((user.money + user.effort).abs())}','','',''),''';
           reference++;
         }
       }
@@ -379,15 +379,15 @@ class _CalculationState extends State<Calculation> {
       if (caReserve != 0) {
         counter++;
         params['sql$counter'] = isNewYear
-            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs().toInt())} دينار','','','');'''
-            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${reserve + caReserve} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs().toInt())} دينار','','','');''';
+            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');'''
+            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${reserve + caReserve} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');''';
         reference++;
       }
       if (caReserveProfit != 0) {
         counter++;
         params['sql$counter'] = isNewYear
-            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs().toInt())} دينار','','','');'''
-            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs().toInt())} دينار','','','');''';
+            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs())}','','','');'''
+            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${DateTime.now().year % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs())}','','','');''';
         reference++;
       }
       counter++;

@@ -132,7 +132,7 @@ String getIntToWord(int number) {
         ? 'ألف'
         : (number ~/ 1000 == 2)
             ? 'ألفين'
-            : (number ~/ 1000 <= 10)
+            : (number ~/ 1000 % 100 >= 3 && number ~/ 1000 % 100 <= 10)
                 ? '${getIntToWord(number ~/ 1000)} آلاف'
                 : '${getIntToWord(number ~/ 1000)} ألف';
     return (number % 1000 == 0) ? unit : '$unit و ${getIntToWord(number % 1000)}';
@@ -141,7 +141,7 @@ String getIntToWord(int number) {
         ? 'مليون'
         : (number ~/ 1000000 == 2)
             ? 'مليونين'
-            : (number ~/ 1000000 <= 10)
+            : (number ~/ 1000000 % 100 >= 3 && number ~/ 1000000 % 100 <= 10)
                 ? '${getIntToWord(number ~/ 1000000)} ملايين'
                 : '${getIntToWord(number ~/ 1000000)} مليون';
     return (number % 1000000 == 0) ? unit : '$unit و ${getIntToWord(number % 1000000)}';

@@ -95,6 +95,8 @@ class _AddUserState extends State<AddUser> {
           );
         }
 
+        userNames.add(name);
+
         //now we insert the threshold / founding / effort  but first we check if they been changed
 
         String sql = '';
@@ -263,6 +265,11 @@ class _AddUserState extends State<AddUser> {
   }
 
   Widget information() {
+    Map<String, String> usersTypes = {
+      'money': getText('money'),
+      'effort': getText('effort'),
+      'both': getText('both'),
+    };
     return Column(
       children: [
         Row(

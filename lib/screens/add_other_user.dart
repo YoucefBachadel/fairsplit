@@ -58,6 +58,8 @@ class _AddOtherUserState extends State<AddOtherUser> {
               : '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};'''
         });
 
+        userNames.add(name);
+
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
         snackBar(context, widget.user.userId == -1 ? getMessage('addUser') : getMessage('updateUser'));
       }

@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:fairsplit/models/unit.dart';
 import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
@@ -43,8 +41,6 @@ class _DashboardState extends State<Dashboard> {
           (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
           s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;''',
       'sql2': 'SELECT name,profitability FROM units;',
-      'sql3':
-          'SELECT DISTINCT(Year(date)) AS year FROM transaction UNION SELECT DISTINCT(Year(date)) AS year FROM transactionothers UNION SELECT DISTINCT(Year(date)) AS year FROM transactionsp UNION SELECT DISTINCT(Year(date)) AS year FROM transactiontemp;',
     });
     var data = res[0][0];
     currentYear = int.parse(data['currentYear']);
@@ -68,11 +64,6 @@ class _DashboardState extends State<Dashboard> {
       ));
     }
     units.sort((a, b) => b.profitability.compareTo(a.profitability));
-
-    for (var ele in res[2]) {
-      years.add(ele['year'].toString());
-    }
-    years = SplayTreeSet.from(years, (a, b) => b.compareTo(a));
 
     setState(() => isLoadingData = false);
   }

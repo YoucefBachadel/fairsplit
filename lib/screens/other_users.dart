@@ -21,7 +21,6 @@ class OtherUsers extends StatefulWidget {
 class _OtherUsersState extends State<OtherUsers> {
   List<OtherUser> allUsers = [], users = [];
   List<String> usersWithCapital = []; //list of users with capital != 0
-  var userNames = <String>{};
   bool isloading = true;
   String _search = '';
   String _type = 'tout';
@@ -55,8 +54,6 @@ class _OtherUsersState extends State<OtherUsers> {
       );
       user.isUserWithCapital = user.type == 'loan' && user.rest != 0 && usersWithCapital.contains(user.name);
       allUsers.add(user);
-
-      userNames.add(user.realName);
     }
 
     setState(() {
@@ -133,7 +130,7 @@ class _OtherUsersState extends State<OtherUsers> {
         .map((user) => DataRow(
               color: user.isUserWithCapital ? MaterialStatePropertyAll(Colors.red[100]) : null,
               onLongPress: () {
-                context.read<Filter>().change(transactionCategory: '${user.type}s', search: user.realName);
+                context.read<Filter>().change(transactionCategory: 'users', search: user.realName);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
               },
               onSelectChanged: (value) async => await createDialog(
@@ -233,6 +230,12 @@ class _OtherUsersState extends State<OtherUsers> {
   }
 
   Widget searchBar() {
+    Map<String, String> otherUsersTypesSearch = {
+      'tout': getText('tout'),
+      'loan': getText('loan'),
+      'deposit': getText('deposit'),
+    };
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -269,7 +272,7 @@ class _OtherUsersState extends State<OtherUsers> {
                     child: TextField(
                       controller: _controller,
                       focusNode: focusNode,
-                      style: const TextStyle(fontSize: 18.0),
+                      style: const TextStyle(fontSize: 16.0),
                       onSubmitted: ((value) {
                         if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
                           String text =
@@ -309,7 +312,7 @@ class _OtherUsersState extends State<OtherUsers> {
                       elevation: 8.0,
                       child: ConstrainedBox(
                         constraints:
-                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .22)),
+                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .18)),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,

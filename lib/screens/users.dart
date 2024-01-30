@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,7 +25,6 @@ class Users extends StatefulWidget {
 class _UsersState extends State<Users> {
   List<User> allUsers = [], users = [];
   List<Unit> units = [];
-  var userNames = <String>{};
   bool isloading = true;
   String _search = '';
   String _type = 'tout';
@@ -66,15 +63,11 @@ class _UsersState extends State<Users> {
 
     allUsers = toUsers(dataUsers, toThresholds(dataThresholds), toFoundings(dataFoundings), toEfforts(dataEfforts));
 
-    for (var ele in allUsers) {
-      userNames.add(ele.realName);
-    }
     for (var element in dataUnits) {
       units.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
     }
 
     units.sort((a, b) => a.name.compareTo(b.name));
-    userNames = SplayTreeSet.from(userNames);
 
     setState(() {
       isloading = false;
@@ -475,6 +468,13 @@ class _UsersState extends State<Users> {
   }
 
   Widget searchBar() {
+    Map<String, String> usersTypesSearch = {
+      'tout': getText('tout'),
+      'money': getText('money'),
+      'effort': getText('effort'),
+      'both': getText('both'),
+    };
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -509,7 +509,7 @@ class _UsersState extends State<Users> {
                     child: TextField(
                       controller: _controller,
                       focusNode: focusNode,
-                      style: const TextStyle(fontSize: 18.0),
+                      style: const TextStyle(fontSize: 16.0),
                       onSubmitted: ((value) {
                         if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
                           String text =

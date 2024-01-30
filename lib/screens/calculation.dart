@@ -522,12 +522,12 @@ class _CalculationState extends State<Calculation> {
                       mySizedBox(context),
                       if (bottemNavigationSelectedInex == 0)
                         Expanded(child: Center(child: SingleChildScrollView(child: information()))),
-                      if (bottemNavigationSelectedInex == 1) tabScreen(transaction()),
-                      if (bottemNavigationSelectedInex == 2) tabScreen(money()),
-                      if (bottemNavigationSelectedInex == 3) tabScreen(threshold()),
-                      if (bottemNavigationSelectedInex == 4) tabScreen(founding()),
-                      if (bottemNavigationSelectedInex == 5) tabScreen(effort()),
-                      if (bottemNavigationSelectedInex == 6) tabScreen(global()),
+                      // if (bottemNavigationSelectedInex == 1) tabScreen(transaction()),
+                      if (bottemNavigationSelectedInex == 1) tabScreen(money()),
+                      if (bottemNavigationSelectedInex == 2) tabScreen(threshold()),
+                      if (bottemNavigationSelectedInex == 3) tabScreen(founding()),
+                      if (bottemNavigationSelectedInex == 4) tabScreen(effort()),
+                      if (bottemNavigationSelectedInex == 5) tabScreen(global()),
                       mySizedBox(context),
                       SizedBox(width: getWidth(context, 1), child: const Divider()),
                       SizedBox(
@@ -535,7 +535,7 @@ class _CalculationState extends State<Calculation> {
                           type: BottomNavigationBarType.fixed,
                           items: <BottomNavigationBarItem>[
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('info')),
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('transaction')),
+                            // BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('transaction')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('money')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('threshold')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('founding')),
@@ -647,11 +647,10 @@ class _CalculationState extends State<Calculation> {
             dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
             dataCell(context, transaction.userName, textAlign: TextAlign.start),
             dataCell(context, myDateFormate.format(transaction.date)),
-            dataCell(
-                context, transaction.type == 'in' ? transactionsTypes['in'] ?? '' : transactionsTypes['out'] ?? ''),
-            dataCell(context, transaction.type == 'in' ? myCurrency(transaction.amount) : '/',
+            dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
+            dataCell(context, transaction.type == 'in' ? myCurrency(transaction.amount) : '-',
                 textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
-            dataCell(context, transaction.type == 'out' ? myCurrency(transaction.amount) : '/',
+            dataCell(context, transaction.type == 'out' ? myCurrency(transaction.amount) : '-',
                 textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
           ]),
         )

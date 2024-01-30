@@ -15,47 +15,6 @@ List<String> monthsOfYear = [
   'December',
 ];
 
-Map<String, String> usersTypes = {
-  'money': getText('money'),
-  'effort': getText('effort'),
-  'both': getText('both'),
-};
-
-Map<String, String> usersTypesSearch = {
-  'tout': getText('tout'),
-  'money': getText('money'),
-  'effort': getText('effort'),
-  'both': getText('both'),
-};
-
-Map<String, String> otherUsersTypes = {
-  'deposit': getText('deposit'),
-  'loan': getText('loan'),
-};
-
-Map<String, String> otherUsersTypesSearch = {
-  'tout': getText('tout'),
-  'loan': getText('loan'),
-  'deposit': getText('deposit'),
-};
-
-Map<String, String> transactionsTypes = {
-  'in': getText('in'),
-  'out': getText('out'),
-};
-
-Map<String, String> transactionsTypesSearch = {
-  'tout': getText('tout'),
-  'in': getText('in'),
-  'out': getText('out'),
-};
-
-Map<String, String> unitsTypesSearch = {
-  'tout': getText('tout'),
-  'intern': getText('intern'),
-  'extern': getText('extern'),
-};
-
 List<String> selectTransactionType = [
   getText('special'),
   getText('user'),
@@ -63,31 +22,6 @@ List<String> selectTransactionType = [
   getText('deposit'),
   if (isAdmin) getText('allUsers'),
 ];
-
-Map<String, String> compts = {
-  'caisse': getText('caisse'),
-  'reserve': getText('reserve'),
-  'reserveProfit': getText('reserveProfit'),
-  'donation': getText('donation'),
-  'zakat': getText('zakat'),
-};
-
-Map<String, String> comptsSearch = {
-  'tout': getText('tout'),
-  'caisse': getText('caisse'),
-  'reserve': getText('reserve'),
-  'reserveProfit': getText('reserveProfit'),
-  'donation': getText('donation'),
-  'zakat': getText('zakat'),
-};
-
-Map<String, String> transactionsCategorys = {
-  'caisse': getText('caisse'),
-  'users': getText('users'),
-  'loans': getText('loans'),
-  'deposits': getText('deposits'),
-  'specials': getText('specials'),
-};
 
 Map<String, String> constans = {
   'tout': 'Tout',

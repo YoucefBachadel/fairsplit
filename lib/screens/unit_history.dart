@@ -18,7 +18,6 @@ class UnitHistoryScreen extends StatefulWidget {
 class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
   List<UnitHistory> allUnitsHistroy = [], unitsHistory = [];
   var names = <String>{};
-  var years = <String>{};
 
   bool isloading = true;
   String _name = 'tout';
@@ -48,11 +47,9 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
           profitability: double.parse(ele['profitability'])));
 
       names.add(ele['name']);
-      years.add(ele['year']);
     }
 
     names = SplayTreeSet.from(names);
-    years = SplayTreeSet.from(years, (a, b) => b.compareTo(a));
 
     setState(() {
       isloading = false;

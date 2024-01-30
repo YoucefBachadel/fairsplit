@@ -81,7 +81,7 @@ Widget myTextField(
         obscureText: isPassword,
         enabled: enabled,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 18),
+        style: const TextStyle(fontSize: 16),
         decoration: textInputDecoration(hint: hint),
         inputFormatters: [isNumberOnly ? DecimalTextInputFormatter() : FilteringTextInputFormatter.deny(r'')],
       ),
@@ -89,7 +89,7 @@ Widget myTextField(
   );
 }
 
-Widget myText(String text, {Color color = Colors.black, double size = 18.0, bool isBold = false}) {
+Widget myText(String text, {Color color = Colors.black, double size = 16.0, bool isBold = false}) {
   return Text(
     text,
     style: TextStyle(fontSize: size, color: color, fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
@@ -106,7 +106,7 @@ Widget myDropDown(
 }) {
   return Container(
     height: getHeight(context, textFeildHeight),
-    width: width ?? getWidth(context, .08),
+    width: width ?? getWidth(context, dropDownWidth),
     decoration: BoxDecoration(
       color: Colors.white,
       border: Border.all(color: color),
@@ -114,7 +114,7 @@ Widget myDropDown(
     ),
     child: DropdownButtonHideUnderline(
       child: DropdownButton(
-        style: const TextStyle(fontSize: 18, color: Colors.black, overflow: TextOverflow.ellipsis),
+        style: const TextStyle(fontSize: 16, color: Colors.black, overflow: TextOverflow.ellipsis),
         value: value,
         isExpanded: true,
         items: items,

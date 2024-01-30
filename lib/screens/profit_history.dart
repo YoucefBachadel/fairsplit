@@ -17,7 +17,6 @@ class ProfitHistory extends StatefulWidget {
 
 class _ProfitHistoryState extends State<ProfitHistory> {
   List<Profit> allProfitsHistroy = [], profitsHistory = [];
-  var years = <String>{};
   var names = <String>{};
   bool isloading = true;
   String _name = 'tout';
@@ -63,11 +62,9 @@ class _ProfitHistoryState extends State<ProfitHistory> {
       ));
 
       names.add(ele['name']);
-      years.add(ele['year']);
     }
 
     names = SplayTreeSet.from(names);
-    years = SplayTreeSet.from(years, (a, b) => b.compareTo(a));
 
     setState(() => isloading = false);
   }
@@ -331,6 +328,12 @@ class _ProfitHistoryState extends State<ProfitHistory> {
   }
 
   Widget searchBar() {
+    Map<String, String> unitsTypesSearch = {
+      'tout': getText('tout'),
+      'intern': getText('intern'),
+      'extern': getText('extern'),
+    };
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(

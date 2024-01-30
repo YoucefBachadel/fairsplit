@@ -1,7 +1,4 @@
-import 'dart:collection';
-
 import 'package:fairsplit/main.dart';
-import 'package:fairsplit/models/transaction_others.dart';
 import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
@@ -27,16 +24,10 @@ class Transactions extends StatefulWidget {
 class _TransactionsState extends State<Transactions> {
   List<Transaction> allTransactions = [], transactions = [], allCaisseTransactions = [];
   List<TransactionSP> allTransactionsSP = [], transactionsSP = [];
-  List<TransactionOther> allLoanTransactions = [],
-      allDepositTransactions = [],
-      loanTransactions = [],
-      depositTransactions = [];
-  var userNames = <String>{};
-  var loanNames = <String>{};
-  var depositNames = <String>{};
 
   bool isloading = true;
-  String transactionCategory = 'caisse'; //caisse users loans deposits specials
+  String transactionCategory = 'caisse'; //caisse users specials
+  String _userCategory = 'tout'; //tout users loans deposits
   String _compt = 'tout'; // caisse reserve donation zakat
   String _reference = '';
   String _search = ''; //search by user name
@@ -50,16 +41,12 @@ class _TransactionsState extends State<Transactions> {
   DateTime _fromDate = DateTime.now();
   DateTime _toDate = DateTime.now();
 
-  int? _sortColumnIndexTransUser = 3;
+  int? _sortColumnIndexTransUser = 4;
   bool _isAscendingTransUser = false;
   int? _sortColumnIndexTransCaisse = 4;
   bool _isAscendingTransCaisse = false;
   int? _sortColumnIndexTransSP = 3;
   bool _isAscendingTransSP = false;
-  int? _sortColumnIndexTransLoan = 3;
-  bool _isAscendingTransLoan = false;
-  int? _sortColumnIndexTransDeposit = 3;
-  bool _isAscendingTransDeposit = false;
 
   TextEditingController _searchController = TextEditingController();
   final TextEditingController _referenceController = TextEditingController();
@@ -99,8 +86,28 @@ class _TransactionsState extends State<Transactions> {
       );
       allTransactions.add(trans);
       allCaisseTransactions.add(trans);
+    }
 
-      userNames.add(trans.realUserName);
+    for (var ele in dataTransactionOther) {
+      Transaction trans = Transaction(
+        reference: ele['reference'],
+        transactionId: int.parse(ele['transactionId']),
+        userName: ele['userName'],
+        source: ele['category'],
+        date: DateTime.parse(ele['date']),
+        type: ele['type'],
+        amount: double.parse(ele['amount']),
+        soldeUser: double.parse(ele['soldeUser']),
+        soldeCaisse: double.parse(ele['soldeCaisse']),
+        note: ele['note'],
+        reciver: ele['reciver'],
+        amountOnLetter: ele['amountOnLetter'],
+        intermediates: ele['intermediates'],
+        printingNotes: ele['printingNotes'],
+      );
+
+      allTransactions.add(trans);
+      allCaisseTransactions.add(trans);
     }
 
     for (var ele in dataTransactionSP) {
@@ -135,51 +142,6 @@ class _TransactionsState extends State<Transactions> {
         intermediates: ele['intermediates'],
         printingNotes: ele['printingNotes'],
       ));
-    }
-
-    for (var ele in dataTransactionOther) {
-      TransactionOther other = TransactionOther(
-        reference: ele['reference'],
-        transactionId: int.parse(ele['transactionId']),
-        userName: ele['userName'],
-        category: ele['category'],
-        date: DateTime.parse(ele['date']),
-        type: ele['type'],
-        amount: double.parse(ele['amount']),
-        soldeUser: double.parse(ele['soldeUser']),
-        soldeCaisse: double.parse(ele['soldeCaisse']),
-        note: ele['note'],
-        reciver: ele['reciver'],
-        amountOnLetter: ele['amountOnLetter'],
-        intermediates: ele['intermediates'],
-        printingNotes: ele['printingNotes'],
-      );
-      Transaction trans = Transaction(
-        reference: other.reference,
-        transactionId: other.transactionId,
-        userName: other.userName,
-        source: other.category,
-        date: other.date,
-        type: other.type,
-        amount: other.amount,
-        soldeUser: other.soldeUser,
-        soldeCaisse: other.soldeCaisse,
-        note: other.note,
-        reciver: ele['reciver'],
-        amountOnLetter: ele['amountOnLetter'],
-        intermediates: ele['intermediates'],
-        printingNotes: ele['printingNotes'],
-      );
-
-      if (other.category == 'loan') {
-        allLoanTransactions.add(other);
-        loanNames.add(other.realUserName);
-      } else {
-        allDepositTransactions.add(other);
-        depositNames.add(other.realUserName);
-      }
-
-      allCaisseTransactions.add(trans);
     }
 
     for (var ele in dataTransactionTemp) {
@@ -234,14 +196,8 @@ class _TransactionsState extends State<Transactions> {
 
         allTransactions.add(trans);
         allCaisseTransactions.add(trans);
-
-        userNames.add(trans.realUserName);
       }
     }
-
-    if (userNames.isNotEmpty) userNames = SplayTreeSet.from(userNames);
-    if (loanNames.isNotEmpty) loanNames = SplayTreeSet.from(loanNames);
-    if (depositNames.isNotEmpty) depositNames = SplayTreeSet.from(depositNames);
 
     _fromDate = _year == 'tout' ? DateTime(int.parse(years.last)) : DateTime(int.parse(_year));
     _toDate = _year == 'tout'
@@ -257,6 +213,7 @@ class _TransactionsState extends State<Transactions> {
       if ((_search.isEmpty || trans.realUserName == _search) &&
           (_reference.isEmpty || trans.reference.contains(_reference)) &&
           (_type == 'tout' || trans.type == _type) &&
+          (_userCategory == 'tout' || trans.source == _userCategory) &&
           (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
           (trans.date.isBefore(_toDate) || myDateFormate.format(trans.date) == myDateFormate.format(_toDate))) {
         transactions.add(trans);
@@ -305,36 +262,6 @@ class _TransactionsState extends State<Transactions> {
     onSortTransSP();
   }
 
-  void filterTransactionLoan() {
-    loanTransactions.clear();
-    for (var trans in allLoanTransactions) {
-      if ((_search.isEmpty || trans.realUserName == _search) &&
-          (_reference.isEmpty || trans.reference.contains(_reference)) &&
-          (_type == 'tout' || trans.type == _type) &&
-          (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
-          (trans.date.isBefore(_toDate) || myDateFormate.format(trans.date) == myDateFormate.format(_toDate))) {
-        loanTransactions.add(trans);
-        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
-      }
-    }
-    onSortTransLoan();
-  }
-
-  void filterTransactionDeposit() {
-    depositTransactions.clear();
-    for (var trans in allDepositTransactions) {
-      if ((_search.isEmpty || trans.realUserName == _search) &&
-          (_reference.isEmpty || trans.reference.contains(_reference)) &&
-          (_type == 'tout' || trans.type == _type) &&
-          (trans.date.isAfter(_fromDate) || myDateFormate.format(trans.date) == myDateFormate.format(_fromDate)) &&
-          (trans.date.isBefore(_toDate) || myDateFormate.format(trans.date) == myDateFormate.format(_toDate))) {
-        depositTransactions.add(trans);
-        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
-      }
-    }
-    onSortTransDeposit();
-  }
-
   void onSortTransUser() {
     switch (_sortColumnIndexTransUser) {
       case 2:
@@ -344,17 +271,17 @@ class _TransactionsState extends State<Transactions> {
               : tr1.realUserName.compareTo(tr2.realUserName);
         });
         break;
-      case 3:
+      case 4:
         transactions.sort((tr1, tr2) {
           return !_isAscendingTransUser ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
         });
         break;
-      case 5:
+      case 6:
         transactions.sort((a, b) => _isAscendingTransUser
             ? (a.type == 'in' ? a.amount : double.infinity).compareTo(b.type == 'in' ? b.amount : double.infinity)
             : (b.type == 'in' ? b.amount : -double.infinity).compareTo(a.type == 'in' ? a.amount : -double.infinity));
         break;
-      case 6:
+      case 7:
         transactions.sort((a, b) => _isAscendingTransUser
             ? (a.type == 'out' ? a.amount : double.infinity).compareTo(b.type == 'out' ? b.amount : double.infinity)
             : (b.type == 'out' ? b.amount : -double.infinity).compareTo(a.type == 'out' ? a.amount : -double.infinity));
@@ -409,60 +336,6 @@ class _TransactionsState extends State<Transactions> {
     }
   }
 
-  void onSortTransLoan() {
-    switch (_sortColumnIndexTransLoan) {
-      case 2:
-        loanTransactions.sort((tr1, tr2) {
-          return !_isAscendingTransLoan
-              ? tr2.realUserName.compareTo(tr1.realUserName)
-              : tr1.realUserName.compareTo(tr2.realUserName);
-        });
-        break;
-      case 3:
-        loanTransactions.sort((tr1, tr2) {
-          return !_isAscendingTransLoan ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
-        });
-        break;
-      case 5:
-        loanTransactions.sort((a, b) => _isAscendingTransLoan
-            ? (a.type == 'in' ? a.amount : double.infinity).compareTo(b.type == 'in' ? b.amount : double.infinity)
-            : (b.type == 'in' ? b.amount : -double.infinity).compareTo(a.type == 'in' ? a.amount : -double.infinity));
-        break;
-      case 6:
-        loanTransactions.sort((a, b) => _isAscendingTransLoan
-            ? (a.type == 'out' ? a.amount : double.infinity).compareTo(b.type == 'out' ? b.amount : double.infinity)
-            : (b.type == 'out' ? b.amount : -double.infinity).compareTo(a.type == 'out' ? a.amount : -double.infinity));
-        break;
-    }
-  }
-
-  void onSortTransDeposit() {
-    switch (_sortColumnIndexTransDeposit) {
-      case 2:
-        depositTransactions.sort((tr1, tr2) {
-          return !_isAscendingTransDeposit
-              ? tr2.realUserName.compareTo(tr1.realUserName)
-              : tr1.realUserName.compareTo(tr2.realUserName);
-        });
-        break;
-      case 3:
-        depositTransactions.sort((tr1, tr2) {
-          return !_isAscendingTransDeposit ? tr2.date.compareTo(tr1.date) : tr1.date.compareTo(tr2.date);
-        });
-        break;
-      case 5:
-        depositTransactions.sort((a, b) => _isAscendingTransDeposit
-            ? (a.type == 'in' ? a.amount : double.infinity).compareTo(b.type == 'in' ? b.amount : double.infinity)
-            : (b.type == 'in' ? b.amount : -double.infinity).compareTo(a.type == 'in' ? a.amount : -double.infinity));
-        break;
-      case 6:
-        depositTransactions.sort((a, b) => _isAscendingTransDeposit
-            ? (a.type == 'out' ? a.amount : double.infinity).compareTo(b.type == 'out' ? b.amount : double.infinity)
-            : (b.type == 'out' ? b.amount : -double.infinity).compareTo(a.type == 'out' ? a.amount : -double.infinity));
-        break;
-    }
-  }
-
   void _newTransaction(BuildContext context) async => await createDialog(context, const SelectTransactionCategoty());
 
   @override
@@ -485,10 +358,6 @@ class _TransactionsState extends State<Transactions> {
       filterTransactionUser();
     } else if (transactionCategory == 'specials') {
       filterTransactionSP();
-    } else if (transactionCategory == 'loans') {
-      filterTransactionLoan();
-    } else {
-      filterTransactionDeposit();
     }
 
     List<DataColumn> columnsTransCaisse = [
@@ -501,7 +370,7 @@ class _TransactionsState extends State<Transactions> {
                 _sortColumnIndexTransCaisse = columnIndex;
                 _isAscendingTransCaisse = ascending;
               })),
-      dataColumn(context, getText('source')),
+      dataColumn(context, getText('category')),
       sortableDataColumn(
           context,
           getText('date'),
@@ -537,6 +406,7 @@ class _TransactionsState extends State<Transactions> {
                 _sortColumnIndexTransUser = columnIndex;
                 _isAscendingTransUser = ascending;
               })),
+      dataColumn(context, getText('category')),
       sortableDataColumn(
           context,
           getText('date'),
@@ -589,76 +459,6 @@ class _TransactionsState extends State<Transactions> {
                 _isAscendingTransSP = ascending;
               })),
       dataColumn(context, getText('solde')),
-      dataColumn(context, getText('note')),
-    ];
-    List<DataColumn> columnsTransLoan = [
-      dataColumn(context, ''),
-      dataColumn(context, getText('reference')),
-      sortableDataColumn(
-          context,
-          getText('name'),
-          (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTransLoan = columnIndex;
-                _isAscendingTransLoan = ascending;
-              })),
-      sortableDataColumn(
-          context,
-          getText('date'),
-          (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTransLoan = columnIndex;
-                _isAscendingTransLoan = ascending;
-              })),
-      dataColumn(context, getText('type')),
-      sortableDataColumn(
-          context,
-          getText('in'),
-          (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTransLoan = columnIndex;
-                _isAscendingTransLoan = ascending;
-              })),
-      sortableDataColumn(
-          context,
-          getText('out'),
-          (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTransLoan = columnIndex;
-                _isAscendingTransLoan = ascending;
-              })),
-      dataColumn(context, getText('soldeUser')),
-      dataColumn(context, getText('note')),
-    ];
-    List<DataColumn> columnsTransDeposit = [
-      dataColumn(context, ''),
-      dataColumn(context, getText('reference')),
-      sortableDataColumn(
-          context,
-          getText('name'),
-          (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTransDeposit = columnIndex;
-                _isAscendingTransDeposit = ascending;
-              })),
-      sortableDataColumn(
-          context,
-          getText('date'),
-          (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTransDeposit = columnIndex;
-                _isAscendingTransDeposit = ascending;
-              })),
-      dataColumn(context, getText('type')),
-      sortableDataColumn(
-          context,
-          getText('in'),
-          (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTransDeposit = columnIndex;
-                _isAscendingTransDeposit = ascending;
-              })),
-      sortableDataColumn(
-          context,
-          getText('out'),
-          (columnIndex, ascending) => setState(() {
-                _sortColumnIndexTransDeposit = columnIndex;
-                _isAscendingTransDeposit = ascending;
-              })),
-      dataColumn(context, getText('soldeUser')),
       dataColumn(context, getText('note')),
     ];
 
@@ -716,7 +516,7 @@ class _TransactionsState extends State<Transactions> {
                   context,
                   dismissable: true,
                   PrintTransaction(
-                    source: 'user',
+                    source: transaction.source,
                     type: transaction.type,
                     reference: transaction.reference,
                     user: transaction.realUserName,
@@ -732,6 +532,7 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
                 dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
+                dataCell(context, getText(transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
                 dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
@@ -786,100 +587,6 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
                     textAlign: TextAlign.end),
                 dataCell(context, myCurrency(transaction.solde), textAlign: TextAlign.end),
-                DataCell(ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Tooltip(
-                      message: transaction.note,
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        transaction.note,
-                        overflow: TextOverflow.ellipsis,
-                        textDirection: TextDirection.rtl,
-                      ),
-                    ),
-                  ),
-                )),
-              ],
-            ))
-        .toList();
-    List<DataRow> rowsTransLoan = loanTransactions
-        .map((transaction) => DataRow(
-              onSelectChanged: ((value) async => await createDialog(
-                  context,
-                  dismissable: true,
-                  PrintTransaction(
-                    source: 'loan',
-                    type: transaction.type,
-                    reference: transaction.reference,
-                    user: transaction.realUserName,
-                    amount: transaction.amount,
-                    solde: transaction.soldeUser,
-                    date: myDateFormate.format(transaction.date),
-                    reciver: transaction.reciver,
-                    amountOnLetter: transaction.amountOnLetter,
-                    intermediates: transaction.intermediates,
-                    printingNotes: transaction.printingNotes,
-                  ))),
-              cells: [
-                dataCell(context, (loanTransactions.indexOf(transaction) + 1).toString()),
-                dataCell(context, transaction.reference),
-                dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
-                dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
-                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
-                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
-                dataCell(context, myCurrency(transaction.soldeUser), textAlign: TextAlign.end),
-                DataCell(ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Tooltip(
-                      message: transaction.note,
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        transaction.note,
-                        overflow: TextOverflow.ellipsis,
-                        textDirection: TextDirection.rtl,
-                      ),
-                    ),
-                  ),
-                )),
-              ],
-            ))
-        .toList();
-    List<DataRow> rowsTransDeposit = depositTransactions
-        .map((transaction) => DataRow(
-              onSelectChanged: ((value) async => await createDialog(
-                  context,
-                  dismissable: true,
-                  PrintTransaction(
-                    source: 'deposit',
-                    type: transaction.type,
-                    reference: transaction.reference,
-                    user: transaction.realUserName,
-                    amount: transaction.amount,
-                    solde: transaction.soldeUser,
-                    date: myDateFormate.format(transaction.date),
-                    reciver: transaction.reciver,
-                    amountOnLetter: transaction.amountOnLetter,
-                    intermediates: transaction.intermediates,
-                    printingNotes: transaction.printingNotes,
-                  ))),
-              cells: [
-                dataCell(context, (depositTransactions.indexOf(transaction) + 1).toString()),
-                dataCell(context, transaction.reference),
-                dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
-                dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
-                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
-                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
-                dataCell(context, myCurrency(transaction.soldeUser), textAlign: TextAlign.end),
                 DataCell(ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
                   child: Align(
@@ -966,33 +673,7 @@ class _TransactionsState extends State<Transactions> {
                                       ),
                                       _searchControllerH,
                                       _searchControllerV)
-                              : transactionCategory == 'loans'
-                                  ? loanTransactions.isEmpty
-                                      ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                                      : myScorallable(
-                                          dataTable(
-                                            context,
-                                            isAscending: _isAscendingTransLoan,
-                                            sortColumnIndex: _sortColumnIndexTransLoan,
-                                            columns: columnsTransLoan,
-                                            rows: rowsTransLoan,
-                                          ),
-                                          _searchControllerH,
-                                          _searchControllerV)
-                                  : transactionCategory == 'deposits'
-                                      ? depositTransactions.isEmpty
-                                          ? SizedBox(width: getWidth(context, .60), child: emptyList())
-                                          : myScorallable(
-                                              dataTable(
-                                                context,
-                                                isAscending: _isAscendingTransDeposit,
-                                                sortColumnIndex: _sortColumnIndexTransDeposit,
-                                                columns: columnsTransDeposit,
-                                                rows: rowsTransDeposit,
-                                              ),
-                                              _searchControllerH,
-                                              _searchControllerV)
-                                      : const SizedBox()),
+                              : const SizedBox()),
           mySizedBox(context),
           SizedBox(width: getWidth(context, .52), child: const Divider()),
           mySizedBox(context),
@@ -1013,6 +694,31 @@ class _TransactionsState extends State<Transactions> {
   }
 
   Widget searchBar() {
+    Map<String, String> transactionsCategorys = {
+      'caisse': getText('caisse'),
+      'users': getText('users'),
+      'specials': getText('specials'),
+    };
+    Map<String, String> usersCategorys = {
+      'tout': getText('tout'),
+      'users': getText('user'),
+      'loans': getText('loan'),
+      'deposits': getText('deposit'),
+    };
+    Map<String, String> comptsSearch = {
+      'tout': getText('tout'),
+      'caisse': getText('caisse'),
+      'reserve': getText('reserve'),
+      'reserveProfit': getText('reserveProfit'),
+      'donation': getText('donation'),
+      'zakat': getText('zakat'),
+    };
+    Map<String, String> transactionsTypesSearch = {
+      'tout': getText('tout'),
+      'in': getText('in'),
+      'out': getText('out'),
+    };
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -1043,6 +749,7 @@ class _TransactionsState extends State<Transactions> {
                   context.read<Filter>().change(transactionCategory: value.toString());
                   context.read<Filter>().resetFilter();
                   _reference = '';
+                  _userCategory = 'tout';
                   _searchController.clear();
                   _referenceController.clear();
                 }),
@@ -1094,11 +801,12 @@ class _TransactionsState extends State<Transactions> {
               ),
               SizedBox(
                 height: getHeight(context, textFeildHeight),
-                width: getWidth(context, .08),
+                width: getWidth(context, dropDownWidth),
                 child: TextField(
                   controller: _referenceController,
                   onSubmitted: (value) => setState(() => _reference = value),
-                  style: const TextStyle(fontSize: 18),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
                   decoration: textInputDecoration(
                     hint: '...',
                     borderColor: _reference.isEmpty ? Colors.grey : primaryColor,
@@ -1133,6 +841,7 @@ class _TransactionsState extends State<Transactions> {
                 myDropDown(
                   context,
                   value: _compt,
+                  width: getWidth(context, .1),
                   color: _compt == 'tout' ? Colors.grey : primaryColor,
                   items: comptsSearch.entries.map((item) {
                     return DropdownMenuItem(
@@ -1151,17 +860,32 @@ class _TransactionsState extends State<Transactions> {
               optionsBuilder: (textEditingValue) =>
                   userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
             ),
-          if (transactionCategory == 'loans')
-            autoComplete(
-              onSeleted: (item) => setState(() => context.read<Filter>().change(search: item)),
-              optionsBuilder: (textEditingValue) =>
-                  loanNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
-            ),
-          if (transactionCategory == 'deposits')
-            autoComplete(
-              onSeleted: (item) => setState(() => context.read<Filter>().change(search: item)),
-              optionsBuilder: (textEditingValue) =>
-                  depositNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
+          if (transactionCategory == 'users') mySizedBox(context),
+          if (transactionCategory == 'users')
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Text(
+                    getText('category'),
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+                myDropDown(
+                  context,
+                  value: _userCategory,
+                  color: _userCategory == 'tout' ? Colors.grey : primaryColor,
+                  items: usersCategorys.entries.map((item) {
+                    return DropdownMenuItem(
+                      value: getKeyFromValue(item.value),
+                      alignment: AlignmentDirectional.center,
+                      child: Text(item.value),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => _userCategory = value.toString()),
+                ),
+              ],
             ),
           if (transactionCategory != 'caisse') mySizedBox(context),
           Column(
@@ -1208,6 +932,7 @@ class _TransactionsState extends State<Transactions> {
                     myDropDown(
                       context,
                       value: _month,
+                      width: getWidth(context, .072),
                       color: _month == 'tout' ? Colors.grey : primaryColor,
                       items: [constans['tout'] ?? '', ...monthsOfYear].map((item) {
                         return DropdownMenuItem(
@@ -1260,8 +985,7 @@ class _TransactionsState extends State<Transactions> {
                 },
                 child: Container(
                     height: getHeight(context, textFeildHeight),
-                    width: getWidth(context, .08),
-                    padding: const EdgeInsets.all(8.0),
+                    width: getWidth(context, dropDownWidth),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -1307,8 +1031,7 @@ class _TransactionsState extends State<Transactions> {
                 },
                 child: Container(
                     height: getHeight(context, textFeildHeight),
-                    width: getWidth(context, .08),
-                    padding: const EdgeInsets.all(8.0),
+                    width: getWidth(context, dropDownWidth),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -1362,7 +1085,7 @@ class _TransactionsState extends State<Transactions> {
                         '#',
                         getText('reference'),
                         if (transactionCategory == 'specials') getText('category') else getText('name'),
-                        if (transactionCategory == 'caisse') getText('source'),
+                        if (transactionCategory == 'caisse' || transactionCategory == 'users') getText('source'),
                         getText('date'),
                         getText('type'),
                         getText('in'),
@@ -1393,6 +1116,7 @@ class _TransactionsState extends State<Transactions> {
                               transactions.indexOf(trans) + 1,
                               trans.reference,
                               trans.realUserName,
+                              getText(trans.source),
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
                               trans.type == 'in' ? trans.amount : '-',
@@ -1410,30 +1134,6 @@ class _TransactionsState extends State<Transactions> {
                               trans.type == 'in' ? trans.amount : '-',
                               trans.type == 'out' ? trans.amount : '-',
                               trans.solde,
-                              trans.note,
-                            ])
-                      else if (transactionCategory == 'loans')
-                        ...loanTransactions.map((trans) => [
-                              loanTransactions.indexOf(trans) + 1,
-                              trans.reference,
-                              trans.realUserName,
-                              myDateFormate.format(trans.date),
-                              trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '-',
-                              trans.type == 'out' ? trans.amount : '-',
-                              trans.soldeUser,
-                              trans.note,
-                            ])
-                      else
-                        ...depositTransactions.map((trans) => [
-                              depositTransactions.indexOf(trans) + 1,
-                              trans.reference,
-                              trans.realUserName,
-                              myDateFormate.format(trans.date),
-                              trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '-',
-                              trans.type == 'out' ? trans.amount : '-',
-                              trans.soldeUser,
                               trans.note,
                             ])
                     ],
@@ -1456,6 +1156,7 @@ class _TransactionsState extends State<Transactions> {
             ),
           if (_search.isNotEmpty ||
               _reference.isNotEmpty ||
+              _userCategory != 'tout' ||
               _compt != 'tout' ||
               _type != 'tout' ||
               _month != 'tout' ||
@@ -1474,6 +1175,7 @@ class _TransactionsState extends State<Transactions> {
                 _reference = '';
                 _searchController.clear();
                 _referenceController.clear();
+                _userCategory = 'tout';
                 _type = 'tout';
                 _month = 'tout';
                 _fromDate = _year == 'tout' ? DateTime(int.parse(years.last)) : DateTime(int.parse(_year));
@@ -1519,7 +1221,7 @@ class _TransactionsState extends State<Transactions> {
               child: TextField(
                 controller: _searchController,
                 focusNode: focusNode,
-                style: const TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 16),
                 onSubmitted: ((value) {
                   if (optionsBuilder(_searchController.value).first.isNotEmpty) {
                     setState(
@@ -1603,26 +1305,7 @@ class _TransactionsState extends State<Transactions> {
         trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
         data.add({
           'date': myDateFormate.format(trans.date),
-          'in': myCurrency(trans.type == 'in' ? trans.amount : 0),
-          'out': myCurrency(trans.type == 'out' ? trans.amount : 0),
-          'solde': myCurrency(trans.soldeUser)
-        });
-      }).toList();
-    } else if (transactionCategory == 'loans') {
-      loanTransactions.map((trans) {
-        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
-        data.add({
-          'date': myDateFormate.format(trans.date),
-          'in': myCurrency(trans.type == 'in' ? trans.amount : 0),
-          'out': myCurrency(trans.type == 'out' ? trans.amount : 0),
-          'solde': myCurrency(trans.soldeUser)
-        });
-      }).toList();
-    } else if (transactionCategory == 'deposits') {
-      depositTransactions.map((trans) {
-        trans.type == 'in' ? totalIn += trans.amount : totalOut += trans.amount;
-        data.add({
-          'date': myDateFormate.format(trans.date),
+          'source': trans.source,
           'in': myCurrency(trans.type == 'in' ? trans.amount : 0),
           'out': myCurrency(trans.type == 'out' ? trans.amount : 0),
           'solde': myCurrency(trans.soldeUser)
@@ -1645,8 +1328,9 @@ class _TransactionsState extends State<Transactions> {
       pw.Table.fromTextArray(
         headers: [
           if (transactionCategory == 'caisse') 'Name',
-          if (transactionCategory == 'caisse') 'Type',
+          if (transactionCategory == 'caisse') 'Category',
           'Date',
+          if (transactionCategory == 'users') 'Category',
           'In',
           'Out',
           'Solde',
@@ -1656,6 +1340,7 @@ class _TransactionsState extends State<Transactions> {
                   if (transactionCategory == 'caisse') trans['name'],
                   if (transactionCategory == 'caisse') getText(trans['source'] ?? ''),
                   trans['date'],
+                  if (transactionCategory == 'users') getText(trans['source'] ?? ''),
                   trans['in'],
                   trans['out'],
                   trans['solde'],

@@ -10,6 +10,7 @@ double profitability = 0;
 bool isAdmin = false;
 String transactionFilterYear = 'tout';
 var years = <String>{};
+var userNames = <String>{};
 Map<String, String> realUserNames = {};
 
 Color primaryColor = const Color(0XFF02333c); //0XFF303F9F
@@ -17,6 +18,7 @@ Color secondaryColor = const Color(0XFF08535d);
 Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 
 double textFeildHeight = .05;
+double dropDownWidth = .065;
 
 late pw.Font pdfFont;
 late pw.Font pdfFontBold;

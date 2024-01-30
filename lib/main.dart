@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -198,11 +199,43 @@ class _MyAppState extends State<MyApp> {
     // print('done');
   }
 
+  void loadData() async {
+    var res = await sqlQuery(selectUrl, {
+      'sql1': '''SELECT DISTINCT(Year(date)) AS year  FROM transaction 
+          UNION SELECT DISTINCT(Year(date)) AS year FROM transactionothers 
+          UNION SELECT DISTINCT(Year(date)) AS year FROM transactionsp 
+          UNION SELECT DISTINCT(Year(date)) AS year FROM transactiontemp
+          UNION SELECT year FROM profithistory
+          UNION SELECT year FROM userhistory
+          UNION SELECT year FROM unithistory;''',
+      'sql2': '''SELECT DISTINCT(userName) AS name FROM transaction
+          UNION SELECT DISTINCT(userName) AS name FROM transactionothers
+          UNION SELECT DISTINCT(userName) AS name FROM transactiontemp WHERE userName <> 'reserve' AND userName <> 'reserveProfit'
+          UNION SELECT name FROM users 
+          UNION SELECT name FROM otherusers
+          UNION SELECT name FROM userhistory;'''
+    });
+
+    for (var ele in res[0]) {
+      years.add(ele['year'].toString());
+    }
+    years = SplayTreeSet.from(years, (a, b) => b.compareTo(a));
+
+    userNames.clear();
+    for (var ele in res[1]) {
+      userNames.add(realUserNames[ele['name']] ?? ele['name']);
+    }
+
+    userNames = SplayTreeSet.from(userNames, (a, b) => a.compareTo(b));
+  }
+
   @override
   void initState() {
     super.initState();
     selectedTab = tabsIndex[widget.index] ?? 0;
     initFont();
+    loadData();
+
     // updateamountOnLetter();
   }
 

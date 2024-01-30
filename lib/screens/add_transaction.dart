@@ -577,6 +577,14 @@ class _AddTransactionState extends State<AddTransaction> {
   }
 
   Widget transactionInfo() {
+    Map<String, String> compts = {
+      'caisse': getText('caisse'),
+      'reserve': getText('reserve'),
+      'reserveProfit': getText('reserveProfit'),
+      'donation': getText('donation'),
+      'zakat': getText('zakat'),
+    };
+
     return Column(
       children: [
         if (selectedTransactionType == 0) // special transaction
@@ -642,7 +650,7 @@ class _AddTransactionState extends State<AddTransaction> {
                           controller: textEditingController,
                           focusNode: focusNode,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 18.0),
+                          style: const TextStyle(fontSize: 16.0),
                           enabled: ['da', 'tr'].contains(widget.sourceTab),
                           autofocus: true,
                           decoration: InputDecoration(
@@ -743,7 +751,7 @@ class _AddTransactionState extends State<AddTransaction> {
                           controller: textEditingController,
                           focusNode: focusNode,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 18.0),
+                          style: const TextStyle(fontSize: 16.0),
                           enabled: ['da', 'tr'].contains(widget.sourceTab),
                           autofocus: true,
                           decoration: InputDecoration(
@@ -967,7 +975,7 @@ class _AddTransactionState extends State<AddTransaction> {
             ),
             child: TextFormField(
               onChanged: ((value) => note = value),
-              style: const TextStyle(fontSize: 22),
+              style: const TextStyle(fontSize: 16),
               maxLength: 350,
               minLines: 5,
               maxLines: 5,
@@ -999,7 +1007,7 @@ class _AddTransactionState extends State<AddTransaction> {
               myText('المبلغ بالحروف'),
               mySizedBox(context),
               TextFormField(
-                style: const TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 16),
                 controller: controller,
                 minLines: 1,
                 maxLines: 2,
@@ -1035,7 +1043,7 @@ class _AddTransactionState extends State<AddTransaction> {
               controller: textEditingController,
               focusNode: focusNode,
               textDirection: TextDirection.rtl,
-              style: const TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
               decoration: const InputDecoration(
                 contentPadding: EdgeInsets.all(12),
@@ -1081,7 +1089,7 @@ class _AddTransactionState extends State<AddTransaction> {
         mySizedBox(context),
         TextFormField(
           initialValue: intermediates,
-          style: const TextStyle(fontSize: 18),
+          style: const TextStyle(fontSize: 16),
           textAlign: TextAlign.start,
           maxLength: 350,
           minLines: 3,
@@ -1104,7 +1112,7 @@ class _AddTransactionState extends State<AddTransaction> {
         mySizedBox(context),
         TextFormField(
           initialValue: printingNotes,
-          style: const TextStyle(fontSize: 18),
+          style: const TextStyle(fontSize: 16),
           textAlign: TextAlign.start,
           maxLength: 350,
           minLines: 3,

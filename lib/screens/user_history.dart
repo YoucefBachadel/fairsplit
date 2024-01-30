@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 
 import '../models/user_history.dart';
@@ -17,8 +15,6 @@ class UserHistoryScreen extends StatefulWidget {
 
 class _UserHistoryScreenState extends State<UserHistoryScreen> {
   List<UserHistory> allUsersHistroy = [], usersHistory = [];
-  var years = <String>{};
-  var userNames = <String>{};
   bool isloading = true;
   String _search = '';
   String _year = 'tout';
@@ -48,16 +44,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         totalProfit: double.parse(ele['totalProfit']),
         zakat: double.parse(ele['zakat']),
       ));
-
-      userNames.add(ele['name']);
-      years.add(ele['year']);
     }
-    for (var userHistory in allUsersHistroy) {
-      userNames.add(userHistory.realName);
-    }
-
-    userNames = SplayTreeSet.from(userNames);
-    years = SplayTreeSet.from(years, (a, b) => b.compareTo(a));
 
     setState(() {
       isloading = false;
@@ -296,7 +283,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                     child: TextField(
                       controller: _controller,
                       focusNode: focusNode,
-                      style: const TextStyle(fontSize: 18.0),
+                      style: const TextStyle(fontSize: 16.0),
                       onSubmitted: ((value) {
                         if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
                           String text =
@@ -336,7 +323,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                       elevation: 8.0,
                       child: ConstrainedBox(
                         constraints:
-                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .22)),
+                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .18)),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,

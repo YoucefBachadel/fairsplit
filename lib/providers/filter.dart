@@ -2,7 +2,7 @@ import 'package:fairsplit/shared/constants.dart';
 import 'package:flutter/material.dart';
 
 class Filter with ChangeNotifier {
-  String _transactionCategory = 'caisse', _compt = 'tout', _search = '', _loanDeposit = 'tout';
+  String _transactionCategory = 'users', _compt = 'tout', _search = '', _loanDeposit = 'tout';
 
   String get transactionCategory => _transactionCategory;
   String get compt => _compt;
@@ -18,7 +18,7 @@ class Filter with ChangeNotifier {
   }
 
   void reset() {
-    _transactionCategory = 'caisse';
+    _transactionCategory = 'users';
     _compt = 'tout';
     _search = '';
     _loanDeposit = 'tout';

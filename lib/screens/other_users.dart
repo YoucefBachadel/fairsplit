@@ -273,6 +273,7 @@ class _OtherUsersState extends State<OtherUsers> {
                       controller: _controller,
                       focusNode: focusNode,
                       style: const TextStyle(fontSize: 16.0),
+                      textAlign: TextAlign.center,
                       onSubmitted: ((value) {
                         if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
                           String text =

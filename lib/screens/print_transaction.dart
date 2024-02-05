@@ -110,7 +110,13 @@ class PrintTransaction extends StatelessWidget {
             ]),
             pw.SizedBox(height: 5),
             pw.Row(mainAxisAlignment: pw.MainAxisAlignment.end, children: [
-              data(solde == 0 ? '0' : myCurrency(solde), fontSize: 12),
+              data(
+                  solde == -0.01
+                      ? '/'
+                      : solde == 0
+                          ? '0'
+                          : myCurrency(solde),
+                  fontSize: 12),
               title('الرصيد المتبقي      '),
             ]),
           ],

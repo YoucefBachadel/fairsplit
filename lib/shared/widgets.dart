@@ -115,11 +115,12 @@ Widget myDropDown(
     child: DropdownButtonHideUnderline(
       child: DropdownButton(
         style: const TextStyle(fontSize: 16, color: Colors.black, overflow: TextOverflow.ellipsis),
+        alignment: AlignmentDirectional.center,
         value: value,
-        isExpanded: true,
         items: items,
         onChanged: onChanged,
-        itemHeight: null,
+        isExpanded: true,
+        // itemHeight: null,
       ),
     ),
   );

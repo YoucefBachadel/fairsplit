@@ -645,7 +645,7 @@ class _CalculationState extends State<Calculation> {
         .map(
           (transaction) => DataRow(cells: [
             dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
-            dataCell(context, transaction.userName, textAlign: TextAlign.start),
+            dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
             dataCell(context, myDateFormate.format(transaction.date)),
             dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
             dataCell(context, transaction.type == 'in' ? myCurrency(transaction.amount) : '-',
@@ -673,7 +673,7 @@ class _CalculationState extends State<Calculation> {
         .map(
           (user) => DataRow(cells: [
             dataCell(context, (moneyUsers.indexOf(user) + 1).toString()),
-            dataCell(context, user.name, textAlign: TextAlign.start),
+            dataCell(context, user.realName, textAlign: TextAlign.start),
             dataCell(context, myCurrency(user.initialCapital), textAlign: TextAlign.end),
             dataCell(context, myCurrency(user.capital), textAlign: TextAlign.end),
             dataCell(context, myCurrency(profitability == 0 ? 0 : user.money / profitability),
@@ -737,7 +737,7 @@ class _CalculationState extends State<Calculation> {
         .map(
           (user) => DataRow(cells: [
             dataCell(context, (thresholdUsers.indexOf(user) + 1).toString()),
-            dataCell(context, user.name, textAlign: TextAlign.start),
+            dataCell(context, user.realName, textAlign: TextAlign.start),
             dataCell(context, user.thresholdPerc.toString()),
             dataCell(context, myCurrency(user.threshold), textAlign: TextAlign.end),
           ]),
@@ -765,7 +765,7 @@ class _CalculationState extends State<Calculation> {
         .map(
           (user) => DataRow(cells: [
             dataCell(context, (foundingUsers.indexOf(user) + 1).toString()),
-            dataCell(context, user.name, textAlign: TextAlign.start),
+            dataCell(context, user.realName, textAlign: TextAlign.start),
             dataCell(context, user.foundingPerc.toString()),
             dataCell(context, myCurrency(user.founding), textAlign: TextAlign.end),
           ]),
@@ -793,7 +793,7 @@ class _CalculationState extends State<Calculation> {
         .map(
           (user) => DataRow(cells: [
             dataCell(context, (unitEffortUsers.indexOf(user) + 1).toString()),
-            dataCell(context, user.name, textAlign: TextAlign.start),
+            dataCell(context, user.realName, textAlign: TextAlign.start),
             dataCell(context, user.effortPerc.toString()),
             dataCell(context, myCurrency(user.effort), textAlign: TextAlign.end),
           ]),
@@ -821,7 +821,7 @@ class _CalculationState extends State<Calculation> {
         .map(
           (user) => DataRow(cells: [
             dataCell(context, (globalEffortUsers.indexOf(user) + 1).toString()),
-            dataCell(context, user.name, textAlign: TextAlign.start),
+            dataCell(context, user.realName, textAlign: TextAlign.start),
             dataCell(context, user.effortPerc.toString()),
             dataCell(context, myCurrency(user.effort), textAlign: TextAlign.end),
           ]),

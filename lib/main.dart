@@ -274,6 +274,7 @@ class _MyAppState extends State<MyApp> {
                         padding: const EdgeInsets.only(left: 5),
                         child: Column(children: [
                           const Spacer(),
+                          Divider(color: scaffoldColor, thickness: .1),
                           ...tabs
                               .map(
                                 (e) => InkWell(
@@ -336,21 +337,26 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget tabItem(String text, bool selected) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 20.0),
-      decoration: BoxDecoration(
-        color: selected ? scaffoldColor : Colors.transparent,
-        borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-          color: selected ? primaryColor : Colors.white,
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 20.0),
+          decoration: BoxDecoration(
+            color: selected ? scaffoldColor : Colors.transparent,
+            borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
+          ),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              color: selected ? primaryColor : Colors.white,
+            ),
+          ),
         ),
-      ),
+        Divider(color: scaffoldColor, thickness: .1),
+      ],
     );
   }
 

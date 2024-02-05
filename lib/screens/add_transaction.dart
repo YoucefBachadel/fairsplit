@@ -256,7 +256,7 @@ class _AddTransactionState extends State<AddTransaction> {
           _testsChecked = false;
           snackBar(context, getMessage('soldeZero'));
         } else {
-          soldeForPrint = _solde;
+          soldeForPrint = ((category == 'reserve' || category == 'reserveProfit') && isNewYear) ? -0.01 : _solde;
           //insert the special transaction
           //update the setting category
           //update the setting caisse
@@ -351,11 +351,11 @@ class _AddTransactionState extends State<AddTransaction> {
           if (selectedName.isNotEmpty && (users.isEmpty || nameWrite)) {
             double _soldeUser = selectedUser.capital + _amount;
 
-            if (_soldeUser < 0) {
+            if (_soldeUser < 0 && !isNewYear) {
               _testsChecked = false;
               snackBar(context, getMessage('capitalZero'));
             } else {
-              soldeForPrint = _soldeUser;
+              soldeForPrint = isNewYear ? -0.01 : _soldeUser;
               //insert the transaction
               //update the User capital
               //update the setting caisse
@@ -371,7 +371,7 @@ class _AddTransactionState extends State<AddTransaction> {
             snackBar(context, getMessage('checkName'));
           }
         } else if (selectedTransactionType == 2) {
-          //locan transaction
+          //loan transaction
           if (selectedName.isNotEmpty && (loanUsers.isEmpty || nameWrite)) {
             double _userAmount = selectedOtherUser.amount;
             if (type == 'out') _userAmount -= _amount;
@@ -1061,9 +1061,7 @@ class _AddTransactionState extends State<AddTransaction> {
             child: Material(
               elevation: 8.0,
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: getWidth(context, .33),
-                ),
+                constraints: BoxConstraints(maxWidth: getWidth(context, .33)),
                 child: ListView.builder(
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
@@ -1084,8 +1082,6 @@ class _AddTransactionState extends State<AddTransaction> {
             ),
           ),
         ),
-        // mySizedBox(context),
-        // myText('الوسطاء'),
         mySizedBox(context),
         TextFormField(
           initialValue: intermediates,
@@ -1107,8 +1103,6 @@ class _AddTransactionState extends State<AddTransaction> {
           ),
           onChanged: (value) => setState(() => intermediates = value),
         ),
-        // mySizedBox(context),
-        // myText('ملاحظات'),
         mySizedBox(context),
         TextFormField(
           initialValue: printingNotes,

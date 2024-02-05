@@ -130,39 +130,19 @@ class _DashboardState extends State<Dashboard> {
                         ),
                       ),
                       Expanded(
-                        child: Column(children: [
-                          ...[
+                        child: Column(
+                          children: [
                             [getText('profitability'), (profitability * 100).toStringAsFixed(2)],
                             [getText('totalProfit'), myCurrency(totalProfit)],
+                            [getText('totalLoan'), myCurrency(totalLoan), '2', 'loan'],
+                            [getText('totalDeposit'), myCurrency(totalDeposit), '3', 'deposit'],
                             // [getText('totalIn'), myCurrency(totalIn)],
                             // [getText('totalOut'), myCurrency(totalOut)],
                             // [getText('totalLoan'), myCurrency(totalLoan)],
                             // [getText('totalDeposit'), myCurrency(totalDeposit)],
                             // [getText('reserveProfit'), myCurrency(reserveProfit)],
                           ].map((e) => boxCard(e[0], e[1], false)).toList(),
-                          ...[
-                            [getText('totalLoan'), myCurrency(totalLoan), '2', 'loan'],
-                            [getText('totalDeposit'), myCurrency(totalDeposit), '3', 'deposit'],
-                          ]
-                              .map((e) => boxCard(
-                                    e[0],
-                                    e[1],
-                                    true,
-                                    onTap: () async => await createDialog(
-                                      context,
-                                      AddTransaction(
-                                        sourceTab: 'da',
-                                        selectedTransactionType: int.parse(e[2]),
-                                      ),
-                                    ),
-                                    onLongPress: () {
-                                      context.read<Filter>().change(loanDeposit: e[3]);
-                                      Navigator.pushReplacement(
-                                          context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-                                    },
-                                  ))
-                              .toList(),
-                        ]),
+                        ),
                       ),
                     ],
                   ),

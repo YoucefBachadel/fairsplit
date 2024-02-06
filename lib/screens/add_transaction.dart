@@ -149,12 +149,9 @@ class _AddTransactionState extends State<AddTransaction> {
     params['sql1'] = 'SELECT * FROM Settings;';
     params['sql2'] = '''SELECT MAX(max_date) AS lastDate FROM (
                           SELECT MAX(date) AS max_date FROM transaction
-                          UNION ALL
-                          SELECT MAX(date) AS max_date FROM transactionothers
-                          UNION ALL
-                          SELECT MAX(date) AS max_date FROM transactionsp
-	                        UNION ALL
-                          SELECT MAX(date) AS max_date FROM transactiontemp
+                          UNION ALL SELECT MAX(date) AS max_date FROM transactionothers
+                          UNION ALL SELECT MAX(date) AS max_date FROM transactionsp
+	                        UNION ALL SELECT MAX(date) AS max_date FROM transactiontemp
                         ) AS all_max_dates''';
     if (widget.sourceTab == 'tr') {
       if ([1, 4].contains(selectedTransactionType)) {
@@ -172,12 +169,7 @@ class _AddTransactionState extends State<AddTransaction> {
     donation = double.parse(dataSettings['donation']);
     zakat = double.parse(dataSettings['zakat']);
 
-    DateTime _lastDate = DateTime(
-      DateTime.parse(res[1][0]['lastDate']).year,
-      DateTime.parse(res[1][0]['lastDate']).month,
-      DateTime.parse(res[1][0]['lastDate']).day,
-    );
-    if (_lastDate != lastTransactionDate) lastTransactionDate = _lastDate.add(const Duration(days: 1));
+    lastTransactionDate = DateTime.parse(res[1][0]['lastDate']);
 
     if (widget.sourceTab == 'da' && selectedTransactionType == 0) {
       //if source tab is dashboard and type is special
@@ -945,16 +937,25 @@ class _AddTransactionState extends State<AddTransaction> {
                         locale: const Locale("fr", "FR"),
                       );
                       if (selected != null && selected != date) {
-                        setState(
-                          () => date = DateTime(
+                        DateTime _selectedDate = DateTime(
+                          selected.year,
+                          selected.month,
+                          selected.day,
+                          DateTime.now().hour,
+                          DateTime.now().minute,
+                          DateTime.now().second,
+                        );
+                        if (_selectedDate.isBefore(lastTransactionDate)) {
+                          _selectedDate = DateTime(
                             selected.year,
                             selected.month,
                             selected.day,
-                            DateTime.now().hour,
-                            DateTime.now().minute,
-                            DateTime.now().second,
-                          ),
-                        );
+                            lastTransactionDate.hour,
+                            lastTransactionDate.minute,
+                            lastTransactionDate.second + 1,
+                          );
+                        }
+                        setState(() => date = _selectedDate);
                       }
                     },
                   )

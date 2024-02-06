@@ -31,13 +31,7 @@ class _UsersState extends State<Users> {
   int _thresholdUnitFilter = -2;
   int _foundingUnitFilter = -2;
   int _effortUnitFilter = -2;
-  double tcapital = 0,
-      tweightedCapital = 0,
-      tinitialCapital = 0,
-      tmoney = 0,
-      teffort = 0,
-      tthreshold = 0,
-      tfounding = 0;
+  double tcapital = 0, tinitialCapital = 0, tmoney = 0, teffort = 0, tthreshold = 0, tfounding = 0;
 
   int? _sortColumnIndex = 1;
   bool _isAscending = true;
@@ -80,7 +74,6 @@ class _UsersState extends State<Users> {
     bool _iseffortFilter = false;
 
     tcapital = 0;
-    tweightedCapital = 0;
     tinitialCapital = 0;
     tmoney = 0;
     teffort = 0;
@@ -130,7 +123,6 @@ class _UsersState extends State<Users> {
         users.add(user);
 
         tcapital += user.capital;
-        tweightedCapital += user.weightedCapital;
         tinitialCapital += user.initialCapital;
         tmoney += user.money;
         teffort += user.effort;

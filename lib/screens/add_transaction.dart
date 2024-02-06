@@ -118,10 +118,11 @@ class _AddTransactionState extends State<AddTransaction> {
       rest = 0,
       selectedUserCapital = 0; //used to show user capital
   DateTime date = DateTime.now();
-  bool isLoading = true;
   int selectedTransactionType = 0;
   String _password = ''; // used for all users Transaction;
   int reference = 0;
+  DateTime lastTransactionDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+  bool isLoading = true;
   bool isNewYear = false; //true after 1 jan befor passage so user and reserve transaction will be stored in tempTransac
 
   List<User> users = [];
@@ -145,15 +146,22 @@ class _AddTransactionState extends State<AddTransaction> {
 
   void loadData() async {
     var params = {};
-    int counter = 1;
-    params['sql$counter'] = 'SELECT * FROM Settings;';
-    if ((['tr', 'da'].contains(widget.sourceTab)) && ([1, 4].contains(selectedTransactionType))) {
-      counter++;
-      params['sql$counter'] = '''SELECT userId,name,capital FROM Users;''';
-    }
-    if (['tr', 'da'].contains(widget.sourceTab) && ([2, 3].contains(selectedTransactionType))) {
-      counter++;
-      params['sql$counter'] = '''SELECT userId,name,type,amount,rest FROM OtherUsers;''';
+    params['sql1'] = 'SELECT * FROM Settings;';
+    params['sql2'] = '''SELECT MAX(max_date) AS lastDate FROM (
+                          SELECT MAX(date) AS max_date FROM transaction
+                          UNION ALL
+                          SELECT MAX(date) AS max_date FROM transactionothers
+                          UNION ALL
+                          SELECT MAX(date) AS max_date FROM transactionsp
+	                        UNION ALL
+                          SELECT MAX(date) AS max_date FROM transactiontemp
+                        ) AS all_max_dates''';
+    if (widget.sourceTab == 'tr') {
+      if ([1, 4].contains(selectedTransactionType)) {
+        params['sql3'] = '''SELECT userId,name,capital FROM Users;''';
+      } else if ([2, 3].contains(selectedTransactionType)) {
+        params['sql3'] = '''SELECT userId,name,type,amount,rest FROM OtherUsers;''';
+      }
     }
     var res = await sqlQuery(selectUrl, params);
 
@@ -163,6 +171,13 @@ class _AddTransactionState extends State<AddTransaction> {
     reserveProfit = double.parse(dataSettings['reserveProfit']);
     donation = double.parse(dataSettings['donation']);
     zakat = double.parse(dataSettings['zakat']);
+
+    DateTime _lastDate = DateTime(
+      DateTime.parse(res[1][0]['lastDate']).year,
+      DateTime.parse(res[1][0]['lastDate']).month,
+      DateTime.parse(res[1][0]['lastDate']).day,
+    );
+    if (_lastDate != lastTransactionDate) lastTransactionDate = _lastDate.add(const Duration(days: 1));
 
     if (widget.sourceTab == 'da' && selectedTransactionType == 0) {
       //if source tab is dashboard and type is special
@@ -185,7 +200,7 @@ class _AddTransactionState extends State<AddTransaction> {
       }
     } else if (selectedTransactionType != 0) {
       // else if source tab is dashboard or transaction and type is not special
-      var dataUsers = res[1];
+      var dataUsers = res[2];
 
       if ([1, 4].contains(selectedTransactionType)) {
         for (var element in dataUsers) {
@@ -896,56 +911,58 @@ class _AddTransactionState extends State<AddTransaction> {
                 )),
           ],
         ),
-        if (isAdmin) mySizedBox(context),
-        if (isAdmin)
-          Row(
-            children: [
-              Expanded(child: myText(getText('date'))),
-              Expanded(
-                flex: 4,
-                child: Row(
-                  children: [
-                    myTextField(
-                      context,
-                      hint: myDateFormate.format(date),
+        mySizedBox(context),
+        Row(
+          children: [
+            Expanded(child: myText(getText('date'))),
+            Expanded(
+              flex: 4,
+              child: Row(
+                children: [
+                  Container(
+                      height: getHeight(context, textFeildHeight),
                       width: getWidth(context, .10),
-                      enabled: false,
-                      onChanged: ((text) {}),
-                    ),
-                    mySizedBox(context),
-                    IconButton(
-                      icon: Icon(
-                        Icons.calendar_month,
-                        color: primaryColor,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.black),
+                        borderRadius: const BorderRadius.all(Radius.circular(12)),
                       ),
-                      onPressed: () async {
-                        final DateTime? selected = await showDatePicker(
-                          context: context,
-                          initialDate: date,
-                          firstDate: DateTime(currentYear),
-                          lastDate: DateTime.now(),
-                          initialEntryMode: DatePickerEntryMode.input,
-                          locale: const Locale("fr", "FR"),
+                      child: myText(myDateFormate.format(date))),
+                  mySizedBox(context),
+                  IconButton(
+                    icon: Icon(
+                      Icons.calendar_month,
+                      color: primaryColor,
+                    ),
+                    onPressed: () async {
+                      final DateTime? selected = await showDatePicker(
+                        context: context,
+                        initialDate: date,
+                        firstDate: lastTransactionDate,
+                        lastDate: DateTime.now(),
+                        initialEntryMode: DatePickerEntryMode.input,
+                        locale: const Locale("fr", "FR"),
+                      );
+                      if (selected != null && selected != date) {
+                        setState(
+                          () => date = DateTime(
+                            selected.year,
+                            selected.month,
+                            selected.day,
+                            DateTime.now().hour,
+                            DateTime.now().minute,
+                            DateTime.now().second,
+                          ),
                         );
-                        if (selected != null && selected != date) {
-                          setState(
-                            () => date = DateTime(
-                              selected.year,
-                              selected.month,
-                              selected.day,
-                              DateTime.now().hour,
-                              DateTime.now().minute,
-                              DateTime.now().second,
-                            ),
-                          );
-                        }
-                      },
-                    )
-                  ],
-                ),
+                      }
+                    },
+                  )
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
         if (selectedTransactionType == 4) mySizedBox(context),
         if (selectedTransactionType == 4)
           Row(

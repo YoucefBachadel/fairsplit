@@ -29,7 +29,6 @@ class _AddUserState extends State<AddUser> {
   bool isLoading = true;
   bool isMoney = false;
   bool isEffort = false;
-  // String password = '';
 
   // this to check if has been changed, it will be modified on conferm or delete item
   bool thresholdsHasChanged = false;
@@ -328,14 +327,17 @@ class _AddUserState extends State<AddUser> {
               flex: 4,
               child: Row(
                 children: [
-                  myTextField(
-                    context,
-                    hint: myDateFormate.format(joinDate),
-                    width: getWidth(context, .1),
-                    enabled: false,
-                    onChanged: ((text) {}),
-                  ),
-                  const SizedBox(width: 5.0),
+                  Container(
+                      height: getHeight(context, textFeildHeight),
+                      width: getWidth(context, .10),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.black),
+                        borderRadius: const BorderRadius.all(Radius.circular(12)),
+                      ),
+                      child: myText(myDateFormate.format(joinDate))),
+                  mySizedBox(context),
                   IconButton(
                     icon: Icon(
                       Icons.calendar_month,
@@ -350,12 +352,10 @@ class _AddUserState extends State<AddUser> {
                         lastDate: DateTime.now(),
                       );
                       if (selected != null && selected != joinDate) {
-                        setState(() {
-                          joinDate = selected;
-                        });
+                        setState(() => joinDate = selected);
                       }
                     },
-                  )
+                  ),
                 ],
               ),
             ),
@@ -847,63 +847,58 @@ class _AddUserState extends State<AddUser> {
             icon: Icons.add,
             text: getText('add'),
             onTap: () {
-              try {
-                if (_percentage != '0' && _evaluation != '0') {
-                  percentage = double.parse(_percentage);
-                  evaluation = double.parse(_evaluation);
+              percentage = double.parse(_percentage);
+              evaluation = double.parse(_evaluation);
+              if (percentage != 0 && evaluation != 0) {
+                switch (type) {
+                  case 1:
+                    effortssHasChanged = true;
+                    if (listIndex == -1) {
+                      efforts.add(Effort(
+                        userId: widget.user.userId,
+                        unitId: _selectedUnitId,
+                        effortPerc: percentage,
+                        evaluation: evaluation,
+                      ));
+                    } else {
+                      efforts[listIndex].effortPerc = percentage;
+                      efforts[listIndex].evaluation = evaluation;
+                    }
 
-                  switch (type) {
-                    case 1:
-                      effortssHasChanged = true;
-                      if (listIndex == -1) {
-                        efforts.add(Effort(
-                          userId: widget.user.userId,
-                          unitId: _selectedUnitId,
-                          effortPerc: percentage,
-                          evaluation: evaluation,
-                        ));
-                      } else {
-                        efforts[listIndex].effortPerc = percentage;
-                        efforts[listIndex].evaluation = evaluation;
-                      }
-
-                      break;
-                    case 2:
-                      thresholdsHasChanged = true;
-                      if (listIndex == -1) {
-                        thresholds.add(my_threshold.Threshold(
-                          userId: widget.user.userId,
-                          unitId: _selectedUnitId,
-                          thresholdPerc: percentage,
-                        ));
-                      } else {
-                        thresholds[listIndex].thresholdPerc = percentage;
-                      }
-                      break;
-                    case 3:
-                      foundingssHasChanged = true;
-                      if (listIndex == -1) {
-                        foundings.add(Founding(
-                          userId: widget.user.userId,
-                          unitId: _selectedUnitId,
-                          foundingPerc: percentage,
-                        ));
-                      } else {
-                        foundings[listIndex].foundingPerc = percentage;
-                      }
-                      break;
-                  }
-
-                  setState(() => Navigator.of(context).pop());
-                } else {
-                  snackBar(
-                    context,
-                    getMessage('zeroValue'),
-                    duration: 5,
-                  );
+                    break;
+                  case 2:
+                    thresholdsHasChanged = true;
+                    if (listIndex == -1) {
+                      thresholds.add(my_threshold.Threshold(
+                        userId: widget.user.userId,
+                        unitId: _selectedUnitId,
+                        thresholdPerc: percentage,
+                      ));
+                    } else {
+                      thresholds[listIndex].thresholdPerc = percentage;
+                    }
+                    break;
+                  case 3:
+                    foundingssHasChanged = true;
+                    if (listIndex == -1) {
+                      foundings.add(Founding(
+                        userId: widget.user.userId,
+                        unitId: _selectedUnitId,
+                        foundingPerc: percentage,
+                      ));
+                    } else {
+                      foundings[listIndex].foundingPerc = percentage;
+                    }
+                    break;
                 }
-              } on Exception {
-                snackBar(context, getMessage('checkData'), duration: 5);
+
+                setState(() => Navigator.of(context).pop());
+              } else {
+                snackBar(
+                  context,
+                  getMessage('zeroValue'),
+                  duration: 5,
+                );
               }
             },
           ),

@@ -120,7 +120,6 @@ Widget myDropDown(
         items: items,
         onChanged: onChanged,
         isExpanded: true,
-        // itemHeight: null,
       ),
     ),
   );

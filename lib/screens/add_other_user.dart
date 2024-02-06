@@ -81,7 +81,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .40),
+      height: getHeight(context, .41),
       width: getWidth(context, .3),
       child: Column(
         children: [
@@ -145,14 +145,13 @@ class _AddOtherUserState extends State<AddOtherUser> {
                           )),
                       child: Column(
                         children: [
+                          mySizedBox(context),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Text(
                                 getText('loan'),
-                                style: !isDeposit
-                                    ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: primaryColor)
-                                    : Theme.of(context).textTheme.headlineSmall,
+                                style: Theme.of(context).textTheme.headlineSmall,
                               ),
                               Transform.scale(
                                 scale: 1.8,
@@ -172,13 +171,13 @@ class _AddOtherUserState extends State<AddOtherUser> {
                               ),
                               Text(
                                 getText('deposit'),
-                                style: isDeposit
-                                    ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: primaryColor)
-                                    : Theme.of(context).textTheme.headlineSmall,
+                                style: Theme.of(context).textTheme.headlineSmall,
                               ),
                             ],
                           ),
+                          mySizedBox(context),
                           const Divider(),
+                          mySizedBox(context),
                           Row(
                             children: [
                               Expanded(child: myText(getText('name'))),
@@ -201,13 +200,16 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                 flex: 4,
                                 child: Row(
                                   children: [
-                                    myTextField(
-                                      context,
-                                      hint: myDateFormate.format(joinDate),
-                                      width: getWidth(context, .1),
-                                      enabled: false,
-                                      onChanged: ((text) {}),
-                                    ),
+                                    Container(
+                                        height: getHeight(context, textFeildHeight),
+                                        width: getWidth(context, .10),
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(color: Colors.black),
+                                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                        ),
+                                        child: myText(myDateFormate.format(joinDate))),
                                     mySizedBox(context),
                                     IconButton(
                                       icon: Icon(
@@ -218,16 +220,15 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                         final DateTime? selected = await showDatePicker(
                                           context: context,
                                           initialDate: joinDate,
+                                          initialEntryMode: DatePickerEntryMode.input,
                                           firstDate: DateTime(1900, 01, 01, 00, 00, 00),
                                           lastDate: DateTime.now(),
                                         );
                                         if (selected != null && selected != joinDate) {
-                                          setState(() {
-                                            joinDate = selected;
-                                          });
+                                          setState(() => joinDate = selected);
                                         }
                                       },
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
@@ -252,13 +253,15 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             ],
                           ),
                           mySizedBox(context),
-                          myButton(context, onTap: () => save()),
-                          mySizedBox(context),
+                          const Divider(),
                         ],
                       ),
                     ),
                   ),
-          )
+          ),
+          mySizedBox(context),
+          if (!isLoading) myButton(context, onTap: () => save()),
+          mySizedBox(context),
         ],
       ),
     );

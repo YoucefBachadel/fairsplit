@@ -23,39 +23,34 @@ class _DashboardState extends State<Dashboard> {
   List<Unit> units = [];
   double caisse = 0,
       reserve = 0,
+      reserveProfit = 0,
       donation = 0,
       zakat = 0,
-      totalIn = 0,
-      totalOut = 0,
-      totalLoan = 0,
-      totalDeposit = 0,
       totalProfit = 0,
-      reserveProfit = 0;
+      totalLoan = 0,
+      totalDeposit = 0;
 
   void locadData() async {
     var res = await sqlQuery(selectUrl, {
-      'sql1':
-          '''SELECT (SELECT SUM(capital) FROM Users) as capitalUsers,(SELECT SUM(capital) FROM Units) as capitalUnits,
-          (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
-          (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
-          (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
-          s.caisse, s.reserve, s.donation, s.zakat,s.profitability,s.reserveProfit, s.currentYear FROM Settings s;''',
+      'sql1': '''SELECT 
+                (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
+                (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
+                (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
+                s.caisse, s.reserve, s.reserveProfit, s.donation, s.zakat, s.profitability, s.currentYear FROM Settings s;''',
       'sql2': 'SELECT name,profitability FROM units;',
     });
     var data = res[0][0];
     currentYear = int.parse(data['currentYear']);
     transactionFilterYear = currentYear.toString();
-    profitability = double.parse(data['profitability']);
     caisse = double.parse(data['caisse']);
     reserve = double.parse(data['reserve']);
+    reserveProfit = double.parse(data['reserveProfit'] ?? '0');
     donation = double.parse(data['donation']);
     zakat = double.parse(data['zakat']);
-    totalIn = double.parse(data['totalIn'] ?? '0');
-    totalOut = double.parse(data['totalOut'] ?? '0');
+    profitability = double.parse(data['profitability']);
+    totalProfit = double.parse(data['totalProfit'] ?? '0');
     totalLoan = double.parse(data['totalLoan'] ?? '0');
     totalDeposit = double.parse(data['totalDeposit'] ?? '0');
-    totalProfit = double.parse(data['totalProfit'] ?? '0');
-    reserveProfit = double.parse(data['reserveProfit'] ?? '0');
 
     for (var unit in res[1]) {
       units.add(Unit(
@@ -132,15 +127,17 @@ class _DashboardState extends State<Dashboard> {
                       Expanded(
                         child: Column(
                           children: [
-                            [getText('profitability'), (profitability * 100).toStringAsFixed(2)],
+                            [
+                              getText('profitability'),
+                              profitability == 0 ? zero : (profitability * 100).toStringAsFixed(2)
+                            ],
                             [getText('totalProfit'), myCurrency(totalProfit)],
-                            [getText('totalLoan'), myCurrency(totalLoan), '2', 'loan'],
-                            [getText('totalDeposit'), myCurrency(totalDeposit), '3', 'deposit'],
-                            // [getText('totalIn'), myCurrency(totalIn)],
-                            // [getText('totalOut'), myCurrency(totalOut)],
-                            // [getText('totalLoan'), myCurrency(totalLoan)],
-                            // [getText('totalDeposit'), myCurrency(totalDeposit)],
-                            // [getText('reserveProfit'), myCurrency(reserveProfit)],
+                            [
+                              getText('weightedCapital'),
+                              profitability == 0 ? zero : myCurrency(totalProfit / profitability)
+                            ],
+                            [getText('totalLoan'), myCurrency(totalLoan)],
+                            [getText('totalDeposit'), myCurrency(totalDeposit)],
                           ].map((e) => boxCard(e[0], e[1], false)).toList(),
                         ),
                       ),
@@ -160,15 +157,10 @@ class _DashboardState extends State<Dashboard> {
     Function()? onLongPress,
   }) {
     var column = Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        myText(title, size: 24),
-        Container(
-          padding: const EdgeInsets.all(8.0),
-          alignment: Alignment.center,
-          child: myText(amount, size: 28),
-        ),
+        Expanded(child: Center(child: myText(title, size: 24))),
+        const Divider(),
+        Expanded(flex: 2, child: Center(child: myText(amount, size: 28))),
       ],
     );
     return Expanded(

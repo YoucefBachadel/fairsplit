@@ -20,6 +20,8 @@ Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 double textFeildHeight = .05;
 double dropDownWidth = .065;
 
+String zero = '-';
+
 late pw.Font pdfFont;
 late pw.Font pdfFontBold;
 
@@ -37,7 +39,7 @@ dynamic sqlQuery(Uri uri, dynamic params) async {
 }
 
 String myCurrency(double amount) =>
-    amount == 0 ? '-' : (NumberFormat.currency(symbol: '', customPattern: '#,##0.00', locale: 'fr_FR')).format(amount);
+    amount == 0 ? zero : (NumberFormat.currency(symbol: '', customPattern: '#,##0.00', locale: 'fr_FR')).format(amount);
 
 String dateFormat(DateTime date) => DateFormat('dd-MM-yyyy').format(date);
 

@@ -128,12 +128,12 @@ class _UnitsState extends State<Units> {
                 dataCell(context, myCurrency(unit.capital), textAlign: TextAlign.end),
                 dataCell(context, (unit.capital * 100 / totalCapital).toStringAsFixed(2)),
                 dataCell(context, myCurrency(unit.profit), textAlign: TextAlign.end),
-                dataCell(context, (unit.profitability * 100).toStringAsFixed(2)),
+                dataCell(context, unit.profitability == 0 ? zero : (unit.profitability * 100).toStringAsFixed(2)),
                 ...[
                   unit.type == 'extern'
                       ? unit.currentMonthOrYear
                       : unit.currentMonthOrYear == 13
-                          ? '-'
+                          ? zero
                           : monthsOfYear[unit.currentMonthOrYear - 1],
                 ].map((e) => dataCell(context, e.toString())).toList(),
                 if (isAdmin)
@@ -202,7 +202,7 @@ class _UnitsState extends State<Units> {
                         mySizedBox(context),
                         totalItem(context, getText('count'), internCount.toString()),
                         totalItem(context, getText('percentage'),
-                            '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
+                            internCapital == 0 ? zero : '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
                         totalItem(context, getText('capital'), myCurrency(internCapital)),
                       ],
                     ),
@@ -214,7 +214,7 @@ class _UnitsState extends State<Units> {
                         mySizedBox(context),
                         totalItem(context, getText('count'), externCount.toString()),
                         totalItem(context, getText('percentage'),
-                            '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
+                            externCapital == 0 ? zero : '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
                         totalItem(context, getText('capital'), myCurrency(externCapital)),
                       ],
                     ),

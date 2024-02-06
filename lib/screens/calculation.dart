@@ -648,9 +648,9 @@ class _CalculationState extends State<Calculation> {
             dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
             dataCell(context, myDateFormate.format(transaction.date)),
             dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
-            dataCell(context, transaction.type == 'in' ? myCurrency(transaction.amount) : '-',
+            dataCell(context, transaction.type == 'in' ? myCurrency(transaction.amount) : zero,
                 textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
-            dataCell(context, transaction.type == 'out' ? myCurrency(transaction.amount) : '-',
+            dataCell(context, transaction.type == 'out' ? myCurrency(transaction.amount) : zero,
                 textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
           ]),
         )

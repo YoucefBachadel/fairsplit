@@ -1107,9 +1107,9 @@ class _TransactionsState extends State<Transactions> {
                               getText(trans.source),
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '-',
-                              trans.type == 'out' ? trans.amount : '-',
-                              trans.soldeUser,
+                              trans.type == 'in' ? trans.amount : zero,
+                              trans.type == 'out' ? trans.amount : zero,
+                              trans.soldeUser != -0.01 ? trans.soldeUser : '/',
                               trans.note,
                             ])
                       else if (transactionCategory == 'caisse')
@@ -1120,8 +1120,8 @@ class _TransactionsState extends State<Transactions> {
                               getText(trans.source),
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '-',
-                              trans.type == 'out' ? trans.amount : '-',
+                              trans.type == 'in' ? trans.amount : zero,
+                              trans.type == 'out' ? trans.amount : zero,
                               trans.soldeCaisse,
                               trans.note,
                             ])
@@ -1132,9 +1132,9 @@ class _TransactionsState extends State<Transactions> {
                               trans.category,
                               myDateFormate.format(trans.date),
                               trans.type == 'in' ? getText('in') : getText('out'),
-                              trans.type == 'in' ? trans.amount : '-',
-                              trans.type == 'out' ? trans.amount : '-',
-                              trans.solde,
+                              trans.type == 'in' ? trans.amount : zero,
+                              trans.type == 'out' ? trans.amount : zero,
+                              trans.solde != -0.01 ? trans.solde : '/',
                               trans.note,
                             ])
                     ],
@@ -1307,7 +1307,7 @@ class _TransactionsState extends State<Transactions> {
           'name': trans.realUserName,
           'in': myCurrency(trans.type == 'in' ? trans.amount : 0),
           'out': myCurrency(trans.type == 'out' ? trans.amount : 0),
-          'solde': myCurrency(trans.soldeUser)
+          'solde': trans.soldeUser != -0.01 ? myCurrency(trans.soldeUser) : '/'
         });
       }).toList();
     } else if (transactionCategory == 'caisse') {

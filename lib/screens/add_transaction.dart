@@ -269,8 +269,8 @@ class _AddTransactionState extends State<AddTransaction> {
           //update the setting caisse
           await sqlQuery(insertUrl, {
             'sql1': ((category == 'reserve' || category == 'reserveProfit') && isNewYear)
-                ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'$category' , '$date' , '$type' ,${_amount.abs()} ,$_soldeCaisse , '$note','$amountOnLetter','$intermediates','$printingNotes','$reciver');'''
-                : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note','$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
+                ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'$category' , '$date' , '$type' ,${_amount.abs()} ,$_soldeCaisse , '$note','$amountOnLetter','$intermediates','$printingNotes','$reciver');'''
+                : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note','$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
             'sql2':
                 '''UPDATE settings SET $category = $_solde , caisse = $_soldeCaisse , reference = ${reference + 1};''',
           });
@@ -304,7 +304,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             usersSQL += '(${user.userId}, $_soldeUser),';
             transactionsSQL +=
-                '''('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${user.userId} , '${user.name}' , '$date' , '$type' ,${_userAmount.abs()} , ${isNewYear ? '' : '$_soldeUser,'} $_soldeCaisse , '$note' , '${numberToArabicWords(_userAmount.abs())}' , '$intermediates' , '$printingNotes' , '$reciver' ),''';
+                '''('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , ${user.userId} , '${user.name}' , '$date' , '$type' ,${_userAmount.abs()} , ${isNewYear ? '' : '$_soldeUser,'} $_soldeCaisse , '$note' , '${numberToArabicWords(_userAmount.abs())}' , '$intermediates' , '$printingNotes' , '$reciver' ),''';
             reference++;
           }
 
@@ -368,7 +368,7 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO ${isNewYear ? 'transactiontemp' : 'transaction'} (reference,userId,userName,date,type,amount,${isNewYear ? '' : 'soldeUser,'}soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , ${selectedUser.userId},'${selectedUser.name}', '$date' , '$type' ,${_amount.abs()} ,${isNewYear ? '' : '$_soldeUser,'} $_soldeCaisse , '$note' , '$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
+                    '''INSERT INTO ${isNewYear ? 'transactiontemp' : 'transaction'} (reference,userId,userName,date,type,amount,${isNewYear ? '' : 'soldeUser,'}soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , ${selectedUser.userId},'${selectedUser.name}', '$date' , '$type' ,${_amount.abs()} ,${isNewYear ? '' : '$_soldeUser,'} $_soldeCaisse , '$note' , '$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
                 'sql2': '''UPDATE users SET capital = $_soldeUser WHERE userId = ${selectedUser.userId};''',
                 'sql3': '''UPDATE settings SET caisse = $_soldeCaisse , reference = ${reference + 1};'''
               });
@@ -395,7 +395,7 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO transactionothers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}', 'loan' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' ,'$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
+                    '''INSERT INTO transactionothers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}', 'loan' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' ,'$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
                 'sql2':
                     '''UPDATE otherusers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
                 'sql3': '''UPDATE settings SET caisse = $_soldeCaisse , reference = ${reference + 1};'''
@@ -424,7 +424,7 @@ class _AddTransactionState extends State<AddTransaction> {
               //update the setting caisse
               await sqlQuery(insertUrl, {
                 'sql1':
-                    '''INSERT INTO transactionothers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${date.year % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}','deposit' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' ,'$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
+                    '''INSERT INTO transactionothers (reference,userName,category,date,type,amount,soldeUser,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , '${selectedOtherUser.name}','deposit' , '$date' , '$type' ,${_amount.abs()} ,$_userRest, $_soldeCaisse , '$note' ,'$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
                 'sql2':
                     '''UPDATE otherusers SET amount = $_userAmount, rest = $_userRest WHERE userId = ${selectedOtherUser.userId};''',
                 'sql3': '''UPDATE settings SET caisse = $_soldeCaisse , reference = ${reference + 1};''',
@@ -464,7 +464,7 @@ class _AddTransactionState extends State<AddTransaction> {
                   : selectedOtherUser.realName,
           solde: soldeForPrint,
           type: type,
-          reference: '${date.year % 100}/${(reference).toString().padLeft(4, '0')}',
+          reference: '${currentYear % 100}/${reference.toString().padLeft(4, '0')}',
           amount: amount,
           date: myDateFormate.format(date),
           amountOnLetter: amountOnLetter,

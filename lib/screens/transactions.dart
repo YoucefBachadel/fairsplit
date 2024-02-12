@@ -1060,7 +1060,8 @@ class _TransactionsState extends State<Transactions> {
             onPressed: () async {
               final DateTime? selected = await showDatePicker(
                 context: context,
-                initialDate: DateTime.now(),
+                initialDate: _fromDate,
+                initialEntryMode: DatePickerEntryMode.input,
                 firstDate: _year == 'tout' ? DateTime(int.parse(years.last)) : DateTime(int.parse(_year)),
                 lastDate: _year == 'tout'
                     ? DateTime(int.parse(years.first) + 1).subtract(const Duration(seconds: 1))

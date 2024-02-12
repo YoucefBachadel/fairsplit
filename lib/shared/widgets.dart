@@ -298,7 +298,7 @@ Widget myScorallable(Widget widget, ScrollController _controllerH, ScrollControl
 Widget totalItem(BuildContext context, String title, String value) {
   return Container(
     width: getWidth(context, .23),
-    padding: const EdgeInsets.only(top: 8.0),
+    padding: const EdgeInsets.only(top: 5.0),
     child: Row(
       children: [
         Expanded(flex: 2, child: myText(title)),

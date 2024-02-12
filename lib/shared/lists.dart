@@ -121,6 +121,7 @@ Map<String, String> constans = {
   'reference': 'Reference',
   'unitsProfitability': 'Units Profitability',
   'dailyProfit': 'Daily Profit',
+  'passage': 'Passage',
 };
 
 Map<String, String> messages = {

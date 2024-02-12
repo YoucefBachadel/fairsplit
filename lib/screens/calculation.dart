@@ -66,6 +66,8 @@ class _CalculationState extends State<Calculation> {
       'sql8': isIntern
           ? '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND date >= '${DateTime(currentYear, widget.unit.currentMonthOrYear, 1)}';'''
           : '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Year(date) >= ${widget.unit.currentMonthOrYear};''',
+      'sql9':
+          '''SELECT transactionId,userId,userName,date,type,amount FROM transactiontemp  WHERE userName != 'reserveProfit';''',
     });
 
     caisse = double.parse(res[0][0]['caisse']);
@@ -154,6 +156,18 @@ class _CalculationState extends State<Calculation> {
         transactions.add(transaction);
         transactionsDays.add(DateTime(transaction.date.year, transaction.date.month, transaction.date.day));
       }
+    }
+
+    for (var ele in res[8]) {
+      Transaction transaction = Transaction(
+        transactionId: int.parse(ele['transactionId']),
+        userId: ele['userName'] == 'reserve' ? 0 : int.parse(ele['userId']),
+        userName: ele['userName'] == 'reserve' ? getText('reserve') : ele['userName'],
+        date: DateTime.parse(ele['date']),
+        type: ele['type'],
+        amount: double.parse(ele['amount']),
+      );
+      allTransactions.add(transaction);
     }
 
     //  if extern unit we use 365 else we calculate number of days in current month
@@ -397,7 +411,7 @@ class _CalculationState extends State<Calculation> {
         ''' UPDATE Units SET profit = profit + $unitProfitValue, profitability = profitability + $profitability, currentMonthOrYear = ${widget.unit.currentMonthOrYear + 1}  WHERE unitId = ${widget.unit.unitId}; ''';
     counter++;
     params['sql$counter'] =
-        '''INSERT INTO ProfitHistory(name, year, month, profit,profitability,unitProfitability,weightedCapital, reserve,reserveProfit, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',${!isIntern ? widget.unit.currentMonthOrYear : currentYear},${!isIntern ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,$profitability,${caMoney / widget.unit.capital},${caMoney / profitability},$caReserve,$caReserveProfit,$caDonation,$caMoney,$caEffort,$caThreshold,$caFounding);''';
+        '''INSERT INTO ProfitHistory(name, year, month, profit,profitability,unitProfitability,weightedCapital, reserve,reserveProfit, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',$currentYear,${!isIntern ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,$profitability,${caMoney / widget.unit.capital},${caMoney / profitability},$caReserve,$caReserveProfit,$caDonation,$caMoney,$caEffort,$caThreshold,$caFounding);''';
     counter++;
     params['sql$counter'] = isIntern
         ? 'UPDATE settings SET profitability = profitability + $profitability , reserveYear = reserveYear + $caReserve , reserveProfit = reserveProfit + $caReserveProfit , donationProfit = donationProfit + $caDonation , reference = $reference;'
@@ -418,7 +432,7 @@ class _CalculationState extends State<Calculation> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .9),
+      height: getHeight(context, .8),
       width: getWidth(context, .75),
       child: Column(
         children: [
@@ -428,7 +442,7 @@ class _CalculationState extends State<Calculation> {
               children: [
                 Expanded(
                   child: Text(
-                    widget.unit.name,
+                    '${widget.unit.name} - ${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : monthsOfYear[widget.unit.currentMonthOrYear - 1]}',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
@@ -452,90 +466,83 @@ class _CalculationState extends State<Calculation> {
                 )),
           ),
           Expanded(
-              child: Container(
-            padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                bottomRight: Radius.circular(20.0),
-                bottomLeft: Radius.circular(20.0),
+            child: Container(
+              padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(20.0),
+                  bottomLeft: Radius.circular(20.0),
+                ),
               ),
-            ),
-            child: isloading
-                ? myProgress()
-                : Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  myTextField(
-                                    context,
-                                    controller: controller,
-                                    hint: myCurrency(unitProfitHint),
-                                    width: getWidth(context, .25),
-                                    onChanged: ((text) => _unitProfitValue = text),
-                                    autoFocus: true,
-                                    onSubmited: ((text) {
-                                      if (!iscalculated) {
-                                        try {
-                                          unitProfitValue = double.parse(_unitProfitValue);
-                                          calculate();
-                                        } catch (e) {
-                                          snackBar(context, 'number only !!!');
+              child: isloading
+                  ? myProgress()
+                  : Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    myTextField(
+                                      context,
+                                      controller: controller,
+                                      hint: myCurrency(unitProfitHint),
+                                      width: getWidth(context, .18),
+                                      onChanged: ((text) => _unitProfitValue = text),
+                                      autoFocus: true,
+                                      onSubmited: ((text) {
+                                        if (!iscalculated) {
+                                          try {
+                                            unitProfitValue = double.parse(_unitProfitValue);
+                                            calculate();
+                                          } catch (e) {
+                                            snackBar(context, 'number only !!!');
+                                          }
                                         }
-                                      }
-                                    }),
-                                    enabled: !iscalculated,
-                                  ),
-                                  if (!iscalculated)
-                                    IconButton(
-                                      icon: Icon(Icons.play_arrow, color: secondaryColor),
-                                      hoverColor: Colors.transparent,
-                                      onPressed: () {
-                                        try {
-                                          unitProfitValue = double.parse(_unitProfitValue);
-                                          calculate();
-                                        } catch (e) {
-                                          snackBar(context, 'number only !!!');
-                                        }
-                                      },
-                                    )
-                                ],
+                                      }),
+                                      enabled: !iscalculated,
+                                    ),
+                                    if (!iscalculated)
+                                      IconButton(
+                                        icon: Icon(Icons.play_arrow, color: secondaryColor),
+                                        hoverColor: Colors.transparent,
+                                        onPressed: () {
+                                          try {
+                                            unitProfitValue = double.parse(_unitProfitValue);
+                                            calculate();
+                                          } catch (e) {
+                                            snackBar(context, 'number only !!!');
+                                          }
+                                        },
+                                      )
+                                  ],
+                                ),
                               ),
-                            ),
-                            !iscalculated
-                                ? const SizedBox()
-                                : myButton(context, width: getWidth(context, .07), onTap: () {
-                                    setState(() => isloading = true);
-                                    save();
-                                  }),
-                          ],
+                              !iscalculated
+                                  ? const SizedBox()
+                                  : myButton(context, width: getWidth(context, .07), onTap: () {
+                                      setState(() => isloading = true);
+                                      save();
+                                    }),
+                            ],
+                          ),
                         ),
-                      ),
-                      mySizedBox(context),
-                      SizedBox(width: getWidth(context, 1), child: const Divider()),
-                      mySizedBox(context),
-                      if (bottemNavigationSelectedInex == 0)
-                        Expanded(child: Center(child: SingleChildScrollView(child: information()))),
-                      // if (bottemNavigationSelectedInex == 1) tabScreen(transaction()),
-                      if (bottemNavigationSelectedInex == 1) tabScreen(money()),
-                      if (bottemNavigationSelectedInex == 2) tabScreen(threshold()),
-                      if (bottemNavigationSelectedInex == 3) tabScreen(founding()),
-                      if (bottemNavigationSelectedInex == 4) tabScreen(effort()),
-                      if (bottemNavigationSelectedInex == 5) tabScreen(global()),
-                      mySizedBox(context),
-                      SizedBox(width: getWidth(context, 1), child: const Divider()),
-                      SizedBox(
-                        child: BottomNavigationBar(
+                        const Divider(),
+                        if (bottemNavigationSelectedInex == 0) Expanded(child: information()),
+                        if (bottemNavigationSelectedInex == 1) Expanded(child: money()),
+                        if (bottemNavigationSelectedInex == 2) Expanded(child: threshold()),
+                        if (bottemNavigationSelectedInex == 3) Expanded(child: founding()),
+                        if (bottemNavigationSelectedInex == 4) Expanded(child: effort()),
+                        if (bottemNavigationSelectedInex == 5) Expanded(child: global()),
+                        const Divider(),
+                        BottomNavigationBar(
                           type: BottomNavigationBarType.fixed,
                           items: <BottomNavigationBarItem>[
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('info')),
-                            // BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('transaction')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('money')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('threshold')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('founding')),
@@ -549,115 +556,98 @@ class _CalculationState extends State<Calculation> {
                           selectedIconTheme: const IconThemeData(opacity: 0.0, size: 0),
                           unselectedIconTheme: const IconThemeData(opacity: 0.0, size: 0),
                           selectedItemColor: primaryColor,
-                          backgroundColor: Colors.white,
+                          backgroundColor: Colors.transparent,
                           elevation: 0,
                         ),
-                      ),
-                      mySizedBox(context),
-                    ],
-                  ),
-          ))
+                        mySizedBox(context),
+                      ],
+                    ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget tabScreen(Widget view) => Expanded(child: SingleChildScrollView(child: view));
-
   Widget information() {
-    return Row(
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        const Spacer(),
-        Column(
-          children: [
-            {'key': getText('unit'), 'val': widget.unit.name},
-            {'key': getText('capital'), 'val': myCurrency(widget.unit.capital)},
-            {
-              'key': widget.unit.type == "extern" ? getText('year') : getText('month'),
-              'val': widget.unit.type == "extern"
-                  ? widget.unit.currentMonthOrYear.toString()
-                  : monthsOfYear[widget.unit.currentMonthOrYear - 1]
-            },
-            // {
-            //   'key': '${getText('unitProfitability')} %',
-            //   'val': (caMoney / widget.unit.capital * 100).toStringAsFixed(2)
-            // },
-            {'key': getText('dailyProfit'), 'val': myCurrency(caMoneyProfitPerDay)},
-            {'key': '${getText('profitability')} %', 'val': (profitability * 100).toStringAsFixed(2)},
-            {'key': '${getText('reserve')} %', 'val': widget.unit.reservePerc.toString()},
-            {'key': '${getText('donation')} %', 'val': widget.unit.donationPerc.toString()},
-            {'key': '', 'val': ''},
-            {'key': '${getText('money')} %', 'val': widget.unit.moneyPerc.toString()},
-            {'key': '${getText('effort')} %', 'val': widget.unit.effortPerc.toString()},
-            {'key': '', 'val': ''},
-            {'key': '${getText('threshold')} %', 'val': widget.unit.thresholdPerc.toString()},
-            {'key': '${getText('founding')} %', 'val': widget.unit.foundingPerc.toString()},
-          ].map((e) => infoItem(e['key']!, e['val']!)).toList(),
+        infoItem(getText('capital'), myCurrency(widget.unit.capital), '', ''),
+        infoItem(getText('dailyProfit'), myCurrency(caMoneyProfitPerDay), '', ''),
+        infoItem(
+          getText('profitability'),
+          myPercentage(profitability * 100),
+          getText('weightedCapital'),
+          myCurrency(profitability == 0 ? 0 : caMoney / profitability),
         ),
-        const Spacer(),
-        Column(
-          children: [
-            {'key': '', 'val': ''},
-            {'key': '', 'val': ''},
-            {'key': '', 'val': ''},
-            {'key': '', 'val': ''},
-            {'key': getText('weightedCapital'), 'val': myCurrency(profitability == 0 ? 0 : caMoney / profitability)},
-            {'key': getText('reserve'), 'val': myCurrency(caReserve)},
-            {'key': getText('donation'), 'val': myCurrency(caDonation)},
-            {'key': 'Net Profit', 'val': myCurrency(caNetProfit)},
-            {'key': getText('money'), 'val': myCurrency(caMoney)},
-            {'key': getText('effort'), 'val': myCurrency(caEffort)},
-            {'key': getText('effortGlobal'), 'val': myCurrency(caEffortGlobal)},
-            {'key': getText('threshold'), 'val': myCurrency(caThreshold)},
-            {'key': getText('founding'), 'val': myCurrency(caFounding)},
-          ].map((e) => infoItem(e['key']!, e['val']!)).toList(),
+        infoItem('${getText('reserve')} %', myPercentage(widget.unit.reservePerc), getText('reserve'),
+            myCurrency(caReserve)),
+        infoItem(
+          '${getText('donation')} %',
+          myPercentage(widget.unit.donationPerc),
+          getText('donation'),
+          myCurrency(caDonation),
+        ),
+        infoItem('', '', getText('netProfit'), myCurrency(caNetProfit)),
+        infoItem(
+          '${getText('money')} %',
+          myPercentage(widget.unit.moneyPerc),
+          getText('money'),
+          myCurrency(caMoney),
+        ),
+        infoItem(
+          '${getText('effort')} %',
+          myPercentage(widget.unit.effortPerc),
+          getText('effort'),
+          myCurrency(caEffort),
+        ),
+        infoItem('', '', getText('effortGlobal'), myCurrency(caEffortGlobal)),
+        infoItem(
+          '${getText('threshold')} %',
+          myPercentage(widget.unit.thresholdPerc),
+          getText('threshold'),
+          myCurrency(caThreshold),
+        ),
+        infoItem(
+          '${getText('founding')} %',
+          myPercentage(widget.unit.foundingPerc),
+          getText('founding'),
+          myCurrency(caFounding),
         ),
       ],
     );
   }
 
-  Widget infoItem(String title, String value) {
-    return SizedBox(
-      width: getWidth(context, .3),
-      height: getHeight(context, .05),
-      child: value.isEmpty
-          ? const SizedBox()
-          : Row(
-              children: [
-                Expanded(flex: 2, child: myText(title)),
-                Expanded(flex: 3, child: myText(':      $value')),
-              ],
-            ),
+  Widget infoItem(String title1, String value1, String title2, String value2) {
+    return Row(
+      children: [
+        const Spacer(),
+        SizedBox(
+          width: getWidth(context, .3),
+          child: value1.isEmpty
+              ? const SizedBox()
+              : Row(
+                  children: [
+                    Expanded(flex: 2, child: myText(title1)),
+                    Expanded(flex: 3, child: myText(':      $value1')),
+                  ],
+                ),
+        ),
+        const Spacer(),
+        SizedBox(
+          width: getWidth(context, .3),
+          child: value2.isEmpty
+              ? const SizedBox()
+              : Row(
+                  children: [
+                    Expanded(flex: 2, child: myText(title2)),
+                    Expanded(flex: 3, child: myText(':      $value2')),
+                  ],
+                ),
+        ),
+      ],
     );
-  }
-
-  Widget transaction() {
-    List<DataColumn> column = [
-      '',
-      getText('name'),
-      getText('date'),
-      getText('type'),
-      getText('in'),
-      getText('out'),
-    ].map((e) => dataColumn(context, e)).toList();
-    List<DataRow> rows = transactions
-        .where((element) => (isIntern || element.date.year == widget.unit.currentMonthOrYear))
-        .map(
-          (transaction) => DataRow(cells: [
-            dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
-            dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
-            dataCell(context, myDateFormate.format(transaction.date)),
-            dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
-            dataCell(context, transaction.type == 'in' ? myCurrency(transaction.amount) : zero,
-                textAlign: transaction.type == 'in' ? TextAlign.end : TextAlign.center),
-            dataCell(context, transaction.type == 'out' ? myCurrency(transaction.amount) : zero,
-                textAlign: transaction.type == 'out' ? TextAlign.end : TextAlign.center),
-          ]),
-        )
-        .toList();
-    return transactions.where((element) => (isIntern || element.date.year == widget.unit.currentMonthOrYear)).isEmpty
-        ? emptyList()
-        : dataTable(context, columns: column, rows: rows);
   }
 
   Widget money() {
@@ -683,46 +673,48 @@ class _CalculationState extends State<Calculation> {
         )
         .toList();
     return moneyUsers.isEmpty
-        ? emptyList()
-        : Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  myText('${getText('money')}  :  ${myCurrency(caMoney)} '),
-                  mySizedBox(context),
-                  if (caMoney != 0)
-                    IconButton(
-                        onPressed: () => createExcel(
-                              '${widget.unit.name} --- ${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : '${monthsOfYear[widget.unit.currentMonthOrYear - 1]} $currentYear'}',
-                              [
+        ? Center(child: emptyList())
+        : SingleChildScrollView(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    myText('${getText('money')}  :  ${myCurrency(caMoney)} '),
+                    mySizedBox(context),
+                    if (caMoney != 0)
+                      IconButton(
+                          onPressed: () => createExcel(
+                                '${widget.unit.name} --- ${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : '${monthsOfYear[widget.unit.currentMonthOrYear - 1]} $currentYear'}',
                                 [
-                                  '#',
-                                  getText('name'),
-                                  getText('initialCapital'),
-                                  getText('capital'),
-                                  getText('weightedCapital'),
-                                  getText('profit')
+                                  [
+                                    '#',
+                                    getText('name'),
+                                    getText('initialCapital'),
+                                    getText('capital'),
+                                    getText('weightedCapital'),
+                                    getText('profit')
+                                  ],
+                                  ...moneyUsers.map((user) => [
+                                        moneyUsers.indexOf(user) + 1,
+                                        user.name,
+                                        user.initialCapital,
+                                        user.capital,
+                                        profitability == 0 ? 0 : user.money / profitability,
+                                        user.money,
+                                      ])
                                 ],
-                                ...moneyUsers.map((user) => [
-                                      moneyUsers.indexOf(user) + 1,
-                                      user.name,
-                                      user.initialCapital,
-                                      user.capital,
-                                      profitability == 0 ? 0 : user.money / profitability,
-                                      user.money,
-                                    ])
-                              ],
-                            ),
-                        icon: Icon(
-                          Icons.file_download,
-                          color: primaryColor,
-                        )),
-                ],
-              ),
-              mySizedBox(context),
-              dataTable(context, columns: column, rows: rows),
-            ],
+                              ),
+                          icon: Icon(
+                            Icons.file_download,
+                            color: primaryColor,
+                          )),
+                  ],
+                ),
+                mySizedBox(context),
+                dataTable(context, columns: column, rows: rows),
+              ],
+            ),
           );
   }
 
@@ -744,13 +736,15 @@ class _CalculationState extends State<Calculation> {
         )
         .toList();
     return thresholdUsers.isEmpty
-        ? emptyList()
-        : Column(
-            children: [
-              myText('${getText('threshold')}  :  ${myCurrency(caThreshold)} '),
-              mySizedBox(context),
-              dataTable(context, columns: column, rows: rows),
-            ],
+        ? Center(child: emptyList())
+        : SingleChildScrollView(
+            child: Column(
+              children: [
+                myText('${getText('threshold')}  :  ${myCurrency(caThreshold)} '),
+                mySizedBox(context),
+                dataTable(context, columns: column, rows: rows),
+              ],
+            ),
           );
   }
 
@@ -772,13 +766,15 @@ class _CalculationState extends State<Calculation> {
         )
         .toList();
     return foundingUsers.isEmpty
-        ? emptyList()
-        : Column(
-            children: [
-              myText('${getText('founding')}  :  ${myCurrency(caFounding)} '),
-              mySizedBox(context),
-              dataTable(context, columns: column, rows: rows),
-            ],
+        ? Center(child: emptyList())
+        : SingleChildScrollView(
+            child: Column(
+              children: [
+                myText('${getText('founding')}  :  ${myCurrency(caFounding)} '),
+                mySizedBox(context),
+                dataTable(context, columns: column, rows: rows),
+              ],
+            ),
           );
   }
 
@@ -800,13 +796,15 @@ class _CalculationState extends State<Calculation> {
         )
         .toList();
     return unitEffortUsers.isEmpty
-        ? emptyList()
-        : Column(
-            children: [
-              myText('${getText('effort')}  :  ${myCurrency(caEffort)} '),
-              mySizedBox(context),
-              dataTable(context, columns: column, rows: rows),
-            ],
+        ? Center(child: emptyList())
+        : SingleChildScrollView(
+            child: Column(
+              children: [
+                myText('${getText('effort')}  :  ${myCurrency(caEffort)} '),
+                mySizedBox(context),
+                dataTable(context, columns: column, rows: rows),
+              ],
+            ),
           );
   }
 
@@ -828,13 +826,15 @@ class _CalculationState extends State<Calculation> {
         )
         .toList();
     return globalEffortUsers.isEmpty
-        ? emptyList()
-        : Column(
-            children: [
-              myText('${getText('effortGlobal')}  :  ${myCurrency(caEffortGlobal)} '),
-              mySizedBox(context),
-              dataTable(context, columns: column, rows: rows),
-            ],
+        ? Center(child: emptyList())
+        : SingleChildScrollView(
+            child: Column(
+              children: [
+                myText('${getText('effortGlobal')}  :  ${myCurrency(caEffortGlobal)} '),
+                mySizedBox(context),
+                dataTable(context, columns: column, rows: rows),
+              ],
+            ),
           );
   }
 }

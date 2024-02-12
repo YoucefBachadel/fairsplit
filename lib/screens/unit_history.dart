@@ -142,7 +142,7 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
         getText('effort'),
         getText('money'),
         getText('capital'),
-        '${getText('profitability')} %',
+        getText('profitability'),
       ]
           .map((e) => sortableDataColumn(
                 context,
@@ -346,61 +346,4 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
       ),
     );
   }
-
-//   Widget sfGride() {
-//     return SfDataGrid(
-//       columnWidthMode: ColumnWidthMode.fill,
-//       columns: [
-//         '',
-//         getText('name'),
-//         getText('year'),
-//         getText('rawProfit'),
-//         getText('reserve'),
-//         getText('donation'),
-//         getText('netProfit'),
-//         getText('thresholdFounding'),
-//         getText('threshold'),
-//         getText('founding'),
-//         getText('effort'),
-//         getText('money'),
-//         getText('capital'),
-//         '${getText('profitability')} %',
-//       ].map((e) => GridColumn(columnName: e, label: myText(e))).toList(),
-//       source: UnitHistoryDataSource(unitsHistory: unitsHistory),
-//     );
-//   }
 }
-
-// class UnitHistoryDataSource extends DataGridSource {
-//   UnitHistoryDataSource({required List<UnitHistory> unitsHistory}) {
-//     _unitsHistory = unitsHistory
-//         .map((unitHistory) => DataGridRow(cells: [
-//               DataGridCell(columnName: '', value: (unitsHistory.indexOf(unitHistory) + 1)),
-//               ...[
-//                 unitHistory.name,
-//                 unitHistory.year,
-//                 myCurrency(unitHistory.rawProfit),
-//                 myCurrency(unitHistory.reserve),
-//                 myCurrency(unitHistory.donation),
-//                 myCurrency(unitHistory.netProfit),
-//                 myCurrency(unitHistory.thresholdFounding),
-//                 myCurrency(unitHistory.threshold),
-//                 myCurrency(unitHistory.founding),
-//                 myCurrency(unitHistory.effort),
-//                 myCurrency(unitHistory.money),
-//                 myCurrency(unitHistory.capital),
-//                 unitHistory.profitability,
-//               ].map((e) => DataGridCell(columnName: e.toString(), value: e)).toList(),
-//             ]))
-//         .toList();
-//   }
-
-//   List<DataGridRow> _unitsHistory = [];
-
-//   @override
-//   List<DataGridRow> get rows => _unitsHistory;
-
-//   @override
-//   DataGridRowAdapter? buildRow(DataGridRow row) =>
-//       DataGridRowAdapter(cells: row.getCells().map((e) => myText(e.toString())).toList());
-// }

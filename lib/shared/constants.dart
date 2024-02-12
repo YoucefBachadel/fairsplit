@@ -38,6 +38,12 @@ dynamic sqlQuery(Uri uri, dynamic params) async {
   return jsonDecode(res.body);
 }
 
+String myPercentage(double percentage) => percentage == 0
+    ? zero
+    : double.parse(percentage.toStringAsFixed(2)) == percentage.toInt()
+        ? percentage.toInt().toString()
+        : double.parse(percentage.toStringAsFixed(2)).toString();
+
 String myCurrency(double amount) =>
     amount == 0 ? zero : (NumberFormat.currency(symbol: '', customPattern: '#,##0.00', locale: 'fr_FR')).format(amount);
 

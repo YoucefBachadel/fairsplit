@@ -33,7 +33,7 @@ class _DashboardState extends State<Dashboard> {
   void locadData() async {
     var res = await sqlQuery(selectUrl, {
       'sql1': '''SELECT 
-                (SELECT SUM(profit) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
+                (SELECT SUM(money) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
                 (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
                 (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
                 s.caisse, s.reserve, s.reserveProfit, s.donation, s.zakat, s.profitability, s.currentYear FROM Settings s;''',
@@ -41,6 +41,7 @@ class _DashboardState extends State<Dashboard> {
     });
     var data = res[0][0];
     currentYear = int.parse(data['currentYear']);
+    years.add(currentYear.toString());
     transactionFilterYear = currentYear.toString();
     caisse = double.parse(data['caisse']);
     reserve = double.parse(data['reserve']);

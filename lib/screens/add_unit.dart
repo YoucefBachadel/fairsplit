@@ -16,7 +16,8 @@ class AddUnit extends StatefulWidget {
 }
 
 class _AddUnitState extends State<AddUnit> {
-  late String name, capital, reserve, donation, money, effort, threshold, founding;
+  late String name;
+  late double capital, reserve, donation, money, effort, threshold, founding;
   late bool isExtern;
   bool isLoading = false;
 
@@ -39,7 +40,7 @@ class _AddUnitState extends State<AddUnit> {
   void save() async {
     if (name == '') {
       snackBar(context, getMessage('emptyName'), duration: 5);
-    } else if (double.parse(capital) == 0) {
+    } else if (capital == 0) {
       snackBar(context, getMessage('capitalZero'));
     } else {
       setState(() => isLoading = true);
@@ -47,19 +48,12 @@ class _AddUnitState extends State<AddUnit> {
       try {
         int _unitId = widget.unit.unitId;
         String _type = isExtern ? 'extern' : 'intern';
-        double _capital = double.parse(capital);
-        double _reserve = double.parse(reserve);
-        double _donation = double.parse(donation);
-        double _money = double.parse(money);
-        double _effort = double.parse(effort);
-        double _threshold = double.parse(threshold);
-        double _founding = double.parse(founding);
 
         // sending a post request to the url
         await sqlQuery(insertUrl, {
           'sql1': _unitId == -1
-              ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,currentMonthOrYear) VALUES ('$name' ,'$_type',$_capital,0, $_reserve , $_donation  ,$_threshold , $_founding , $_effort , $_money , ${_type == 'intern' ? 1 : currentYear});'''
-              : '''UPDATE Units SET name = '$name' ,capital = $_capital ,type = '$_type',reservePerc = $_reserve ,donationPerc = $_donation ,thresholdPerc = $_threshold ,foundingPerc = $_founding ,effortPerc = $_effort ,moneyPerc = $_money Where unitId = $_unitId;''',
+              ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,currentMonthOrYear) VALUES ('$name' ,'$_type',$capital,0, $reserve , $donation  ,$threshold , $founding , $effort , $money , ${_type == 'intern' ? 1 : currentYear});'''
+              : '''UPDATE Units SET name = '$name' ,capital = $capital ,type = '$_type',reservePerc = $reserve ,donationPerc = $donation ,thresholdPerc = $threshold ,foundingPerc = $founding ,effortPerc = $effort ,moneyPerc = $money Where unitId = $_unitId;''',
         });
 
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
@@ -76,13 +70,13 @@ class _AddUnitState extends State<AddUnit> {
   void initState() {
     name = widget.unit.name;
     isExtern = widget.unit.type == 'extern';
-    capital = widget.unit.capital.toString();
-    reserve = widget.unit.reservePerc.toString();
-    donation = widget.unit.donationPerc.toString();
-    money = widget.unit.moneyPerc.toString();
-    effort = widget.unit.effortPerc.toString();
-    threshold = widget.unit.thresholdPerc.toString();
-    founding = widget.unit.foundingPerc.toString();
+    capital = widget.unit.capital;
+    reserve = widget.unit.reservePerc;
+    donation = widget.unit.donationPerc;
+    money = widget.unit.moneyPerc;
+    effort = widget.unit.effortPerc;
+    threshold = widget.unit.thresholdPerc;
+    founding = widget.unit.foundingPerc;
     super.initState();
   }
 
@@ -171,8 +165,8 @@ class _AddUnitState extends State<AddUnit> {
                                             () {
                                               isExtern = value;
                                               if (isExtern) {
-                                                threshold = '0';
-                                                founding = '0';
+                                                threshold = 0;
+                                                founding = 0;
                                               }
                                             },
                                           ),
@@ -212,10 +206,10 @@ class _AddUnitState extends State<AddUnit> {
                                     flex: 4,
                                     child: myTextField(
                                       context,
-                                      hint: myCurrency(double.parse(capital)),
+                                      hint: myCurrency(capital),
                                       width: getWidth(context, .22),
                                       isNumberOnly: true,
-                                      onChanged: (value) => capital = value,
+                                      onChanged: (value) => capital = double.parse(value),
                                     )),
                               ],
                             ),
@@ -228,10 +222,8 @@ class _AddUnitState extends State<AddUnit> {
                                 Expanded(
                                   child: myTextField(
                                     context,
-                                    hint: reserve,
-                                    onChanged: ((text) {
-                                      reserve = text;
-                                    }),
+                                    hint: myPercentage(reserve),
+                                    onChanged: ((text) => reserve = double.parse(text)),
                                     isNumberOnly: true,
                                   ),
                                 ),
@@ -239,10 +231,8 @@ class _AddUnitState extends State<AddUnit> {
                                 Expanded(
                                   child: myTextField(
                                     context,
-                                    hint: donation,
-                                    onChanged: ((text) {
-                                      donation = text;
-                                    }),
+                                    hint: myPercentage(donation),
+                                    onChanged: ((text) => donation = double.parse(text)),
                                     isNumberOnly: true,
                                   ),
                                 ),
@@ -255,10 +245,8 @@ class _AddUnitState extends State<AddUnit> {
                                 Expanded(
                                   child: myTextField(
                                     context,
-                                    hint: money,
-                                    onChanged: ((text) {
-                                      money = text;
-                                    }),
+                                    hint: myPercentage(money),
+                                    onChanged: ((text) => money = double.parse(text)),
                                     isNumberOnly: true,
                                   ),
                                 ),
@@ -266,10 +254,8 @@ class _AddUnitState extends State<AddUnit> {
                                 Expanded(
                                   child: myTextField(
                                     context,
-                                    hint: effort,
-                                    onChanged: ((text) {
-                                      effort = text;
-                                    }),
+                                    hint: myPercentage(effort),
+                                    onChanged: ((text) => effort = double.parse(text)),
                                     isNumberOnly: true,
                                   ),
                                 ),
@@ -282,10 +268,8 @@ class _AddUnitState extends State<AddUnit> {
                                 Expanded(
                                   child: myTextField(
                                     context,
-                                    hint: threshold,
-                                    onChanged: ((text) {
-                                      threshold = text;
-                                    }),
+                                    hint: myPercentage(threshold),
+                                    onChanged: ((text) => threshold = double.parse(text)),
                                     isNumberOnly: true,
                                     enabled: !isExtern,
                                   ),
@@ -294,10 +278,8 @@ class _AddUnitState extends State<AddUnit> {
                                 Expanded(
                                   child: myTextField(
                                     context,
-                                    hint: founding,
-                                    onChanged: ((text) {
-                                      founding = text;
-                                    }),
+                                    hint: myPercentage(founding),
+                                    onChanged: ((text) => founding = double.parse(text)),
                                     isNumberOnly: true,
                                     enabled: !isExtern,
                                   ),

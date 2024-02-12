@@ -14,6 +14,8 @@ class User {
   double capital;
   double weightedCapital;
   double initialCapital; //used in calculation and to store user capital after passage
+  double totalIn;
+  double totalOut;
   double money;
   double moneyExtern;
   double threshold;
@@ -36,6 +38,8 @@ class User {
     DateTime? joinDate,
     this.type = 'money',
     this.capital = 0,
+    this.totalIn = 0,
+    this.totalOut = 0,
     this.money = 0,
     this.moneyExtern = 0,
     this.threshold = 0,
@@ -76,6 +80,8 @@ List<User> toUsers(
       type: element['type'],
       capital: double.parse(element['capital']),
       initialCapital: double.parse(element['initialCapital']),
+      totalIn: double.parse(element['totalIn']),
+      totalOut: double.parse(element['totalOut']),
       money: double.parse(element['money']),
       moneyExtern: double.parse(element['moneyExtern']),
       threshold: double.parse(element['threshold']),

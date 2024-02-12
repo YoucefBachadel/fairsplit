@@ -18,7 +18,13 @@ class Units extends StatefulWidget {
 class _UnitsState extends State<Units> {
   bool isLoadingUnits = true;
   List<Unit> units = [];
-  double totalCapital = 0, internCapital = 0, externCapital = 0;
+  double totalCapital = 1,
+      internCapital = 0,
+      externCapital = 0,
+      internProfit = 0,
+      externProfit = 0,
+      internProfitability = 0,
+      externProfitability = 0;
   int internCount = 0, externCount = 0;
 
   int? _sortColumnIndex = 0;
@@ -50,17 +56,20 @@ class _UnitsState extends State<Units> {
       if (ele['type'] == 'intern') {
         internCount += 1;
         internCapital += double.parse(ele['capital']);
+        internProfit += double.parse(ele['profit']);
+        internProfitability += double.parse(ele['profitability']);
       } else {
         externCount += 1;
         externCapital += double.parse(ele['capital']);
+        externProfit += double.parse(ele['profit']);
+        externProfitability += double.parse(ele['profitability']);
       }
     }
+    totalCapital -= 1;
 
     units.sort((a, b) => a.name.compareTo(b.name));
 
-    setState(() {
-      isLoadingUnits = false;
-    });
+    setState(() => isLoadingUnits = false);
   }
 
   void onSort() {
@@ -104,7 +113,7 @@ class _UnitsState extends State<Units> {
         getText('capital'),
         '${getText('capital')} %',
         getText('profit'),
-        '${getText('profitability')} %',
+        getText('profitability'),
       ]
           .map((e) => sortableDataColumn(
                 context,
@@ -126,9 +135,9 @@ class _UnitsState extends State<Units> {
                 dataCell(context, unit.name, textAlign: TextAlign.start),
                 dataCell(context, getText(unit.type), textAlign: TextAlign.start),
                 dataCell(context, myCurrency(unit.capital), textAlign: TextAlign.end),
-                dataCell(context, (unit.capital * 100 / totalCapital).toStringAsFixed(2)),
+                dataCell(context, myPercentage(unit.capital * 100 / totalCapital)),
                 dataCell(context, myCurrency(unit.profit), textAlign: TextAlign.end),
-                dataCell(context, unit.profitability == 0 ? zero : (unit.profitability * 100).toStringAsFixed(2)),
+                dataCell(context, myPercentage(unit.profitability * 100)),
                 ...[
                   unit.type == 'extern'
                       ? unit.currentMonthOrYear
@@ -189,7 +198,6 @@ class _UnitsState extends State<Units> {
             ),
             mySizedBox(context),
             SizedBox(width: getWidth(context, .52), child: const Divider()),
-            mySizedBox(context),
             Column(
               children: [
                 Row(
@@ -199,11 +207,11 @@ class _UnitsState extends State<Units> {
                       children: [
                         myText(getText('intern')),
                         const SizedBox(width: 40, child: Divider()),
-                        mySizedBox(context),
                         totalItem(context, getText('count'), internCount.toString()),
-                        totalItem(context, getText('percentage'),
-                            internCapital == 0 ? zero : '${(internCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
                         totalItem(context, getText('capital'), myCurrency(internCapital)),
+                        totalItem(context, '${getText('capital')} %', myPercentage(internCapital * 100 / totalCapital)),
+                        totalItem(context, getText('profit'), myCurrency(internProfit)),
+                        totalItem(context, getText('profitability'), myPercentage(internProfitability)),
                       ],
                     ),
                     SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
@@ -211,11 +219,11 @@ class _UnitsState extends State<Units> {
                       children: [
                         myText(getText('extern')),
                         const SizedBox(width: 40, child: Divider()),
-                        mySizedBox(context),
                         totalItem(context, getText('count'), externCount.toString()),
-                        totalItem(context, getText('percentage'),
-                            externCapital == 0 ? zero : '${(externCapital * 100 / totalCapital).toStringAsFixed(2)} %'),
                         totalItem(context, getText('capital'), myCurrency(externCapital)),
+                        totalItem(context, '${getText('capital')} %', myPercentage(externCapital * 100 / totalCapital)),
+                        totalItem(context, getText('profit'), myCurrency(externProfit)),
+                        totalItem(context, getText('profitability'), myPercentage(externProfitability)),
                       ],
                     ),
                   ],

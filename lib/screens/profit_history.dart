@@ -198,8 +198,8 @@ class _ProfitHistoryState extends State<ProfitHistory> {
       dataColumn(context, getText('month')),
       ...[
         getText('profit'),
-        '${getText('profitability')} %',
-        '${getText('unitProfitability')} %',
+        getText('profitability'),
+        getText('unitProfitability'),
         getText('weightedCapital'),
         getText('reserve'),
         getText('reserveProfit'),

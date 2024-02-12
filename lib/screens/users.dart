@@ -46,7 +46,11 @@ class _UsersState extends State<Users> {
       'sql1': 'SELECT * FROM Threshold;',
       'sql2': 'SELECT * FROM Founding;',
       'sql3': 'SELECT * FROM Effort;',
-      'sql4': 'SELECT * FROM Users;',
+      'sql4':
+          '''SELECT u.*,
+                    (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'in') AS totalIn,
+                    (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'out') AS totalOut 
+            FROM Users u;''',
       'sql5': '''SELECT unitId , name FROM Units WHERE type = 'intern';''',
     });
     var dataThresholds = data[0];
@@ -161,35 +165,45 @@ class _UsersState extends State<Users> {
       case 5:
         users.sort((tr1, tr2) {
           return !_isAscending
-              ? (tr2.money + tr2.initialCapital).compareTo(tr1.money + tr1.initialCapital)
-              : (tr1.money + tr1.initialCapital).compareTo(tr2.money + tr2.initialCapital);
+              ? tr2.initialCapital.compareTo(tr1.initialCapital)
+              : tr1.initialCapital.compareTo(tr2.initialCapital);
         });
         break;
       case 6:
+        users.sort((tr1, tr2) {
+          return !_isAscending ? tr2.totalIn.compareTo(tr1.totalIn) : tr1.totalIn.compareTo(tr2.totalIn);
+        });
+        break;
+      case 7:
+        users.sort((tr1, tr2) {
+          return !_isAscending ? tr2.totalOut.compareTo(tr1.totalOut) : tr1.totalOut.compareTo(tr2.totalOut);
+        });
+        break;
+      case 8:
         users.sort((tr1, tr2) {
           return !_isAscending
               ? (tr2.money + tr2.moneyExtern).compareTo(tr1.money + tr1.moneyExtern)
               : (tr1.money + tr1.moneyExtern).compareTo(tr2.money + tr2.moneyExtern);
         });
         break;
-      case 7:
+      case 9:
         users.sort((tr1, tr2) {
           return !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold);
         });
         break;
-      case 8:
+      case 10:
         users.sort((tr1, tr2) {
           return !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding);
         });
         break;
-      case 9:
+      case 11:
         users.sort((tr1, tr2) {
           return !_isAscending
               ? (tr2.effort + tr2.effortExtern).compareTo(tr1.effort + tr1.effortExtern)
               : (tr1.effort + tr1.effortExtern).compareTo(tr2.effort + tr2.effortExtern);
         });
         break;
-      case 10:
+      case 12:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2) {
             return !_isAscending
@@ -204,7 +218,7 @@ class _UsersState extends State<Users> {
           }
         });
         break;
-      case 11:
+      case 13:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2 && _foundingUnitFilter != -2) {
             return !_isAscending
@@ -218,7 +232,7 @@ class _UsersState extends State<Users> {
           }
         });
         break;
-      case 12:
+      case 14:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2 && _foundingUnitFilter != -2) {
             return !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort);
@@ -227,7 +241,7 @@ class _UsersState extends State<Users> {
           }
         });
         break;
-      case 13:
+      case 15:
         users.sort((tr1, tr2) {
           return !_isAscending ? tr2.evaluation.compareTo(tr1.evaluation) : tr1.evaluation.compareTo(tr2.evaluation);
         });
@@ -267,6 +281,8 @@ class _UsersState extends State<Users> {
         getText('capital'),
         getText('weightedCapital'),
         getText('initialCapital'),
+        getText('totalIn'),
+        getText('totalOut'),
         getText('money'),
         getText('threshold'),
         getText('founding'),
@@ -321,6 +337,16 @@ class _UsersState extends State<Users> {
                 dataCell(
                   context,
                   myCurrency(user.initialCapital),
+                  textAlign: TextAlign.end,
+                ),
+                dataCell(
+                  context,
+                  myCurrency(user.totalIn),
+                  textAlign: TextAlign.end,
+                ),
+                dataCell(
+                  context,
+                  myCurrency(user.totalOut),
                   textAlign: TextAlign.end,
                 ),
                 dataCell(
@@ -436,14 +462,14 @@ class _UsersState extends State<Users> {
                     totalItem(context, getText('initialCapital'), myCurrency(tinitialCapital)),
                   ],
                 ),
-                SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
+                SizedBox(height: getHeight(context, .07), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
                     totalItem(context, getText('money'), myCurrency(tmoney)),
                     totalItem(context, getText('effort'), myCurrency(teffort)),
                   ],
                 ),
-                SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
+                SizedBox(height: getHeight(context, .07), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
                     totalItem(context, getText('threshold'), myCurrency(tthreshold)),
@@ -708,6 +734,8 @@ class _UsersState extends State<Users> {
                         getText('capital'),
                         getText('weightedCapital'),
                         getText('initialCapital'),
+                        getText('totalIn'),
+                        getText('totalOut'),
                         getText('money'),
                         getText('effort'),
                         getText('threshold'),
@@ -725,6 +753,8 @@ class _UsersState extends State<Users> {
                             user.capital,
                             user.weightedCapital,
                             user.initialCapital,
+                            user.totalIn,
+                            user.totalOut,
                             user.money + user.moneyExtern,
                             user.effort + user.effortExtern,
                             user.threshold,

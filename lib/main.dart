@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fairsplit/providers/filter.dart';
+import 'package:fairsplit/screens/passage.dart';
 import 'package:fairsplit/screens/profit_history.dart';
 import 'package:fairsplit/shared/functions.dart';
 import 'package:file_picker/file_picker.dart';
@@ -109,6 +110,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late int selectedTab;
   bool isLoading = false;
+  bool isPassageAllowed = false;
 
   Map<String, int> tabsIndex = {
     'da': 0,
@@ -143,7 +145,7 @@ class _MyAppState extends State<MyApp> {
     const UnitHistoryScreen(),
   ];
 
-  void updateamountOnLetter() async {
+  Future updateamountOnLetter() async {
     var params = {
       'sql1': 'SELECT transactionId,amount FROM transaction;',
       'sql2': 'SELECT transactionId,amount FROM transactionsp;',
@@ -196,26 +198,24 @@ class _MyAppState extends State<MyApp> {
       'sql3': transactionsSPSQL,
       'sql4': transactionsTempSQL,
     });
-    // print('done');
   }
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {
-      'sql1':
-          '''SELECT DISTINCT(Year(date)) AS year  FROM transaction 
+      'sql1': '''SELECT DISTINCT(Year(date)) AS year  FROM transaction 
           UNION SELECT DISTINCT(Year(date)) AS year FROM transactionothers 
           UNION SELECT DISTINCT(Year(date)) AS year FROM transactionsp 
           UNION SELECT DISTINCT(Year(date)) AS year FROM transactiontemp
           UNION SELECT year FROM profithistory
           UNION SELECT year FROM userhistory
           UNION SELECT year FROM unithistory;''',
-      'sql2':
-          '''SELECT DISTINCT(userName) AS name FROM transaction
+      'sql2': '''SELECT DISTINCT(userName) AS name FROM transaction
           UNION SELECT DISTINCT(userName) AS name FROM transactionothers
           UNION SELECT DISTINCT(userName) AS name FROM transactiontemp WHERE userName <> 'reserve' AND userName <> 'reserveProfit'
           UNION SELECT name FROM users 
           UNION SELECT name FROM otherusers
-          UNION SELECT name FROM userhistory;'''
+          UNION SELECT name FROM userhistory;''',
+      'sql3': '''SELECT COUNT(unitId) AS count FROM units WHERE type = 'intern' AND currentMonthOrYear != 13''',
     });
 
     for (var ele in res[0]) {
@@ -228,22 +228,26 @@ class _MyAppState extends State<MyApp> {
       userNames.add(realUserNames[ele['name']] ?? ele['name']);
     }
 
+    if (res[2][0]['count'] == '0') setState(() => isPassageAllowed = true);
+
     userNames = SplayTreeSet.from(userNames, (a, b) => a.compareTo(b));
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    selectedTab = tabsIndex[widget.index] ?? 0;
-    initFont();
-    loadData();
-
-    // updateamountOnLetter();
   }
 
   initFont() async {
     pdfFont = pw.Font.ttf(await rootBundle.load("fonts/pdf.ttf"));
     pdfFontBold = pw.Font.ttf(await rootBundle.load("fonts/pdf-Bold.ttf"));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.index != 'first') {
+      selectedTab = tabsIndex[widget.index] ?? 0;
+      initFont();
+      loadData();
+    }
+    // updateamountOnLetter().then((value) => print('done'));
   }
 
   @override
@@ -289,6 +293,21 @@ class _MyAppState extends State<MyApp> {
                               )
                               .toList(),
                           const Spacer(flex: 10),
+                          if (isAdmin && isPassageAllowed)
+                            InkWell(
+                              onTap: () => createDialog(context, const Passage(), dismissable: false),
+                              child: Container(
+                                  height: getHeight(context, textFeildHeight),
+                                  margin: const EdgeInsets.only(right: 5),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border.all(color: primaryColor),
+                                    borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                  ),
+                                  child: myText(getText('passage'), color: primaryColor)),
+                            ),
+                          mySizedBox(context),
                           InkWell(
                             onTap: () async {
                               FilePickerResult? result = await FilePicker.platform.pickFiles(

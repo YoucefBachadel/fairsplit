@@ -17,7 +17,7 @@ Color primaryColor = const Color(0XFF02333c); //0XFF303F9F
 Color secondaryColor = const Color(0XFF08535d);
 Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 
-double textFeildHeight = .05;
+double textFeildHeight = .045;
 double dropDownWidth = .065;
 
 String zero = '-';
@@ -25,8 +25,8 @@ String zero = '-';
 late pw.Font pdfFont;
 late pw.Font pdfFontBold;
 
-// String host = 'http://fairsplit.assala.com/php_test';
-String host = 'http://fairsplit.assala.com/php';
+String host = 'http://fairsplit.assala.com/php_test';
+// String host = 'http://fairsplit.assala.com/php';
 
 Uri insertUrl = Uri.parse('$host/insert.php');
 Uri insertSPUrl = Uri.parse('$host/insertSP.php');

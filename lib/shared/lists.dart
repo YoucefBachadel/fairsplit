@@ -82,6 +82,7 @@ Map<String, String> constans = {
   'profitability': 'Profitability',
   'unitProfitability': 'Unit Profitability',
   'startCapital': 'Start Capital',
+  'endCapital': 'End Capital',
   'initialCapital': 'Initial Capital',
   'weightedCapital': 'Weighted Capital',
   'total': 'Total',
@@ -99,6 +100,7 @@ Map<String, String> constans = {
   'intern': 'Intern',
   'extern': 'Extern',
   'totalCapital': 'Total Capital',
+  'totalZakat': 'Total Zakat',
   'count': 'Count',
   'deposit': 'Deposit',
   'deposits': 'Deposits',
@@ -122,6 +124,7 @@ Map<String, String> constans = {
   'unitsProfitability': 'Units Profitability',
   'dailyProfit': 'Daily Profit',
   'passage': 'Passage',
+  'materials': 'Materials'
 };
 
 Map<String, String> messages = {
@@ -149,6 +152,8 @@ Map<String, String> messages = {
   'soldeCaisseZero': 'Solde Caisse must be >= 0',
   'checkName': 'Check The Name',
   'amountTotalUserCapital': 'amount > total users capitals',
+  'calculationDone': 'Calculation done successfully',
+  'passageDone': 'Passage done successfully',
 };
 
 String getText(String key) => constans[key] ?? '';

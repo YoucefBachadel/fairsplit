@@ -32,7 +32,8 @@ class _DashboardState extends State<Dashboard> {
 
   void locadData() async {
     var res = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT 
+      'sql1':
+          '''SELECT 
                 (SELECT SUM(money) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
                 (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
                 (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
@@ -161,7 +162,7 @@ class _DashboardState extends State<Dashboard> {
       children: [
         Expanded(child: Center(child: myText(title, size: 24))),
         const Divider(),
-        Expanded(flex: 2, child: Center(child: myText(amount, size: 28))),
+        Expanded(flex: 2, child: Center(child: myText(amount, size: 28, fontFamily: 'IBM'))),
       ],
     );
     return Expanded(

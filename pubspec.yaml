@@ -74,8 +74,11 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: Main
+    - family: IBM
       fonts:
-        - asset: fonts/main.ttf
+        - asset: fonts/ibm.ttf
+    - family: Itim
+      fonts:
+        - asset: fonts/itim.ttf
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

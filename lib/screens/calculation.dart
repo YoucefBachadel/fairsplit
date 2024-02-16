@@ -380,7 +380,7 @@ class _CalculationState extends State<Calculation> {
       String _type = unitProfitValue >= 0 ? 'in' : 'out';
       for (var user in moneyUsers) {
         user.capital += user.money + user.effort;
-        if (user.money + user.effort != 0) {
+        if ((user.money + user.effort).abs() > 0.001) {
           transactionSQL +=
               '''('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,${user.userId}, '${user.name}', '${DateTime.now()}' , '$_type' , ${(user.money + user.effort).abs()} ,  ${isNewYear ? '' : '${user.capital},'} $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords((user.money + user.effort).abs())}','','',''),''';
           reference++;
@@ -399,9 +399,8 @@ class _CalculationState extends State<Calculation> {
       }
       if (caReserveProfit != 0) {
         counter++;
-        params['sql$counter'] = isNewYear
-            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs())}','','','');'''
-            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs())}','','','');''';
+        params['sql$counter'] =
+            '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs())}','','','');''';
         reference++;
       }
       counter++;
@@ -419,7 +418,7 @@ class _CalculationState extends State<Calculation> {
     await sqlQuery(insertUrl, params);
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-    snackBar(context, 'Calculation done successfully');
+    snackBar(context, getMessage('calculationDone'));
   }
 
   @override

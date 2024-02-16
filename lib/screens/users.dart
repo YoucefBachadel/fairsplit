@@ -305,6 +305,7 @@ class _UsersState extends State<Users> {
 
     List<DataRow> rows = users
         .map((user) => DataRow(
+              color: user.capital < 0 ? MaterialStatePropertyAll(Colors.red[100]) : null,
               onLongPress: () {
                 context.read<Filter>().change(transactionCategory: 'users', search: user.realName);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
@@ -324,46 +325,14 @@ class _UsersState extends State<Users> {
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, user.realName, textAlign: TextAlign.start),
                 dataCell(context, getText(user.type)),
-                dataCell(
-                  context,
-                  myCurrency(user.capital),
-                  textAlign: TextAlign.end,
-                ),
-                dataCell(
-                  context,
-                  myCurrency(user.weightedCapital),
-                  textAlign: TextAlign.end,
-                ),
-                dataCell(
-                  context,
-                  myCurrency(user.initialCapital),
-                  textAlign: TextAlign.end,
-                ),
-                dataCell(
-                  context,
-                  myCurrency(user.totalIn),
-                  textAlign: TextAlign.end,
-                ),
-                dataCell(
-                  context,
-                  myCurrency(user.totalOut),
-                  textAlign: TextAlign.end,
-                ),
-                dataCell(
-                  context,
-                  myCurrency(user.money + user.moneyExtern),
-                  textAlign: TextAlign.end,
-                ),
-                dataCell(
-                  context,
-                  myCurrency(user.threshold),
-                  textAlign: TextAlign.end,
-                ),
-                dataCell(
-                  context,
-                  myCurrency(user.founding),
-                  textAlign: TextAlign.end,
-                ),
+                dataCell(context, myCurrency(user.capital), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(user.weightedCapital), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(user.initialCapital), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(user.totalIn), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(user.totalOut), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(user.money + user.moneyExtern), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(user.threshold), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(user.founding), textAlign: TextAlign.end),
                 dataCell(
                   context,
                   myCurrency(user.effort + user.effortExtern),
@@ -450,9 +419,7 @@ class _UsersState extends State<Users> {
                                 _controllerH,
                                 _controllerV,
                               )),
-            mySizedBox(context),
             SizedBox(width: getWidth(context, .52), child: const Divider()),
-            mySizedBox(context),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -737,6 +704,7 @@ class _UsersState extends State<Users> {
                         getText('totalIn'),
                         getText('totalOut'),
                         getText('money'),
+                        getText('moneyExtern'),
                         getText('effort'),
                         getText('threshold'),
                         getText('founding'),
@@ -755,7 +723,8 @@ class _UsersState extends State<Users> {
                             user.initialCapital,
                             user.totalIn,
                             user.totalOut,
-                            user.money + user.moneyExtern,
+                            user.money,
+                            user.moneyExtern,
                             user.effort + user.effortExtern,
                             user.threshold,
                             user.founding,

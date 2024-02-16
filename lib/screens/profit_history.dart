@@ -287,21 +287,18 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                           _controllerV,
                         ),
             ),
-            mySizedBox(context),
             SizedBox(width: getWidth(context, .52), child: const Divider()),
-            mySizedBox(context),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Column(
                   children: [
                     totalItem(context, getText('profit'), myCurrency(tprofit)),
-                    totalItem(context, getText('profitability'), '${(tprofitability * 100).toStringAsFixed(2)} %'),
-                    totalItem(
-                        context, getText('unitProfitability'), '${(tunitProfitability * 100).toStringAsFixed(2)} %'),
+                    totalItem(context, getText('profitability'), myPercentage(tprofitability * 100)),
+                    totalItem(context, getText('unitProfitability'), myPercentage(tunitProfitability * 100)),
                   ],
                 ),
-                SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
+                SizedBox(height: getHeight(context, .1), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
                     totalItem(context, getText('reserve'), myCurrency(treserve)),
@@ -309,7 +306,7 @@ class _ProfitHistoryState extends State<ProfitHistory> {
                     totalItem(context, getText('donation'), myCurrency(tdonation)),
                   ],
                 ),
-                SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
+                SizedBox(height: getHeight(context, .1), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
                     totalItem(context, getText('money'), myCurrency(tmoney)),

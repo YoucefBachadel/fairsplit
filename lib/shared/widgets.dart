@@ -28,13 +28,13 @@ Widget myButton(
   return InkWell(
     onTap: isLoading || !enabled ? null : onTap,
     child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
       decoration: BoxDecoration(
         color: enabled ? color : Colors.grey,
         borderRadius: BorderRadius.circular(15),
       ),
       alignment: Alignment.center,
       width: width ?? getWidth(context, .09),
+      height: getHeight(context, textFeildHeight),
       child: isLoading && enabled
           ? myProgress(color: Colors.white)
           : Row(
@@ -89,12 +89,8 @@ Widget myTextField(
   );
 }
 
-Widget myText(String text, {Color color = Colors.black, double size = 16.0, bool isBold = false}) {
-  return Text(
-    text,
-    style: TextStyle(fontSize: size, color: color, fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
-  );
-}
+Widget myText(String text, {Color color = Colors.black, double size = 16.0, String fontFamily = 'Itim'}) =>
+    Text(text, style: TextStyle(color: color, fontSize: size, fontFamily: fontFamily));
 
 Widget myDropDown(
   BuildContext context, {
@@ -174,12 +170,12 @@ Widget delteConfirmation(
 
 Widget verticalDivider() => const VerticalDivider(color: Colors.black, thickness: 0.2);
 
-Widget emptyList() {
+Widget emptyList({Color textColor = Colors.grey}) {
   return Container(
     alignment: Alignment.center,
     child: Text(
       getText('emptyList'),
-      style: const TextStyle(fontSize: 30, color: Colors.grey),
+      style: TextStyle(fontSize: 30, color: textColor),
     ),
   );
 }
@@ -192,6 +188,7 @@ InputDecoration textInputDecoration({
 }) {
   return InputDecoration(
     hintText: hint,
+    contentPadding: const EdgeInsets.all(10),
     enabledBorder: OutlineInputBorder(
       borderSide: BorderSide(color: borderColor),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
@@ -214,13 +211,11 @@ DataCell dataCell(
   return DataCell(
     SizedBox(
       width: double.infinity,
-      child: Text(
-        text,
-        textAlign: textAlign,
-        textDirection: textDirection,
-        overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
+      child: Text(text,
+          textAlign: textAlign,
+          textDirection: textDirection,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontFamily: 'IBM')),
     ),
   );
 }
@@ -295,14 +290,18 @@ Widget myScorallable(Widget widget, ScrollController _controllerH, ScrollControl
   );
 }
 
-Widget totalItem(BuildContext context, String title, String value) {
+Widget totalItem(BuildContext context, String title, String value, {bool isExpanded = true}) {
   return Container(
     width: getWidth(context, .23),
     padding: const EdgeInsets.only(top: 5.0),
     child: Row(
       children: [
-        Expanded(flex: 2, child: myText(title)),
-        Expanded(flex: 2, child: myText(':    $value')),
+        if (!isExpanded) const Spacer(),
+        isExpanded ? Expanded(flex: 2, child: myText(title)) : myText(title),
+        isExpanded
+            ? Expanded(flex: 2, child: myText(':    $value', fontFamily: 'IBM'))
+            : myText(':    $value', fontFamily: 'IBM'),
+        if (!isExpanded) const Spacer(),
       ],
     ),
   );

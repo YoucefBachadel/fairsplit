@@ -263,12 +263,12 @@ class _AddTransactionState extends State<AddTransaction> {
           _testsChecked = false;
           snackBar(context, getMessage('soldeZero'));
         } else {
-          soldeForPrint = ((category == 'reserve' || category == 'reserveProfit') && isNewYear) ? -0.01 : _solde;
+          soldeForPrint = (category == 'reserve' && isNewYear) ? -0.01 : _solde;
           //insert the special transaction
           //update the setting category
           //update the setting caisse
           await sqlQuery(insertUrl, {
-            'sql1': ((category == 'reserve' || category == 'reserveProfit') && isNewYear)
+            'sql1': (category == 'reserve' && isNewYear)
                 ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'$category' , '$date' , '$type' ,${_amount.abs()} ,$_soldeCaisse , '$note','$amountOnLetter','$intermediates','$printingNotes','$reciver');'''
                 : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde ,$_soldeCaisse , '$note','$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
             'sql2':

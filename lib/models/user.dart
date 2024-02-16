@@ -13,15 +13,18 @@ class User {
   String type;
   double capital;
   double weightedCapital;
-  double initialCapital; //used in calculation and to store user capital after passage
+  double initialCapital;
+  double newCapital;
   double totalIn;
   double totalOut;
+  double totalProfit;
   double money;
   double moneyExtern;
   double threshold;
   double founding;
   double effort;
   double effortExtern;
+  double zakat;
   String months;
   List<Threshold> thresholds;
   List<Founding> foundings;
@@ -30,6 +33,8 @@ class User {
   double foundingPerc; // used in users filter for sort
   double effortPerc; // used in users filter for sort
   double evaluation; // used in users filter for sort
+  bool zakatOut;
+  bool zakatOutToZakatCaisse;
 
   User({
     this.userId = -1,
@@ -55,8 +60,13 @@ class User {
     this.effortPerc = 0,
     this.evaluation = 0,
     this.initialCapital = 0,
+    this.zakat = 0,
+    this.zakatOut = false,
+    this.zakatOutToZakatCaisse = false,
   })  : realName = realUserNames[name] ?? name,
         joinDate = joinDate ?? DateTime.now(),
+        totalProfit = money + moneyExtern + threshold + founding + effort + effortExtern,
+        newCapital = capital + money + threshold + founding + effort,
         thresholds = thresholds ?? [],
         foundings = foundings ?? [],
         efforts = efforts ?? [],

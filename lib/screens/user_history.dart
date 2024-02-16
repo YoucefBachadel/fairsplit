@@ -19,8 +19,8 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
   String _search = '';
   String _year = 'tout';
 
-  int? _sortColumnIndex = 2;
-  bool _isAscending = false;
+  int? _sortColumnIndex = 1;
+  bool _isAscending = true;
 
   TextEditingController _controller = TextEditingController();
   final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
@@ -33,10 +33,11 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
       allUsersHistroy.add(UserHistory(
         name: ele['name'],
         year: int.parse(ele['year']),
-        type: ele['type'],
         startCapital: double.parse(ele['startCapital']),
         totalIn: double.parse(ele['totalIn']),
         totalOut: double.parse(ele['totalOut']),
+        endCapital: double.parse(ele['endCapital']),
+        weightedCapital: double.parse(ele['weightedCapital']),
         moneyProfit: double.parse(ele['moneyProfit']),
         thresholdProfit: double.parse(ele['thresholdProfit']),
         foundingProfit: double.parse(ele['foundingProfit']),
@@ -94,40 +95,52 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         break;
       case 6:
         usersHistory.sort((tr1, tr2) {
+          return !_isAscending ? tr2.endCapital.compareTo(tr1.endCapital) : tr1.endCapital.compareTo(tr2.endCapital);
+        });
+        break;
+      case 7:
+        usersHistory.sort((tr1, tr2) {
+          return !_isAscending
+              ? tr2.weightedCapital.compareTo(tr1.weightedCapital)
+              : tr1.weightedCapital.compareTo(tr2.weightedCapital);
+        });
+        break;
+      case 8:
+        usersHistory.sort((tr1, tr2) {
           return !_isAscending
               ? tr2.moneyProfit.compareTo(tr1.moneyProfit)
               : tr1.moneyProfit.compareTo(tr2.moneyProfit);
         });
         break;
-      case 7:
+      case 9:
         usersHistory.sort((tr1, tr2) {
           return !_isAscending
               ? tr2.thresholdProfit.compareTo(tr1.thresholdProfit)
               : tr1.thresholdProfit.compareTo(tr2.thresholdProfit);
         });
         break;
-      case 8:
+      case 10:
         usersHistory.sort((tr1, tr2) {
           return !_isAscending
               ? tr2.foundingProfit.compareTo(tr1.foundingProfit)
               : tr1.foundingProfit.compareTo(tr2.foundingProfit);
         });
         break;
-      case 9:
+      case 11:
         usersHistory.sort((tr1, tr2) {
           return !_isAscending
               ? tr2.effortProfit.compareTo(tr1.effortProfit)
               : tr1.effortProfit.compareTo(tr2.effortProfit);
         });
         break;
-      case 10:
+      case 12:
         usersHistory.sort((tr1, tr2) {
           return !_isAscending
               ? tr2.totalProfit.compareTo(tr1.totalProfit)
               : tr1.totalProfit.compareTo(tr2.totalProfit);
         });
         break;
-      case 11:
+      case 13:
         usersHistory.sort((tr1, tr2) {
           return !_isAscending ? tr2.zakat.compareTo(tr1.zakat) : tr1.zakat.compareTo(tr2.zakat);
         });
@@ -160,6 +173,8 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         getText('startCapital'),
         getText('totalIn'),
         getText('totalOut'),
+        getText('endCapital'),
+        getText('weightedCapital'),
         getText('moneyProfit'),
         getText('thresholdProfit'),
         getText('foundingProfit'),
@@ -186,15 +201,17 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
               dataCell(context, userHistory.realName, textAlign: TextAlign.start),
               ...[
                 userHistory.year.toString(),
-                userHistory.isMoney ? myCurrency(userHistory.startCapital) : '/',
-                userHistory.isMoney ? myCurrency(userHistory.totalIn) : '/',
-                userHistory.isMoney ? myCurrency(userHistory.totalOut) : '/',
-                userHistory.isMoney ? myCurrency(userHistory.moneyProfit) : '/',
-                userHistory.isMoney ? myCurrency(userHistory.thresholdProfit) : '/',
-                userHistory.isMoney ? myCurrency(userHistory.foundingProfit) : '/',
-                userHistory.isEffort ? myCurrency(userHistory.effortProfit) : '/',
+                myCurrency(userHistory.startCapital),
+                myCurrency(userHistory.totalIn),
+                myCurrency(userHistory.totalOut),
+                myCurrency(userHistory.endCapital),
+                myCurrency(userHistory.weightedCapital),
+                myCurrency(userHistory.moneyProfit),
+                myCurrency(userHistory.thresholdProfit),
+                myCurrency(userHistory.foundingProfit),
+                myCurrency(userHistory.effortProfit),
                 myCurrency(userHistory.totalProfit),
-                userHistory.isMoney ? myCurrency(userHistory.zakat) : '/',
+                myCurrency(userHistory.zakat),
               ].map((e) => dataCell(context, e, textAlign: e == '/' ? TextAlign.center : TextAlign.end)).toList(),
             ],
           ),
@@ -401,11 +418,12 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                       ...usersHistory.map((user) => [
                             usersHistory.indexOf(user) + 1,
                             user.realName,
-                            getText(user.type),
                             user.year,
                             user.startCapital,
                             user.totalIn,
                             user.totalOut,
+                            user.endCapital,
+                            user.weightedCapital,
                             user.moneyProfit,
                             user.effortProfit,
                             user.thresholdProfit,

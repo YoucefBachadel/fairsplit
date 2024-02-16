@@ -111,8 +111,6 @@ class _OtherUsersState extends State<OtherUsers> {
         }),
       ),
       ...[
-        // getText('joinDate'),
-        // getText('phone'),
         getText('type'),
       ].map((e) => dataColumn(context, e)),
       ...[getText('amount'), getText('rest')].map((e) => sortableDataColumn(
@@ -149,8 +147,6 @@ class _OtherUsersState extends State<OtherUsers> {
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, user.realName, textAlign: TextAlign.start),
-                // dataCell(context, myDateFormate.format(user.joinDate)),
-                // dataCell(context, user.phone),
                 dataCell(context, getText(user.type)),
                 dataCell(context, myCurrency(user.amount), textAlign: TextAlign.end),
                 dataCell(context, myCurrency(user.rest), textAlign: TextAlign.end),
@@ -211,16 +207,12 @@ class _OtherUsersState extends State<OtherUsers> {
                             _controllerV,
                           ),
           ),
-          mySizedBox(context),
           SizedBox(width: getWidth(context, .52), child: const Divider()),
-          mySizedBox(context),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              myText('${getText('totalLoan')} :      ${myCurrency(totalLoan)}'),
-              SizedBox(width: getWidth(context, .05)),
-              myText('${getText('totalDeposit')} :      ${myCurrency(totalDeposit)}'),
-              SizedBox(width: getWidth(context, .05)),
+              totalItem(context, getText('totalLoan'), myCurrency(totalLoan), isExpanded: false),
+              totalItem(context, getText('totalDeposit'), myCurrency(totalDeposit), isExpanded: false),
             ],
           ),
           mySizedBox(context),

@@ -23,8 +23,8 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
   String _name = 'tout';
   String _year = 'tout';
 
-  int? _sortColumnIndex = 2;
-  bool _isAscending = false;
+  int? _sortColumnIndex = 1;
+  bool _isAscending = true;
   final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
   void loadData() async {
@@ -35,15 +35,9 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
       allUnitsHistroy.add(UnitHistory(
           name: ele['name'],
           year: int.parse(ele['year']),
-          rawProfit: double.parse(ele['rawProfit']),
-          reserve: double.parse(ele['reserve']),
-          donation: double.parse(ele['donation']),
-          netProfit: double.parse(ele['netProfit']),
-          threshold: double.parse(ele['threshold']),
-          founding: double.parse(ele['founding']),
-          effort: double.parse(ele['effort']),
-          money: double.parse(ele['money']),
+          type: ele['type'],
           capital: double.parse(ele['capital']),
+          profit: double.parse(ele['profit']),
           profitability: double.parse(ele['profitability'])));
 
       names.add(ele['name']);
@@ -75,42 +69,17 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
         unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.year.compareTo(tr1.year) : tr1.year.compareTo(tr2.year));
         break;
       case 3:
-        unitsHistory.sort((tr1, tr2) =>
-            !_isAscending ? tr2.rawProfit.compareTo(tr1.rawProfit) : tr1.rawProfit.compareTo(tr2.rawProfit));
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.type.compareTo(tr1.type) : tr1.type.compareTo(tr2.type));
         break;
       case 4:
         unitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
-        break;
-      case 5:
-        unitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
-        break;
-      case 6:
-        unitsHistory.sort((tr1, tr2) =>
-            !_isAscending ? tr2.netProfit.compareTo(tr1.netProfit) : tr1.netProfit.compareTo(tr2.netProfit));
-        break;
-      case 7:
-        unitsHistory.sort((tr1, tr2) =>
-            !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold));
-        break;
-      case 8:
-        unitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding));
-        break;
-      case 9:
-        unitsHistory
-            .sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
-        break;
-      case 10:
-        unitsHistory
-            .sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
-        break;
-      case 11:
-        unitsHistory.sort(
             (tr1, tr2) => !_isAscending ? tr2.capital.compareTo(tr1.capital) : tr1.capital.compareTo(tr2.capital));
         break;
-      case 12:
+      case 5:
+        unitsHistory
+            .sort((tr1, tr2) => !_isAscending ? tr2.profit.compareTo(tr1.profit) : tr1.profit.compareTo(tr2.profit));
+        break;
+      case 6:
         unitsHistory.sort((tr1, tr2) => !_isAscending
             ? tr2.profitability.compareTo(tr1.profitability)
             : tr1.profitability.compareTo(tr2.profitability));
@@ -133,15 +102,9 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
       ...[
         getText('name'),
         getText('year'),
-        getText('rawProfit'),
-        getText('reserve'),
-        getText('donation'),
-        getText('netProfit'),
-        getText('threshold'),
-        getText('founding'),
-        getText('effort'),
-        getText('money'),
+        getText('type'),
         getText('capital'),
+        getText('profit'),
         getText('profitability'),
       ]
           .map((e) => sortableDataColumn(
@@ -161,19 +124,13 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
             cells: [
               dataCell(context, (unitsHistory.indexOf(unitHistory) + 1).toString()),
               dataCell(context, unitHistory.name, textAlign: TextAlign.start),
+              dataCell(context, unitHistory.year.toString()),
+              dataCell(context, getText(unitHistory.type)),
               ...[
-                unitHistory.year.toString(),
-                myCurrency(unitHistory.rawProfit),
-                myCurrency(unitHistory.reserve),
-                myCurrency(unitHistory.donation),
-                myCurrency(unitHistory.netProfit),
-                myCurrency(unitHistory.threshold),
-                myCurrency(unitHistory.founding),
-                myCurrency(unitHistory.effort),
-                myCurrency(unitHistory.money),
                 myCurrency(unitHistory.capital),
+                myCurrency(unitHistory.profit),
               ].map((e) => dataCell(context, e, textAlign: TextAlign.end)).toList(),
-              dataCell(context, unitHistory.profitability.toString()),
+              dataCell(context, myPercentage(unitHistory.profitability * 100)),
             ],
           ),
         )
@@ -298,30 +255,18 @@ class _UnitHistoryScreenState extends State<UnitHistoryScreen> {
                         '#',
                         getText('name'),
                         getText('year'),
-                        getText('rawProfit'),
-                        getText('reserve'),
-                        getText('donation'),
-                        getText('netProfit'),
-                        getText('money'),
-                        getText('effort'),
-                        getText('threshold'),
-                        getText('founding'),
+                        getText('type'),
                         getText('capital'),
+                        getText('profit'),
                         getText('profitability'),
                       ],
                       ...unitsHistory.map((unit) => [
                             unitsHistory.indexOf(unit) + 1,
                             unit.name,
                             unit.year,
-                            unit.rawProfit,
-                            unit.reserve,
-                            unit.donation,
-                            unit.netProfit,
-                            unit.money,
-                            unit.effort,
-                            unit.threshold,
-                            unit.founding,
+                            unit.type,
                             unit.capital,
+                            unit.profit,
                             (unit.profitability * 100).toStringAsFixed(2),
                           ])
                     ],

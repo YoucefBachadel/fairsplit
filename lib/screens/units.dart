@@ -228,10 +228,8 @@ class _UnitsState extends State<Units> {
                     ),
                   ],
                 ),
-                mySizedBox(context),
                 SizedBox(width: getWidth(context, .4), child: const Divider()),
-                myText('${getText('totalCapital')}            :            ${myCurrency(totalCapital)}'),
-                mySizedBox(context),
+                totalItem(context, getText('totalCapital'), myCurrency(totalCapital)),
               ],
             )
           ],

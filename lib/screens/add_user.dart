@@ -455,7 +455,7 @@ class _AddUserState extends State<AddUser> {
                                 ),
                                 cells: [
                                   dataCell(context, getUnitName(allUnits, e.unitId), textAlign: TextAlign.start),
-                                  dataCell(context, e.thresholdPerc.toString()),
+                                  dataCell(context, myPercentage(e.thresholdPerc)),
                                   DataCell(
                                     Center(
                                       child: IconButton(
@@ -561,7 +561,7 @@ class _AddUserState extends State<AddUser> {
                                 ),
                                 cells: [
                                   dataCell(context, getUnitName(allUnits, e.unitId), textAlign: TextAlign.start),
-                                  dataCell(context, e.foundingPerc.toString()),
+                                  dataCell(context, myPercentage(e.foundingPerc)),
                                   DataCell(
                                     Center(
                                       child: IconButton(
@@ -676,8 +676,8 @@ class _AddUserState extends State<AddUser> {
                                   getUnitName([Unit(unitId: -1, name: 'Global')] + allUnits, e.unitId),
                                   textAlign: TextAlign.start,
                                 ),
-                                dataCell(context, e.effortPerc.toString()),
-                                dataCell(context, e.evaluation.toString()),
+                                dataCell(context, myPercentage(e.effortPerc)),
+                                dataCell(context, myPercentage(e.evaluation)),
                                 DataCell(
                                   Center(
                                     child: IconButton(
@@ -814,7 +814,7 @@ class _AddUserState extends State<AddUser> {
                 flex: 3,
                 child: myTextField(
                   context,
-                  hint: percentage.toString(),
+                  hint: myPercentage(percentage),
                   onChanged: ((text) {
                     _percentage = text;
                   }),
@@ -832,7 +832,7 @@ class _AddUserState extends State<AddUser> {
                   flex: 3,
                   child: myTextField(
                     context,
-                    hint: evaluation.toString(),
+                    hint: myPercentage(evaluation),
                     onChanged: ((text) {
                       _evaluation = text;
                     }),

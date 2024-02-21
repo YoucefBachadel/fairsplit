@@ -1,7 +1,6 @@
 import 'package:fairsplit/shared/functions.dart';
 import 'package:fairsplit/shared/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart' as intl;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:toggle_switch/toggle_switch.dart';
@@ -318,7 +317,7 @@ class _PassageState extends State<Passage> {
       pw.Center(child: pdfTitle('التقرير العام لسنة $currentYear')),
       pdfSizedBox(context),
       pw.Row(children: [
-        pdfData(intl.DateFormat('yyyy-MM-dd').format(DateTime.now())),
+        pdfData(myDateFormate.format(DateTime.now())),
         pdfTitle('التاريخ   '),
         pw.Spacer(),
         pdfData(user.realName),
@@ -359,7 +358,7 @@ class _PassageState extends State<Passage> {
   Widget build(BuildContext context) {
     return SizedBox(
       height: getHeight(context, .8),
-      width: getWidth(context, .8),
+      width: getWidth(context, .78),
       child: Column(children: [
         Container(
           alignment: Alignment.center,
@@ -495,14 +494,14 @@ class _PassageState extends State<Passage> {
                           ],
                         ),
                         const Divider(),
-                        if (bottemNavigationSelectedInex == 0) Expanded(child: informations()),
-                        if (bottemNavigationSelectedInex == 1) Expanded(child: zakatUsersSelector()),
-                        if (bottemNavigationSelectedInex == 2) Expanded(child: printDetails()),
+                        // if (bottemNavigationSelectedInex == 0) Expanded(child: informations()),
+                        if (bottemNavigationSelectedInex == 0) Expanded(child: zakatUsersSelector()),
+                        if (bottemNavigationSelectedInex == 1) Expanded(child: printDetails()),
                         const Divider(),
                         BottomNavigationBar(
                           type: BottomNavigationBarType.fixed,
                           items: <BottomNavigationBarItem>[
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('info')),
+                            // BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('info')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('zakat')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('print')),
                           ],
@@ -568,16 +567,17 @@ class _PassageState extends State<Passage> {
       children: [
         if (zakatUsers.isNotEmpty)
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
-                  width: getWidth(context, .212),
+                  width: getWidth(context, .18),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 16.0),
                     child: myText(
                         'Selected : ${zakatUsers.where((user) => user.zakatOut || user.zakatOutToZakatCaisse).length}'),
                   )),
               SizedBox(
-                width: getWidth(context, .053),
+                width: getWidth(context, .065),
                 child: CheckboxListTile(
                   value: zakatUsers.length == zakatUsers.where((user) => user.zakatOut).length,
                   title: myText('All'),
@@ -596,7 +596,7 @@ class _PassageState extends State<Passage> {
                 ),
               ),
               SizedBox(
-                width: getWidth(context, .068),
+                width: getWidth(context, .065),
                 child: CheckboxListTile(
                   value: zakatUsers.length == zakatUsers.where((user) => user.zakatOutToZakatCaisse).length,
                   title: myText('All'),
@@ -631,7 +631,7 @@ class _PassageState extends State<Passage> {
                         .map((e) => DataRow(cells: [
                               DataCell(Container(
                                 alignment: Alignment.centerLeft,
-                                width: getWidth(context, .2),
+                                width: getWidth(context, .18),
                                 child: Text(
                                   e.realName,
                                   overflow: TextOverflow.ellipsis,
@@ -639,7 +639,7 @@ class _PassageState extends State<Passage> {
                                 ),
                               )),
                               DataCell(Container(
-                                width: getWidth(context, .04),
+                                width: getWidth(context, .05),
                                 alignment: Alignment.center,
                                 child: Center(
                                   child: Checkbox(
@@ -656,7 +656,7 @@ class _PassageState extends State<Passage> {
                                 ),
                               )),
                               DataCell(Container(
-                                width: getWidth(context, .06),
+                                width: getWidth(context, .05),
                                 alignment: Alignment.center,
                                 child: Checkbox(
                                   value: e.zakatOutToZakatCaisse,
@@ -680,79 +680,81 @@ class _PassageState extends State<Passage> {
   }
 
   Widget printDetails() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: myText(getText('type'))),
-              Expanded(
-                flex: 4,
-                child: Row(
-                  children: [
-                    ToggleSwitch(
-                      minWidth: getWidth(context, .05),
-                      minHeight: getHeight(context, .035),
-                      borderWidth: 1,
-                      inactiveBgColor: Colors.white,
-                      borderColor: const [Colors.black],
-                      activeBgColors: [
-                        [Colors.green[800]!],
-                        [Colors.green[800]!],
-                      ],
-                      initialLabelIndex: pageFormat == PdfPageFormat.a5 ? 0 : 1,
-                      labels: const ['A5', 'A4'],
-                      onToggle: (index) => pageFormat = index == 0 ? PdfPageFormat.a5 : PdfPageFormat.a4,
-                    ),
-                  ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(child: myText(getText('type'))),
+                Expanded(
+                  flex: 4,
+                  child: Row(
+                    children: [
+                      ToggleSwitch(
+                        minWidth: getWidth(context, .05),
+                        minHeight: getHeight(context, .035),
+                        borderWidth: 1,
+                        inactiveBgColor: Colors.white,
+                        borderColor: const [Colors.black],
+                        activeBgColors: [
+                          [Colors.green[800]!],
+                          [Colors.green[800]!],
+                        ],
+                        initialLabelIndex: pageFormat == PdfPageFormat.a5 ? 0 : 1,
+                        labels: const ['A5', 'A4'],
+                        onToggle: (index) => pageFormat = index == 0 ? PdfPageFormat.a5 : PdfPageFormat.a4,
+                      ),
+                    ],
+                  ),
+                ),
+                FloatingActionButton(onPressed: () => buildPdf(), mini: true, child: const Icon(Icons.refresh)),
+              ],
+            ),
+            mySizedBox(context),
+            myText('Introduction'),
+            mySizedBox(context),
+            TextFormField(
+              controller: _introController,
+              style: const TextStyle(fontSize: 16),
+              textAlign: TextAlign.start,
+              minLines: 12,
+              maxLines: 12,
+              textDirection: TextDirection.rtl,
+              decoration: const InputDecoration(
+                hintTextDirection: TextDirection.rtl,
+                contentPadding: EdgeInsets.all(12),
+                border: OutlineInputBorder(
+                  gapPadding: 0,
+                  borderSide: BorderSide(width: 0.5),
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
                 ),
               ),
-              FloatingActionButton(onPressed: () => buildPdf(), mini: true, child: const Icon(Icons.refresh)),
-            ],
-          ),
-          mySizedBox(context),
-          myText('Introduction'),
-          mySizedBox(context),
-          TextFormField(
-            controller: _introController,
-            style: const TextStyle(fontSize: 16),
-            textAlign: TextAlign.start,
-            minLines: 12,
-            maxLines: 12,
-            textDirection: TextDirection.rtl,
-            decoration: const InputDecoration(
-              hintTextDirection: TextDirection.rtl,
-              contentPadding: EdgeInsets.all(12),
-              border: OutlineInputBorder(
-                gapPadding: 0,
-                borderSide: BorderSide(width: 0.5),
-                borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+            mySizedBox(context),
+            myText('Conclusion'),
+            mySizedBox(context),
+            TextFormField(
+              controller: _conclusionController,
+              style: const TextStyle(fontSize: 16),
+              textAlign: TextAlign.start,
+              minLines: 12,
+              maxLines: 12,
+              textDirection: TextDirection.rtl,
+              decoration: const InputDecoration(
+                hintTextDirection: TextDirection.rtl,
+                contentPadding: EdgeInsets.all(12),
+                border: OutlineInputBorder(
+                  gapPadding: 0,
+                  borderSide: BorderSide(width: 0.5),
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
               ),
             ),
-          ),
-          mySizedBox(context),
-          myText('Conclusion'),
-          mySizedBox(context),
-          TextFormField(
-            controller: _conclusionController,
-            style: const TextStyle(fontSize: 16),
-            textAlign: TextAlign.start,
-            minLines: 12,
-            maxLines: 12,
-            textDirection: TextDirection.rtl,
-            decoration: const InputDecoration(
-              hintTextDirection: TextDirection.rtl,
-              contentPadding: EdgeInsets.all(12),
-              border: OutlineInputBorder(
-                gapPadding: 0,
-                borderSide: BorderSide(width: 0.5),
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

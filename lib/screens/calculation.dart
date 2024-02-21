@@ -431,7 +431,7 @@ class _CalculationState extends State<Calculation> {
   Widget build(BuildContext context) {
     return SizedBox(
       height: getHeight(context, .8),
-      width: getWidth(context, .75),
+      width: getWidth(context, .78),
       child: Column(
         children: [
           Container(

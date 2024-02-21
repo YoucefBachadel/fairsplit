@@ -21,6 +21,7 @@ class AddUser extends StatefulWidget {
 
 class _AddUserState extends State<AddUser> {
   late String name, phone, type, capital, threshold, founding, effort, months;
+  late double evaluation;
   List<Unit> allUnits = [];
   late List<my_threshold.Threshold> thresholds;
   late List<Founding> foundings;
@@ -53,10 +54,10 @@ class _AddUserState extends State<AddUser> {
   }
 
   void loadUnits() async {
-    var res = await sqlQuery(selectUrl, {'sql1': '''SELECT unitId , name FROM Units WHERE type = 'intern';'''});
+    var res = await sqlQuery(selectUrl, {'sql1': '''SELECT unitId , name , type FROM Units;'''});
     List<dynamic> data = res[0];
     for (var element in data) {
-      allUnits.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
+      allUnits.add(Unit(unitId: int.parse(element['unitId']), name: element['name'], type: element['type']));
     }
     setState(() => isLoading = false);
   }
@@ -86,11 +87,11 @@ class _AddUserState extends State<AddUser> {
           // sending a post request to the url and get the inserted id
           _userId = await sqlQuery(insertSPUrl, {
             'sql':
-                '''INSERT INTO Users (name,phone,joinDate,type,capital,initialCapital,money,moneyExtern,threshold,founding,effort,effortExtern,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , '$months');''',
+                '''INSERT INTO Users (name,phone,joinDate,type,capital,initialCapital,money,moneyExtern,threshold,founding,effort,effortExtern,evaluation,months) VALUES ('$name' , '$phone' , '$joinDate' , '$type' , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , $evaluation , '$months');''',
           });
         } else {
           sqls.add(
-            '''UPDATE Users SET name = '$name' ,phone = '$phone'  ,joinDate = '$joinDate' ,type = '$type' ,months = '$months' Where userId = $_userId;''',
+            '''UPDATE Users SET name = '$name' ,phone = '$phone'  ,joinDate = '$joinDate' ,type = '$type' ,evaluation = $evaluation ,months = '$months' Where userId = $_userId;''',
           );
         }
 
@@ -102,11 +103,11 @@ class _AddUserState extends State<AddUser> {
 
         if (!isNew) {
           //if the type or the list has changed we delete all existing items of the user and we insert it again
-          if (typeHasChanged || thresholdsHasChanged) sqls.add('DELETE FROM Threshold WHERE userId = $_userId');
+          if (typeHasChanged || thresholdsHasChanged) sqls.add('DELETE FROM Threshold WHERE userId = $_userId;');
 
-          if (typeHasChanged || foundingssHasChanged) sqls.add('DELETE FROM Founding WHERE userId = $_userId');
+          if (typeHasChanged || foundingssHasChanged) sqls.add('DELETE FROM Founding WHERE userId = $_userId;');
 
-          if (typeHasChanged || effortssHasChanged) sqls.add('DELETE FROM Effort WHERE userId = $_userId');
+          if (typeHasChanged || effortssHasChanged) sqls.add('DELETE FROM Effort WHERE userId = $_userId;');
         }
 
         if (isMoney && thresholds.isNotEmpty && (typeHasChanged || thresholdsHasChanged)) {
@@ -130,9 +131,9 @@ class _AddUserState extends State<AddUser> {
           sqls.add(sql);
         }
         if (isEffort && efforts.isNotEmpty && (typeHasChanged || effortssHasChanged)) {
-          sql = 'INSERT INTO Effort(userId, unitId, effortPerc, evaluation) VALUES ';
+          sql = 'INSERT INTO Effort(userId, unitId, effortPerc) VALUES ';
           for (var element in efforts) {
-            sql += '($_userId , ${element.unitId} , ${element.effortPerc} , ${element.evaluation}),';
+            sql += '($_userId , ${element.unitId} , ${element.effortPerc}),';
           }
           sql = sql.substring(0, sql.length - 1);
           sql += ';';
@@ -140,8 +141,7 @@ class _AddUserState extends State<AddUser> {
           sqls.add(sql);
         }
 
-        if (sql.isNotEmpty) await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
-
+        if (sqls.isNotEmpty) await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
         snackBar(context, isNew ? getMessage('addUser') : getMessage('updateUser'));
       }
@@ -163,6 +163,7 @@ class _AddUserState extends State<AddUser> {
     founding = widget.user.founding.toString();
     effort = widget.user.effort.toString();
     joinDate = widget.user.joinDate;
+    evaluation = widget.user.evaluation;
     months = widget.user.months;
     thresholds = widget.user.thresholds;
     foundings = widget.user.foundings;
@@ -174,9 +175,9 @@ class _AddUserState extends State<AddUser> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .85),
-      width: isEffort ? getWidth(context, .75) : getWidth(context, .47),
+      width: (isEffort && efforts.isNotEmpty) || (isEffort && isMoney) ? getWidth(context, .7) : getWidth(context, .47),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             alignment: Alignment.center,
@@ -186,7 +187,7 @@ class _AddUserState extends State<AddUser> {
                   IconButton(
                       onPressed: () => createDialog(
                             context,
-                            delteConfirmation(
+                            deleteConfirmation(
                               context,
                               getMessage('deleteUserConfirmation'),
                               () => deleteUser(widget.user.userId),
@@ -221,42 +222,40 @@ class _AddUserState extends State<AddUser> {
                   topRight: Radius.circular(20.0),
                 )),
           ),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                  color: scaffoldColor,
-                  borderRadius: const BorderRadius.only(
-                    bottomRight: Radius.circular(20.0),
-                    bottomLeft: Radius.circular(20.0),
-                  )),
-              child: isLoading
-                  ? myProgress()
-                  : Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(child: information()),
-                            if (efforts.isNotEmpty)
-                              SizedBox(height: getHeight(context, .25), child: const VerticalDivider(width: 50)),
-                            if (efforts.isNotEmpty) monthsDetail(),
-                          ],
-                        ),
-                        const Spacer(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (isEffort) effortDetail(),
-                            if (isMoney) thresholdDetail(),
-                            if (isMoney) foundingDetail(),
-                          ],
-                        ),
-                        const SizedBox(height: 16.0),
-                        myButton(context, onTap: () => save()),
-                      ],
-                    ),
-            ),
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+                color: scaffoldColor,
+                borderRadius: const BorderRadius.only(
+                  bottomRight: Radius.circular(20.0),
+                  bottomLeft: Radius.circular(20.0),
+                )),
+            child: isLoading
+                ? SizedBox(height: getHeight(context, .6), child: myProgress())
+                : Column(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: information()),
+                          if (efforts.isNotEmpty)
+                            SizedBox(height: getHeight(context, .25), child: const VerticalDivider(width: 50)),
+                          if (efforts.isNotEmpty) monthsDetail(),
+                        ],
+                      ),
+                      mySizedBox(context),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (isEffort) effortDetail(),
+                          if (isMoney) thresholdDetail(),
+                          if (isMoney) foundingDetail(),
+                        ],
+                      ),
+                      mySizedBox(context),
+                      myButton(context, onTap: () => save()),
+                    ],
+                  ),
           )
         ],
       ),
@@ -265,8 +264,8 @@ class _AddUserState extends State<AddUser> {
 
   Widget information() {
     Map<String, String> usersTypes = {
-      'money': getText('money'),
-      'effort': getText('effort'),
+      if (efforts.isEmpty) 'money': getText('money'),
+      if (thresholds.isEmpty && foundings.isEmpty) 'effort': getText('effort'),
       'both': getText('both'),
     };
     return Column(
@@ -406,16 +405,19 @@ class _AddUserState extends State<AddUser> {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
-                if (thresholds.length != allUnits.length)
+                if (thresholds.length != allUnits.where((element) => element.type == 'intern').length)
                   IconButton(
                     onPressed: () {
-                      final _allIds = allUnits.map((e) => e.unitId).toSet();
+                      final _allIds =
+                          allUnits.where((element) => element.type == 'intern').map((e) => e.unitId).toSet();
                       final _thresholdsIds = thresholds.map((e) => e.unitId).toSet();
                       final _filteredIds = _allIds.difference(_thresholdsIds);
                       createDialog(
                         context,
-                        unitSelect(2,
-                            units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
+                        unitSelect(
+                          2,
+                          units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList(),
+                        ),
                       );
                     },
                     icon: Icon(
@@ -445,12 +447,7 @@ class _AddUserState extends State<AddUser> {
                                     2, listIndex: thresholds.indexOf(e),
                                     percentage: e.thresholdPerc,
                                     //list of units contain only selected unit
-                                    units: [
-                                      Unit(
-                                        unitId: e.unitId,
-                                        name: getUnitName(allUnits, e.unitId),
-                                      )
-                                    ],
+                                    units: [Unit(unitId: e.unitId, name: getUnitName(allUnits, e.unitId))],
                                   ),
                                 ),
                                 cells: [
@@ -462,7 +459,7 @@ class _AddUserState extends State<AddUser> {
                                           onPressed: () {
                                             createDialog(
                                               context,
-                                              delteConfirmation(
+                                              deleteConfirmation(
                                                 context,
                                                 getMessage('deleteItem'),
                                                 () => setState(() {
@@ -513,10 +510,10 @@ class _AddUserState extends State<AddUser> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
-              if (foundings.length != allUnits.length)
+              if (foundings.length != allUnits.where((element) => element.type == 'intern').length)
                 IconButton(
                   onPressed: () {
-                    final _allIds = allUnits.map((e) => e.unitId).toSet();
+                    final _allIds = allUnits.where((element) => element.type == 'intern').map((e) => e.unitId).toSet();
                     final _foundingsIds = foundings.map((e) => e.unitId).toSet();
                     final _filteredIds = _allIds.difference(_foundingsIds);
                     createDialog(
@@ -551,12 +548,7 @@ class _AddUserState extends State<AddUser> {
                                     3, listIndex: foundings.indexOf(e),
                                     percentage: e.foundingPerc,
                                     //list of units contain only selected unit
-                                    units: [
-                                      Unit(
-                                        unitId: e.unitId,
-                                        name: getUnitName(allUnits, e.unitId),
-                                      )
-                                    ],
+                                    units: [Unit(unitId: e.unitId, name: getUnitName(allUnits, e.unitId))],
                                   ),
                                 ),
                                 cells: [
@@ -568,7 +560,7 @@ class _AddUserState extends State<AddUser> {
                                           onPressed: () {
                                             createDialog(
                                               context,
-                                              delteConfirmation(
+                                              deleteConfirmation(
                                                 context,
                                                 getMessage('deleteItem'),
                                                 () => setState(() {
@@ -598,7 +590,7 @@ class _AddUserState extends State<AddUser> {
   Widget effortDetail() {
     return Container(
       height: getHeight(context, .44),
-      width: getWidth(context, .27),
+      width: getWidth(context, .22),
       margin: const EdgeInsets.all(2.0),
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
@@ -650,9 +642,7 @@ class _AddUserState extends State<AddUser> {
               : SingleChildScrollView(
                   child: dataTable(
                     context,
-                    columns: [getText('unit'), getText('percentage'), getText('evaluation'), '']
-                        .map((e) => dataColumn(context, e))
-                        .toList(),
+                    columns: [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
                     rows: efforts
                         .map((e) => DataRow(
                               onSelectChanged: (value) => createDialog(
@@ -660,7 +650,6 @@ class _AddUserState extends State<AddUser> {
                                 unitSelect(
                                   1, listIndex: efforts.indexOf(e),
                                   percentage: e.effortPerc,
-                                  evaluation: e.evaluation,
                                   //list of units contain only selected unit
                                   units: [
                                     Unit(
@@ -677,14 +666,13 @@ class _AddUserState extends State<AddUser> {
                                   textAlign: TextAlign.start,
                                 ),
                                 dataCell(context, myPercentage(e.effortPerc)),
-                                dataCell(context, myPercentage(e.evaluation)),
                                 DataCell(
                                   Center(
                                     child: IconButton(
                                         onPressed: () {
                                           createDialog(
                                             context,
-                                            delteConfirmation(
+                                            deleteConfirmation(
                                               context,
                                               getMessage('deleteItem'),
                                               () => setState(() {
@@ -713,49 +701,69 @@ class _AddUserState extends State<AddUser> {
   }
 
   Widget monthsDetail() {
-    return Row(
+    return Column(
       children: [
         SizedBox(
-          width: getWidth(context, .1),
-          child: Column(
-            children: monthsOfYear
-                .sublist(0, 6)
-                .map((e) => SizedBox(
-                      height: 30,
-                      child: CheckboxListTile(
-                          value: months[monthsOfYear.indexOf(e)] == '1',
-                          title: myText(e),
-                          onChanged: (val) {
-                            setState(() {
-                              final chars = months.characters.toList();
-                              chars[monthsOfYear.indexOf(e)] = val == false ? '0' : '1';
-                              months = chars.join('');
-                            });
-                          }),
-                    ))
-                .toList(),
+          width: getWidth(context, .15),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              myText(getText('evaluation')),
+              myTextField(
+                context,
+                hint: myPercentage(evaluation),
+                onChanged: (text) => evaluation = double.parse(text),
+                isNumberOnly: true,
+              ),
+            ],
           ),
         ),
-        SizedBox(
-          width: getWidth(context, .1),
-          child: Column(
-            children: monthsOfYear
-                .sublist(6, 12)
-                .map((e) => SizedBox(
-                      height: 30,
-                      child: CheckboxListTile(
-                          value: months[monthsOfYear.indexOf(e)] == '1',
-                          title: myText(e),
-                          onChanged: (val) {
-                            setState(() {
-                              final chars = months.characters.toList();
-                              chars[monthsOfYear.indexOf(e)] = val == false ? '0' : '1';
-                              months = chars.join('');
-                            });
-                          }),
-                    ))
-                .toList(),
-          ),
+        SizedBox(width: getWidth(context, .15), child: const Divider()),
+        Row(
+          children: [
+            SizedBox(
+              width: getWidth(context, .1),
+              child: Column(
+                children: monthsOfYear
+                    .sublist(0, 6)
+                    .map((e) => SizedBox(
+                          height: 30,
+                          child: CheckboxListTile(
+                              value: months[monthsOfYear.indexOf(e)] == '1',
+                              title: myText(e),
+                              onChanged: (val) {
+                                setState(() {
+                                  final chars = months.characters.toList();
+                                  chars[monthsOfYear.indexOf(e)] = val == false ? '0' : '1';
+                                  months = chars.join('');
+                                });
+                              }),
+                        ))
+                    .toList(),
+              ),
+            ),
+            SizedBox(
+              width: getWidth(context, .1),
+              child: Column(
+                children: monthsOfYear
+                    .sublist(6, 12)
+                    .map((e) => SizedBox(
+                          height: 30,
+                          child: CheckboxListTile(
+                              value: months[monthsOfYear.indexOf(e)] == '1',
+                              title: myText(e),
+                              onChanged: (val) {
+                                setState(() {
+                                  final chars = months.characters.toList();
+                                  chars[monthsOfYear.indexOf(e)] = val == false ? '0' : '1';
+                                  months = chars.join('');
+                                });
+                              }),
+                        ))
+                    .toList(),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -766,15 +774,12 @@ class _AddUserState extends State<AddUser> {
     List<Unit> units = const [],
     int listIndex = -1,
     double percentage = 0,
-    double evaluation = 100,
   }) {
     //type 1:effort 2:threshold 3:founding
     int _selectedUnitId = units[0].unitId;
     String _percentage = percentage.toString();
-    String _evaluation = evaluation.toString();
 
     return Container(
-      height: type == 1 ? getHeight(context, .28) : getHeight(context, .23),
       width: getWidth(context, .29),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
@@ -783,6 +788,7 @@ class _AddUserState extends State<AddUser> {
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -824,32 +830,13 @@ class _AddUserState extends State<AddUser> {
             ],
           ),
           mySizedBox(context),
-          if (type == 1)
-            Row(
-              children: [
-                Expanded(child: myText(getText('evaluation'))),
-                Expanded(
-                  flex: 3,
-                  child: myTextField(
-                    context,
-                    hint: myPercentage(evaluation),
-                    onChanged: ((text) {
-                      _evaluation = text;
-                    }),
-                    isNumberOnly: true,
-                  ),
-                ),
-              ],
-            ),
-          mySizedBox(context),
           myButton(
             context,
             icon: Icons.add,
             text: getText('add'),
             onTap: () {
               percentage = double.parse(_percentage);
-              evaluation = double.parse(_evaluation);
-              if (percentage != 0 && evaluation != 0) {
+              if (percentage != 0) {
                 switch (type) {
                   case 1:
                     effortssHasChanged = true;
@@ -858,13 +845,10 @@ class _AddUserState extends State<AddUser> {
                         userId: widget.user.userId,
                         unitId: _selectedUnitId,
                         effortPerc: percentage,
-                        evaluation: evaluation,
                       ));
                     } else {
                       efforts[listIndex].effortPerc = percentage;
-                      efforts[listIndex].evaluation = evaluation;
                     }
-
                     break;
                   case 2:
                     thresholdsHasChanged = true;
@@ -894,15 +878,10 @@ class _AddUserState extends State<AddUser> {
 
                 setState(() => Navigator.of(context).pop());
               } else {
-                snackBar(
-                  context,
-                  getMessage('zeroValue'),
-                  duration: 5,
-                );
+                snackBar(context, getMessage('zeroValue'), duration: 5);
               }
             },
           ),
-          mySizedBox(context),
         ],
       ),
     );

@@ -13,7 +13,9 @@ class UserHistory {
   double thresholdProfit;
   double foundingProfit;
   double effortProfit;
+  double externProfit;
   double totalProfit;
+  double newCapital;
   double zakat;
 
   UserHistory({
@@ -28,7 +30,9 @@ class UserHistory {
     required this.thresholdProfit,
     required this.foundingProfit,
     required this.effortProfit,
+    required this.externProfit,
     required this.totalProfit,
+    required this.newCapital,
     required this.zakat,
   }) : realName = realUserNames[name] ?? name;
 }

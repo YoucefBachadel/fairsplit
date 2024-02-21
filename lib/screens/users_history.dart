@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 import '../models/user_history.dart';
 import '../shared/functions.dart';
@@ -6,14 +8,14 @@ import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 
-class UserHistoryScreen extends StatefulWidget {
-  const UserHistoryScreen({Key? key}) : super(key: key);
+class UsersHistory extends StatefulWidget {
+  const UsersHistory({Key? key}) : super(key: key);
 
   @override
-  State<UserHistoryScreen> createState() => _UserHistoryScreenState();
+  State<UsersHistory> createState() => _UsersHistoryState();
 }
 
-class _UserHistoryScreenState extends State<UserHistoryScreen> {
+class _UsersHistoryState extends State<UsersHistory> {
   List<UserHistory> allUsersHistroy = [], usersHistory = [];
   bool isloading = true;
   String _search = '';
@@ -24,6 +26,15 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
 
   TextEditingController _controller = TextEditingController();
   final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
+  double tStartCapital = 0,
+      tEndCapital = 0,
+      tNewCapital = 0,
+      tMoney = 0,
+      tThreshold = 0,
+      tFounding = 0,
+      tEffort = 0,
+      tTotalProfit = 0,
+      tZakat = 0;
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM UserHistory;'});
@@ -42,7 +53,9 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         thresholdProfit: double.parse(ele['thresholdProfit']),
         foundingProfit: double.parse(ele['foundingProfit']),
         effortProfit: double.parse(ele['effortProfit']),
+        externProfit: double.parse(ele['externProfit']),
         totalProfit: double.parse(ele['totalProfit']),
+        newCapital: double.parse(ele['newCapital']),
         zakat: double.parse(ele['zakat']),
       ));
     }
@@ -54,10 +67,28 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
 
   void filterHistory() {
     usersHistory.clear();
+    tStartCapital = 0;
+    tEndCapital = 0;
+    tNewCapital = 0;
+    tMoney = 0;
+    tThreshold = 0;
+    tFounding = 0;
+    tEffort = 0;
+    tTotalProfit = 0;
+    tZakat = 0;
     for (var userHistory in allUsersHistroy) {
       if ((_search.isEmpty || userHistory.realName == _search) &&
           (_year == 'tout' || userHistory.year.toString() == _year)) {
         usersHistory.add(userHistory);
+        tStartCapital += userHistory.startCapital;
+        tEndCapital += userHistory.endCapital;
+        tNewCapital += userHistory.newCapital;
+        tMoney += userHistory.moneyProfit;
+        tThreshold += userHistory.thresholdProfit;
+        tFounding += userHistory.foundingProfit;
+        tEffort += userHistory.effortProfit;
+        tTotalProfit += userHistory.totalProfit;
+        tZakat += userHistory.zakat;
       }
     }
 
@@ -136,11 +167,23 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
       case 12:
         usersHistory.sort((tr1, tr2) {
           return !_isAscending
+              ? tr2.externProfit.compareTo(tr1.externProfit)
+              : tr1.externProfit.compareTo(tr2.externProfit);
+        });
+        break;
+      case 13:
+        usersHistory.sort((tr1, tr2) {
+          return !_isAscending
               ? tr2.totalProfit.compareTo(tr1.totalProfit)
               : tr1.totalProfit.compareTo(tr2.totalProfit);
         });
         break;
-      case 13:
+      case 14:
+        usersHistory.sort((tr1, tr2) {
+          return !_isAscending ? tr2.newCapital.compareTo(tr1.newCapital) : tr1.newCapital.compareTo(tr2.newCapital);
+        });
+        break;
+      case 15:
         usersHistory.sort((tr1, tr2) {
           return !_isAscending ? tr2.zakat.compareTo(tr1.zakat) : tr1.zakat.compareTo(tr2.zakat);
         });
@@ -148,12 +191,10 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
     }
   }
 
-  void clearSearch() {
-    setState(() {
-      _search = '';
-      _controller.clear();
-    });
-  }
+  void clearSearch() => setState(() {
+        _search = '';
+        _controller.clear();
+      });
 
   @override
   void initState() {
@@ -175,11 +216,13 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
         getText('totalOut'),
         getText('endCapital'),
         getText('weightedCapital'),
-        getText('moneyProfit'),
-        getText('thresholdProfit'),
-        getText('foundingProfit'),
-        getText('effortProfit'),
+        getText('money'),
+        getText('threshold'),
+        getText('founding'),
+        getText('effort'),
+        getText('externProfit'),
         getText('totalProfit'),
+        getText('newCapital'),
         getText('zakat'),
       ]
           .map((e) => sortableDataColumn(
@@ -199,8 +242,8 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
             cells: [
               dataCell(context, (usersHistory.indexOf(userHistory) + 1).toString()),
               dataCell(context, userHistory.realName, textAlign: TextAlign.start),
+              dataCell(context, userHistory.year.toString()),
               ...[
-                userHistory.year.toString(),
                 myCurrency(userHistory.startCapital),
                 myCurrency(userHistory.totalIn),
                 myCurrency(userHistory.totalOut),
@@ -210,7 +253,9 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                 myCurrency(userHistory.thresholdProfit),
                 myCurrency(userHistory.foundingProfit),
                 myCurrency(userHistory.effortProfit),
+                myCurrency(userHistory.externProfit),
                 myCurrency(userHistory.totalProfit),
+                myCurrency(userHistory.newCapital),
                 myCurrency(userHistory.zakat),
               ].map((e) => dataCell(context, e, textAlign: e == '/' ? TextAlign.center : TextAlign.end)).toList(),
             ],
@@ -256,10 +301,36 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                             _controllerH,
                             _controllerV,
                           )),
-            mySizedBox(context),
             SizedBox(width: getWidth(context, .52), child: const Divider()),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    totalItem(context, getText('startCapital'), myCurrency(tStartCapital)),
+                    totalItem(context, getText('endCapital'), myCurrency(tEndCapital)),
+                    totalItem(context, getText('newCapital'), myCurrency(tNewCapital)),
+                  ],
+                ),
+                SizedBox(height: getHeight(context, .08), child: const VerticalDivider(width: 50)),
+                Column(
+                  children: [
+                    totalItem(context, getText('money'), myCurrency(tMoney)),
+                    totalItem(context, getText('zakat'), myCurrency(tZakat)),
+                    totalItem(context, getText('totalProfit'), myCurrency(tTotalProfit)),
+                  ],
+                ),
+                SizedBox(height: getHeight(context, .08), child: const VerticalDivider(width: 50)),
+                Column(
+                  children: [
+                    totalItem(context, getText('effort'), myCurrency(tEffort)),
+                    totalItem(context, getText('threshold'), myCurrency(tThreshold)),
+                    totalItem(context, getText('founding'), myCurrency(tFounding)),
+                  ],
+                ),
+              ],
+            ),
             mySizedBox(context),
-            const Row(),
           ],
         ),
       ),
@@ -412,7 +483,9 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                         getText('effortProfit'),
                         getText('thresholdProfit'),
                         getText('foundingProfit'),
+                        getText('externProfit'),
                         getText('totalProfit'),
+                        getText('newCapital'),
                         getText('zakat'),
                       ],
                       ...usersHistory.map((user) => [
@@ -428,7 +501,9 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                             user.effortProfit,
                             user.thresholdProfit,
                             user.foundingProfit,
+                            user.externProfit,
                             user.totalProfit,
+                            user.newCapital,
                             user.zakat,
                           ])
                     ],
@@ -437,21 +512,99 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                 Icons.file_download,
                 color: primaryColor,
               )),
-          (_search.isNotEmpty || _year != 'tout')
-              ? IconButton(
-                  onPressed: () => setState(() {
-                    _search = '';
-                    _controller.clear();
-                    _year = 'tout';
-                  }),
-                  icon: Icon(
-                    Icons.update,
-                    color: primaryColor,
-                  ),
-                )
-              : const SizedBox(),
+          IconButton(
+            icon: Icon(Icons.print, color: primaryColor),
+            onPressed: () => createDialog(context, SizedBox(child: printPage())),
+          ),
+          if (_search.isNotEmpty || _year != 'tout')
+            IconButton(
+              onPressed: () => setState(() {
+                _search = '';
+                _controller.clear();
+                _year = 'tout';
+              }),
+              icon: Icon(
+                Icons.update,
+                color: primaryColor,
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  Widget printPage() {
+    final pdf = pw.Document();
+
+    pdf.addPage(pdfPage(
+      pdfPageFormat: PdfPageFormat.a4.landscape,
+      pageOrientation: pw.PageOrientation.landscape,
+      build: [
+        pw.Table.fromTextArray(
+          headers: [
+            getText('name'),
+            getText('year'),
+            getText('startCapital'),
+            getText('totalIn'),
+            getText('totalOut'),
+            getText('endCapital'),
+            getText('money'),
+            getText('threshold'),
+            getText('founding'),
+            getText('effort'),
+            getText('externProfit'),
+            getText('newCapital'),
+            getText('zakat'),
+          ],
+          data: usersHistory
+              .map((userHistory) => [
+                    userHistory.realName,
+                    userHistory.year,
+                    myCurrency(userHistory.startCapital),
+                    myCurrency(userHistory.totalIn),
+                    myCurrency(userHistory.totalOut),
+                    myCurrency(userHistory.endCapital),
+                    myCurrency(userHistory.moneyProfit),
+                    myCurrency(userHistory.thresholdProfit),
+                    myCurrency(userHistory.foundingProfit),
+                    myCurrency(userHistory.effortProfit),
+                    myCurrency(userHistory.externProfit),
+                    myCurrency(userHistory.newCapital),
+                    myCurrency(userHistory.zakat),
+                  ])
+              .toList(),
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+          cellStyle: const pw.TextStyle(fontSize: 8),
+          cellPadding: const pw.EdgeInsets.symmetric(horizontal: 8),
+          border: const pw.TableBorder(
+            horizontalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+            verticalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+            top: pw.BorderSide(width: .01, color: PdfColors.grey),
+            left: pw.BorderSide(width: .01, color: PdfColors.grey),
+            bottom: pw.BorderSide(width: .01, color: PdfColors.grey),
+            right: pw.BorderSide(width: .01, color: PdfColors.grey),
+          ),
+          cellAlignments: {
+            0: pw.Alignment.centerLeft,
+            1: pw.Alignment.center,
+            2: pw.Alignment.centerRight,
+            3: pw.Alignment.centerRight,
+            4: pw.Alignment.centerRight,
+            5: pw.Alignment.centerRight,
+            6: pw.Alignment.centerRight,
+            7: pw.Alignment.centerRight,
+            8: pw.Alignment.centerRight,
+            9: pw.Alignment.centerRight,
+            10: pw.Alignment.centerRight,
+            11: pw.Alignment.centerRight,
+            12: pw.Alignment.centerRight,
+            13: pw.Alignment.centerRight,
+          },
+        ),
+      ],
+    ));
+
+    return pdfPreview(context, pdf, 'Users History');
   }
 }

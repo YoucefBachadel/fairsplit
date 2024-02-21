@@ -150,9 +150,13 @@ String getIntToWord(int number) {
   return 'Number out of range';
 }
 
-void printPdf(BuildContext context, Future<Uint8List> pdf) async {
+void printPdf(BuildContext context, Future<Uint8List> pdf, bool closeWhenDone) async {
   await Printing.layoutPdf(
     usePrinterSettings: true,
     onLayout: (PdfPageFormat format) async => pdf,
-  ).then((value) => value ? Navigator.pop(context) : null);
+  ).then((value) => value
+      ? closeWhenDone
+          ? Navigator.pop(context)
+          : null
+      : null);
 }

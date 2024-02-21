@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 import '../main.dart';
 import '../models/effort.dart';
@@ -46,12 +48,11 @@ class _UsersState extends State<Users> {
       'sql1': 'SELECT * FROM Threshold;',
       'sql2': 'SELECT * FROM Founding;',
       'sql3': 'SELECT * FROM Effort;',
-      'sql4':
-          '''SELECT u.*,
-                    (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'in') AS totalIn,
-                    (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'out') AS totalOut 
+      'sql4': '''SELECT u.*,
+                    (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'in' AND Year(date) = $currentYear) AS totalIn,
+                    (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'out' AND Year(date) = $currentYear) AS totalOut 
             FROM Users u;''',
-      'sql5': '''SELECT unitId , name FROM Units WHERE type = 'intern';''',
+      'sql5': '''SELECT unitId , name , type FROM Units;''',
     });
     var dataThresholds = data[0];
     var dataFoundings = data[1];
@@ -62,7 +63,7 @@ class _UsersState extends State<Users> {
     allUsers = toUsers(dataUsers, toThresholds(dataThresholds), toFoundings(dataFoundings), toEfforts(dataEfforts));
 
     for (var element in dataUnits) {
-      units.add(Unit(unitId: int.parse(element['unitId']), name: element['name']));
+      units.add(Unit(unitId: int.parse(element['unitId']), name: element['name'], type: element['type']));
     }
 
     units.sort((a, b) => a.name.compareTo(b.name));
@@ -112,7 +113,6 @@ class _UsersState extends State<Users> {
           if (element.unitId == _effortUnitFilter) {
             _iseffortFilter = true;
             user.effortPerc = element.effortPerc;
-            user.evaluation = element.evaluation;
             break;
           }
         }
@@ -305,7 +305,12 @@ class _UsersState extends State<Users> {
 
     List<DataRow> rows = users
         .map((user) => DataRow(
-              color: user.capital < 0 ? MaterialStatePropertyAll(Colors.red[100]) : null,
+              color: user.capital < 0
+                  ? MaterialStatePropertyAll(Colors.red[100])
+                  : ((user.capital != 0 && user.type == 'effort') ||
+                          (user.effort + user.effortExtern != 0 && user.type == 'money'))
+                      ? MaterialStatePropertyAll(Colors.green[100])
+                      : null,
               onLongPress: () {
                 context.read<Filter>().change(transactionCategory: 'users', search: user.realName);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
@@ -341,25 +346,22 @@ class _UsersState extends State<Users> {
                 if (_thresholdUnitFilter != -2)
                   dataCell(
                       context,
-                      user.thresholds
+                      myPercentage(user.thresholds
                           .firstWhere((element) => element.unitId == _thresholdUnitFilter)
-                          .thresholdPerc
-                          .toString()),
+                          .thresholdPerc)),
                 if (_foundingUnitFilter != -2)
                   dataCell(
                       context,
-                      user.foundings
-                          .firstWhere((element) => element.unitId == _foundingUnitFilter)
-                          .foundingPerc
-                          .toString()),
+                      myPercentage(
+                          user.foundings.firstWhere((element) => element.unitId == _foundingUnitFilter).foundingPerc)),
                 if (_effortUnitFilter != -2) ...[
                   dataCell(
                     context,
-                    user.efforts.firstWhere((element) => element.unitId == _effortUnitFilter).effortPerc.toString(),
+                    myPercentage(user.efforts.firstWhere((element) => element.unitId == _effortUnitFilter).effortPerc),
                   ),
                   dataCell(
                     context,
-                    user.efforts.firstWhere((element) => element.unitId == _effortUnitFilter).evaluation.toString(),
+                    myPercentage(user.evaluation),
                   ),
                 ],
                 if (isAdmin)
@@ -429,14 +431,14 @@ class _UsersState extends State<Users> {
                     totalItem(context, getText('initialCapital'), myCurrency(tinitialCapital)),
                   ],
                 ),
-                SizedBox(height: getHeight(context, .07), child: const VerticalDivider(width: 50)),
+                SizedBox(height: getHeight(context, .05), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
                     totalItem(context, getText('money'), myCurrency(tmoney)),
                     totalItem(context, getText('effort'), myCurrency(teffort)),
                   ],
                 ),
-                SizedBox(height: getHeight(context, .07), child: const VerticalDivider(width: 50)),
+                SizedBox(height: getHeight(context, .05), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
                     totalItem(context, getText('threshold'), myCurrency(tthreshold)),
@@ -605,7 +607,9 @@ class _UsersState extends State<Users> {
                 value: _thresholdUnitFilter,
                 width: getWidth(context, .14),
                 color: _thresholdUnitFilter == -2 ? Colors.grey : primaryColor,
-                items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
+                items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] +
+                        units.where((element) => element.type == 'intern').toList())
+                    .map((item) {
                   return DropdownMenuItem(
                     value: item.unitId,
                     alignment: AlignmentDirectional.center,
@@ -636,7 +640,9 @@ class _UsersState extends State<Users> {
                 value: _foundingUnitFilter,
                 width: getWidth(context, .14),
                 color: _foundingUnitFilter == -2 ? Colors.grey : primaryColor,
-                items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] + units).map((item) {
+                items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] +
+                        units.where((element) => element.type == 'intern').toList())
+                    .map((item) {
                   return DropdownMenuItem(
                     value: item.unitId,
                     alignment: AlignmentDirectional.center,
@@ -738,29 +744,103 @@ class _UsersState extends State<Users> {
                 Icons.file_download,
                 color: primaryColor,
               )),
-          (_controller.text.isNotEmpty ||
-                  _type != 'tout' ||
-                  _thresholdUnitFilter != -2 ||
-                  _foundingUnitFilter != -2 ||
-                  _effortUnitFilter != -2)
-              ? IconButton(
-                  onPressed: () => setState(() {
-                    _search = '';
-                    _controller.clear();
-                    _type = 'tout';
-                    _thresholdUnitFilter = -2;
-                    _foundingUnitFilter = -2;
-                    _effortUnitFilter = -2;
-                    if (_sortColumnIndex! > 8) _sortColumnIndex = 1;
-                  }),
-                  icon: Icon(
-                    Icons.update,
-                    color: primaryColor,
-                  ),
-                )
-              : const SizedBox(),
+          IconButton(
+            icon: Icon(Icons.print, color: primaryColor),
+            onPressed: () => createDialog(context, SizedBox(child: printPage())),
+          ),
+          if (_controller.text.isNotEmpty ||
+              _type != 'tout' ||
+              _thresholdUnitFilter != -2 ||
+              _foundingUnitFilter != -2 ||
+              _effortUnitFilter != -2)
+            IconButton(
+              onPressed: () => setState(() {
+                _search = '';
+                _controller.clear();
+                _type = 'tout';
+                _thresholdUnitFilter = -2;
+                _foundingUnitFilter = -2;
+                _effortUnitFilter = -2;
+                if (_sortColumnIndex! > 8) _sortColumnIndex = 1;
+              }),
+              icon: Icon(
+                Icons.update,
+                color: primaryColor,
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  Widget printPage() {
+    final pdf = pw.Document();
+
+    pdf.addPage(pdfPage(
+      pdfPageFormat: PdfPageFormat.a4.landscape,
+      pageOrientation: pw.PageOrientation.landscape,
+      build: [
+        pw.Table.fromTextArray(
+          headers: [
+            getText('name'),
+            getText('type'),
+            getText('capital'),
+            getText('weightedCapital'),
+            getText('initialCapital'),
+            getText('totalIn'),
+            getText('totalOut'),
+            getText('money'),
+            getText('threshold'),
+            getText('founding'),
+            getText('effort'),
+          ],
+          data: users
+              .map((user) => [
+                    user.realName,
+                    getText(user.type),
+                    myCurrency(user.capital),
+                    myCurrency(user.weightedCapital),
+                    myCurrency(user.initialCapital),
+                    myCurrency(user.totalIn),
+                    myCurrency(user.totalOut),
+                    myCurrency(user.money + user.moneyExtern),
+                    myCurrency(user.threshold),
+                    myCurrency(user.founding),
+                    myCurrency(user.effort + user.effortExtern),
+                  ])
+              .toList(),
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+          cellStyle: const pw.TextStyle(fontSize: 10),
+          cellPadding: const pw.EdgeInsets.symmetric(horizontal: 8),
+          border: const pw.TableBorder(
+            horizontalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+            verticalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+            top: pw.BorderSide(width: .01, color: PdfColors.grey),
+            left: pw.BorderSide(width: .01, color: PdfColors.grey),
+            bottom: pw.BorderSide(width: .01, color: PdfColors.grey),
+            right: pw.BorderSide(width: .01, color: PdfColors.grey),
+          ),
+          cellAlignments: {
+            0: pw.Alignment.centerLeft,
+            1: pw.Alignment.center,
+            2: pw.Alignment.centerRight,
+            3: pw.Alignment.centerRight,
+            4: pw.Alignment.centerRight,
+            5: pw.Alignment.centerRight,
+            6: pw.Alignment.centerRight,
+            7: pw.Alignment.centerRight,
+            8: pw.Alignment.centerRight,
+            9: pw.Alignment.centerRight,
+            10: pw.Alignment.centerRight,
+            11: pw.Alignment.centerRight,
+            12: pw.Alignment.centerRight,
+            13: pw.Alignment.centerRight,
+          },
+        ),
+      ],
+    ));
+
+    return pdfPreview(context, pdf, 'Users');
   }
 }

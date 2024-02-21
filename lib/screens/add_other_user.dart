@@ -54,7 +54,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
       } else {
         await sqlQuery(insertUrl, {
           'sql1': isNew
-              ? '''INSERT INTO OtherUsers (name,phone,joinDate,type,amount,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0 , 0);'''
+              ? '''INSERT INTO OtherUsers (name,phone,joinDate,type,rest) VALUES ('$name' ,'$phone','$joinDate', '$_type', 0);'''
               : '''UPDATE OtherUsers SET name = '$name' ,phone = '$phone' ,joinDate = '$joinDate' ,type = '$_type' WHERE userID = ${widget.user.userId};'''
         });
 
@@ -81,9 +81,9 @@ class _AddOtherUserState extends State<AddOtherUser> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .41),
       width: getWidth(context, .3),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             alignment: Alignment.center,
@@ -93,7 +93,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                     ? IconButton(
                         onPressed: () => createDialog(
                               context,
-                              delteConfirmation(
+                              deleteConfirmation(
                                 context,
                                 getMessage('deleteOtherUserConfirmation'),
                                 () => deleteUser(widget.user.userId),
@@ -131,135 +131,130 @@ class _AddOtherUserState extends State<AddOtherUser> {
                   topRight: Radius.circular(20.0),
                 )),
           ),
-          Expanded(
-            child: isLoading
-                ? myProgress()
-                : SingleChildScrollView(
-                    child: Container(
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                          color: scaffoldColor,
-                          borderRadius: const BorderRadius.only(
-                            bottomRight: Radius.circular(20.0),
-                            bottomLeft: Radius.circular(20.0),
-                          )),
-                      child: Column(
+          isLoading
+              ? SizedBox(height: getHeight(context, .3), child: myProgress())
+              : Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                      color: scaffoldColor,
+                      borderRadius: const BorderRadius.only(
+                        bottomRight: Radius.circular(20.0),
+                        bottomLeft: Radius.circular(20.0),
+                      )),
+                  child: Column(
+                    children: [
+                      mySizedBox(context),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          mySizedBox(context),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Text(
-                                getText('loan'),
-                                style: Theme.of(context).textTheme.headlineSmall,
-                              ),
-                              Transform.scale(
-                                scale: 1.8,
-                                child: Switch(
-                                  value: isDeposit,
-                                  onChanged: (value) => widget.user.userId != -1
-                                      ? null
-                                      : setState(
-                                          () {
-                                            isDeposit = value;
-                                          },
-                                        ),
-                                  thumbColor: MaterialStateProperty.all(Colors.white),
-                                  trackColor: MaterialStateProperty.all(primaryColor),
-                                  hoverColor: Colors.transparent,
-                                ),
-                              ),
-                              Text(
-                                getText('deposit'),
-                                style: Theme.of(context).textTheme.headlineSmall,
-                              ),
-                            ],
+                          Text(
+                            getText('loan'),
+                            style: Theme.of(context).textTheme.headlineSmall,
                           ),
-                          mySizedBox(context),
-                          const Divider(),
-                          mySizedBox(context),
-                          Row(
-                            children: [
-                              Expanded(child: myText(getText('name'))),
-                              Expanded(
-                                flex: 4,
-                                child: myTextField(
-                                  context,
-                                  hint: name,
-                                  width: getWidth(context, .33),
-                                  onChanged: (text) => name = text,
-                                ),
-                              ),
-                            ],
-                          ),
-                          mySizedBox(context),
-                          Row(
-                            children: [
-                              Expanded(child: myText(getText('joinDate'))),
-                              Expanded(
-                                flex: 4,
-                                child: Row(
-                                  children: [
-                                    Container(
-                                        height: getHeight(context, textFeildHeight),
-                                        width: getWidth(context, .10),
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          border: Border.all(color: Colors.black),
-                                          borderRadius: const BorderRadius.all(Radius.circular(12)),
-                                        ),
-                                        child: myText(myDateFormate.format(joinDate))),
-                                    mySizedBox(context),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.calendar_month,
-                                        color: primaryColor,
-                                      ),
-                                      onPressed: () async {
-                                        final DateTime? selected = await showDatePicker(
-                                          context: context,
-                                          initialDate: joinDate,
-                                          initialEntryMode: DatePickerEntryMode.input,
-                                          firstDate: DateTime(1900, 01, 01, 00, 00, 00),
-                                          lastDate: DateTime.now(),
-                                        );
-                                        if (selected != null && selected != joinDate) {
-                                          setState(() => joinDate = selected);
-                                        }
+                          Transform.scale(
+                            scale: 1.8,
+                            child: Switch(
+                              value: isDeposit,
+                              onChanged: (value) => widget.user.userId != -1
+                                  ? null
+                                  : setState(
+                                      () {
+                                        isDeposit = value;
                                       },
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                              thumbColor: MaterialStateProperty.all(Colors.white),
+                              trackColor: MaterialStateProperty.all(primaryColor),
+                              hoverColor: Colors.transparent,
+                            ),
                           ),
-                          mySizedBox(context),
-                          Row(
-                            children: [
-                              Expanded(child: myText(getText('phone'))),
-                              Expanded(
-                                flex: 4,
-                                child: myTextField(
-                                  context,
-                                  hint: phone,
-                                  width: getWidth(context, .13),
-                                  onChanged: ((text) {
-                                    phone = text;
-                                  }),
-                                  isNumberOnly: true,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            getText('deposit'),
+                            style: Theme.of(context).textTheme.headlineSmall,
                           ),
-                          mySizedBox(context),
-                          const Divider(),
                         ],
                       ),
-                    ),
+                      mySizedBox(context),
+                      const Divider(),
+                      mySizedBox(context),
+                      Row(
+                        children: [
+                          Expanded(child: myText(getText('name'))),
+                          Expanded(
+                            flex: 4,
+                            child: myTextField(
+                              context,
+                              hint: name,
+                              width: getWidth(context, .33),
+                              onChanged: (text) => name = text,
+                            ),
+                          ),
+                        ],
+                      ),
+                      mySizedBox(context),
+                      Row(
+                        children: [
+                          Expanded(child: myText(getText('joinDate'))),
+                          Expanded(
+                            flex: 4,
+                            child: Row(
+                              children: [
+                                Container(
+                                    height: getHeight(context, textFeildHeight),
+                                    width: getWidth(context, .10),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(color: Colors.black),
+                                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                    ),
+                                    child: myText(myDateFormate.format(joinDate))),
+                                mySizedBox(context),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.calendar_month,
+                                    color: primaryColor,
+                                  ),
+                                  onPressed: () async {
+                                    final DateTime? selected = await showDatePicker(
+                                      context: context,
+                                      initialDate: joinDate,
+                                      initialEntryMode: DatePickerEntryMode.input,
+                                      firstDate: DateTime(1900, 01, 01, 00, 00, 00),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (selected != null && selected != joinDate) {
+                                      setState(() => joinDate = selected);
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      mySizedBox(context),
+                      Row(
+                        children: [
+                          Expanded(child: myText(getText('phone'))),
+                          Expanded(
+                            flex: 4,
+                            child: myTextField(
+                              context,
+                              hint: phone,
+                              width: getWidth(context, .13),
+                              onChanged: ((text) {
+                                phone = text;
+                              }),
+                              isNumberOnly: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                      mySizedBox(context),
+                      const Divider(),
+                    ],
                   ),
-          ),
-          mySizedBox(context),
+                ),
           if (!isLoading) myButton(context, onTap: () => save()),
           mySizedBox(context),
         ],

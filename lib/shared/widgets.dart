@@ -1,5 +1,10 @@
+import 'dart:io';
+
+import 'package:fairsplit/shared/functions.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -64,6 +69,7 @@ Widget myTextField(
   bool autoFocus = false,
   bool isPassword = false,
   bool isCenter = false,
+  bool noBorder = false,
   required Function(String text) onChanged,
   Function(String text)? onSubmited,
 }) {
@@ -81,8 +87,8 @@ Widget myTextField(
         obscureText: isPassword,
         enabled: enabled,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 16),
-        decoration: textInputDecoration(hint: hint),
+        style: const TextStyle(fontSize: 16, fontFamily: 'IBM'),
+        decoration: textInputDecoration(hint: hint, noBorder: noBorder),
         inputFormatters: [isNumberOnly ? DecimalTextInputFormatter() : FilteringTextInputFormatter.deny(r'')],
       ),
     ),
@@ -121,7 +127,7 @@ Widget myDropDown(
   );
 }
 
-Widget delteConfirmation(
+Widget deleteConfirmation(
   BuildContext context,
   String message,
   Function() onTap, {
@@ -185,18 +191,23 @@ InputDecoration textInputDecoration({
   Widget? prefixIcon,
   Widget? suffixIcon,
   Color borderColor = Colors.black,
+  bool noBorder = false,
 }) {
   return InputDecoration(
     hintText: hint,
-    contentPadding: const EdgeInsets.all(10),
-    enabledBorder: OutlineInputBorder(
-      borderSide: BorderSide(color: borderColor),
-      borderRadius: const BorderRadius.all(Radius.circular(12)),
-    ),
-    border: const OutlineInputBorder(
-      borderSide: BorderSide(),
-      borderRadius: BorderRadius.all(Radius.circular(12)),
-    ),
+    contentPadding: EdgeInsets.all(noBorder ? 13 : 10),
+    enabledBorder: noBorder
+        ? InputBorder.none
+        : OutlineInputBorder(
+            borderSide: BorderSide(color: borderColor),
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+          ),
+    border: noBorder
+        ? InputBorder.none
+        : const OutlineInputBorder(
+            borderSide: BorderSide(),
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
     prefixIcon: prefixIcon,
     suffixIcon: suffixIcon,
   );
@@ -307,27 +318,64 @@ Widget totalItem(BuildContext context, String title, String value, {bool isExpan
   );
 }
 
-PdfPreview pdfPreview(Future<Uint8List> pdf) {
-  return PdfPreview(
-    build: (format) => pdf,
-    allowPrinting: false,
-    allowSharing: false,
-    canChangeOrientation: false,
-    canChangePageFormat: false,
-    loadingWidget: Center(child: CircularProgressIndicator(color: primaryColor)),
+Widget pdfPreview(BuildContext context, pw.Document pdf, String name, {bool closeWhenDone = true}) {
+  return Stack(
+    children: [
+      PdfPreview(
+        build: (format) => pdf.save(),
+        allowPrinting: false,
+        allowSharing: false,
+        canChangeOrientation: false,
+        canChangePageFormat: false,
+        loadingWidget: Center(child: CircularProgressIndicator(color: primaryColor)),
+      ),
+      Positioned(
+        bottom: 16,
+        right: 16,
+        child: FloatingActionButton(
+          mini: true,
+          onPressed: () => printPdf(context, pdf.save(), closeWhenDone),
+          child: const Icon(Icons.print),
+        ),
+      ),
+      Positioned(
+        bottom: 16,
+        left: 20,
+        child: FloatingActionButton(
+          mini: true,
+          onPressed: () async {
+            final String? initialDirectory = (await getDownloadsDirectory())?.path;
+            String? fileName = await FilePicker.platform.saveFile(
+              dialogTitle: 'Please select an output file:',
+              initialDirectory: initialDirectory,
+              fileName: name,
+              allowedExtensions: ['pdf'],
+            );
+
+            if (fileName != null) {
+              final File file = File('$fileName.pdf');
+              await file.writeAsBytes(await pdf.save()).then((value) => closeWhenDone ? Navigator.pop(context) : null);
+            }
+          },
+          child: const Icon(Icons.download),
+        ),
+      ),
+    ],
   );
 }
 
 pw.MultiPage pdfPage({
   required List<pw.Widget> build,
   PdfPageFormat pdfPageFormat = PdfPageFormat.a5,
+  pw.PageOrientation pageOrientation = pw.PageOrientation.portrait,
 }) {
   return pw.MultiPage(
     pageFormat: pdfPageFormat,
+    orientation: pageOrientation,
     crossAxisAlignment: pw.CrossAxisAlignment.end,
     textDirection: pw.TextDirection.rtl,
     theme: pw.ThemeData.withFont(base: pdfFont, bold: pdfFontBold),
-    margin: const pw.EdgeInsets.all(25),
+    margin: const pw.EdgeInsets.all(8),
     build: (pw.Context context) => build,
   );
 }
@@ -345,6 +393,13 @@ pw.Widget pdfTableHeaderRow(String text) {
     child: pw.Text(text),
   );
 }
+
+pw.Text pdfData(String text, {double fontSize = 10}) => pw.Text(text, style: pw.TextStyle(fontSize: fontSize));
+
+pw.Text pdfTitle(String text) => pw.Text(text, style: pw.TextStyle(fontWeight: pw.FontWeight.bold));
+
+pw.SizedBox pdfSizedBox(BuildContext context) =>
+    pw.SizedBox(height: getHeight(context, .01), width: getWidth(context, .005));
 
 Future<pw.Widget> pdfTableRow({
   required String text,

@@ -24,15 +24,17 @@ class User {
   double founding;
   double effort;
   double effortExtern;
+  double externProfit;
   double zakat;
+  double evaluation;
   String months;
+  int monthsForExtern;
   List<Threshold> thresholds;
   List<Founding> foundings;
   List<Effort> efforts;
   double thresholdPerc; // used in users filter for sort
   double foundingPerc; // used in users filter for sort
   double effortPerc; // used in users filter for sort
-  double evaluation; // used in users filter for sort
   bool zakatOut;
   bool zakatOutToZakatCaisse;
 
@@ -58,13 +60,15 @@ class User {
     this.thresholdPerc = 0,
     this.foundingPerc = 0,
     this.effortPerc = 0,
-    this.evaluation = 0,
+    this.evaluation = 100,
+    this.monthsForExtern = 12,
     this.initialCapital = 0,
     this.zakat = 0,
     this.zakatOut = false,
     this.zakatOutToZakatCaisse = false,
   })  : realName = realUserNames[name] ?? name,
         joinDate = joinDate ?? DateTime.now(),
+        externProfit = moneyExtern + effortExtern,
         totalProfit = money + moneyExtern + threshold + founding + effort + effortExtern,
         newCapital = capital + money + threshold + founding + effort,
         thresholds = thresholds ?? [],
@@ -73,15 +77,24 @@ class User {
         weightedCapital = profitability == 0 ? 0 : (money + moneyExtern) / profitability;
 }
 
+double calculateEvaluation(double effort, evaluation) => effort * 0.8 + effort * 0.2 * evaluation / 100;
+
 List<User> toUsers(
   List<dynamic> data,
   List<Threshold> allThresholds,
   List<Founding> allFoundings,
-  List<Effort> allEfforts,
-) {
+  List<Effort> allEfforts, {
+  bool ispassage = false,
+}) {
   List<User> users = [];
+  double _effort = 0, _evaluation;
 
   for (var element in data) {
+    _effort = double.parse(element['effort']);
+    _evaluation = double.parse(element['evaluation']);
+
+    if (ispassage) _effort = calculateEvaluation(_effort, _evaluation);
+
     users.add(User(
       userId: int.parse(element['userId']),
       name: element['name'],
@@ -96,8 +109,9 @@ List<User> toUsers(
       moneyExtern: double.parse(element['moneyExtern']),
       threshold: double.parse(element['threshold']),
       founding: double.parse(element['founding']),
-      effort: double.parse(element['effort']),
+      effort: _effort,
       effortExtern: double.parse(element['effortExtern']),
+      evaluation: _evaluation,
       months: element['months'],
       thresholds: allThresholds.where((ele) => ele.userId == int.parse(element['userId'])).toList(),
       foundings: allFoundings.where((ele) => ele.userId == int.parse(element['userId'])).toList(),

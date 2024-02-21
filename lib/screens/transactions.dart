@@ -1,10 +1,10 @@
-import 'package:fairsplit/main.dart';
-import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../main.dart';
+import '../providers/filter.dart';
 import '../shared/functions.dart';
 import '../shared/lists.dart';
 import '../models/transaction.dart';
@@ -77,6 +77,7 @@ class _TransactionsState extends State<Transactions> {
         type: ele['type'],
         amount: double.parse(ele['amount']),
         soldeUser: double.parse(ele['soldeUser']),
+        isCaisseChanged: int.parse(ele['changeCaisse']) == 1,
         soldeCaisse: double.parse(ele['soldeCaisse']),
         note: ele['note'],
         reciver: ele['reciver'],
@@ -98,6 +99,7 @@ class _TransactionsState extends State<Transactions> {
         type: ele['type'],
         amount: double.parse(ele['amount']),
         soldeUser: double.parse(ele['soldeUser']),
+        isCaisseChanged: int.parse(ele['changeCaisse']) == 1,
         soldeCaisse: double.parse(ele['soldeCaisse']),
         note: ele['note'],
         reciver: ele['reciver'],
@@ -135,6 +137,7 @@ class _TransactionsState extends State<Transactions> {
         type: ele['type'],
         amount: double.parse(ele['amount']),
         soldeUser: double.parse(ele['solde']),
+        isCaisseChanged: int.parse(ele['changeCaisse']) == 1,
         soldeCaisse: double.parse(ele['soldeCaisse']),
         note: ele['note'],
         reciver: ele['reciver'],
@@ -170,6 +173,7 @@ class _TransactionsState extends State<Transactions> {
           type: ele['type'],
           amount: double.parse(ele['amount']),
           soldeUser: -0.01,
+          isCaisseChanged: int.parse(ele['changeCaisse']) == 1,
           soldeCaisse: double.parse(ele['soldeCaisse']),
           note: ele['note'],
           reciver: ele['reciver'],
@@ -186,6 +190,7 @@ class _TransactionsState extends State<Transactions> {
           type: ele['type'],
           amount: double.parse(ele['amount']),
           soldeUser: -0.01,
+          isCaisseChanged: int.parse(ele['changeCaisse']) == 1,
           soldeCaisse: double.parse(ele['soldeCaisse']),
           note: ele['note'],
           reciver: ele['reciver'],
@@ -225,13 +230,6 @@ class _TransactionsState extends State<Transactions> {
   }
 
   void filterTransactionCaisse() {
-    allCaisseTransactions.sort((a, b) => b.date.compareTo(a.date));
-    for (int i = 0; i < allCaisseTransactions.length - 1; i++) {
-      if (allCaisseTransactions[i].soldeCaisse == allCaisseTransactions[i + 1].soldeCaisse) {
-        allCaisseTransactions[i].isCaisseChanged = false;
-      }
-    }
-
     transactions.clear();
     for (var trans in allCaisseTransactions) {
       if ((_reference.isEmpty || trans.reference.contains(_reference)) &&
@@ -1361,17 +1359,18 @@ class _TransactionsState extends State<Transactions> {
                     trans['solde'],
                   ])
               .toList(),
-          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
           headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-          border: const pw.TableBorder(horizontalInside: pw.BorderSide(width: .01, color: PdfColors.grey)),
-          headerAlignments: {
-            0: pw.Alignment.center,
-            1: pw.Alignment.center,
-            2: pw.Alignment.center,
-            3: pw.Alignment.center,
-            4: pw.Alignment.center,
-            if (_search.isEmpty || transactionCategory == 'caisse') 5: pw.Alignment.center,
-          },
+          cellStyle: const pw.TextStyle(fontSize: 10),
+          cellPadding: const pw.EdgeInsets.symmetric(horizontal: 8),
+          border: const pw.TableBorder(
+            horizontalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+            verticalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+            top: pw.BorderSide(width: .01, color: PdfColors.grey),
+            left: pw.BorderSide(width: .01, color: PdfColors.grey),
+            bottom: pw.BorderSide(width: .01, color: PdfColors.grey),
+            right: pw.BorderSide(width: .01, color: PdfColors.grey),
+          ),
           cellAlignments: {
             0: pw.Alignment.center,
             1: pw.Alignment.center,
@@ -1384,19 +1383,6 @@ class _TransactionsState extends State<Transactions> {
       ],
     ));
 
-    return Stack(
-      children: [
-        pdfPreview(pdf.save()),
-        Positioned(
-          bottom: 16,
-          right: 16,
-          child: FloatingActionButton(
-            mini: true,
-            onPressed: () => printPdf(context, pdf.save()),
-            child: const Icon(Icons.print),
-          ),
-        ),
-      ],
-    );
+    return pdfPreview(context, pdf, 'Transactions');
   }
 }

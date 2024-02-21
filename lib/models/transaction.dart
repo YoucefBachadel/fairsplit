@@ -11,13 +11,13 @@ class Transaction {
   DateTime date;
   double amount;
   double soldeUser;
+  bool isCaisseChanged; // used to filter the transaction that didn't change soled caisse in caisse traansactions
   double soldeCaisse;
   String note;
   String reciver;
   String amountOnLetter;
   String intermediates;
   String printingNotes;
-  bool isCaisseChanged; // used to filter the transaction that didn't change soled caisse in caisse traansactions
 
   Transaction({
     required this.transactionId,

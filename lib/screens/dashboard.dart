@@ -32,9 +32,8 @@ class _DashboardState extends State<Dashboard> {
 
   void locadData() async {
     var res = await sqlQuery(selectUrl, {
-      'sql1':
-          '''SELECT 
-                (SELECT SUM(money) FROM ProfitHistory WHERE year =s.currentYear) as totalProfit,
+      'sql1': '''SELECT 
+                (SELECT SUM(money) FROM unithistory WHERE year =s.currentYear) as totalProfit,
                 (SELECT SUM(rest) FROM OtherUsers WHERE type = 'loan') as totalLoan,
                 (SELECT SUM(rest) FROM OtherUsers WHERE type = 'deposit') as totalDeposit,
                 s.caisse, s.reserve, s.reserveProfit, s.donation, s.zakat, s.profitability, s.currentYear FROM Settings s;''',
@@ -129,10 +128,7 @@ class _DashboardState extends State<Dashboard> {
                       Expanded(
                         child: Column(
                           children: [
-                            [
-                              getText('profitability'),
-                              profitability == 0 ? zero : (profitability * 100).toStringAsFixed(2)
-                            ],
+                            [getText('profitability'), profitability == 0 ? zero : myPercentage(profitability * 100)],
                             [getText('totalProfit'), myCurrency(totalProfit)],
                             [
                               getText('weightedCapital'),
@@ -200,7 +196,7 @@ class _DashboardState extends State<Dashboard> {
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: myText(
-              '${(data as Unit).name} : ${(data).profitability.toStringAsFixed(2)}%',
+              '${(data as Unit).name} : ${myPercentage((data).profitability)}%',
               color: Colors.white,
             ),
           );
@@ -220,7 +216,7 @@ class _DashboardState extends State<Dashboard> {
               showZeroValue: false,
               labelPosition: ChartDataLabelPosition.outside,
               builder: (data, point, series, pointIndex, seriesIndex) {
-                return myText('${(data as Unit).name} : ${(data.profitability / profitability).toStringAsFixed(2)}%',
+                return myText('${(data as Unit).name} : ${myPercentage(data.profitability / profitability)}%',
                     size: 16);
               },
             )),

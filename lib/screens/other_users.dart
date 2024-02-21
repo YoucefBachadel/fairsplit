@@ -1,11 +1,13 @@
-import 'package:fairsplit/providers/filter.dart';
-import 'package:fairsplit/screens/add_transaction.dart';
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 import '../main.dart';
 import '../models/other_user.dart';
 import '../screens/add_other_user.dart';
+import '../screens/add_transaction.dart';
+import '../providers/filter.dart';
 import '../shared/functions.dart';
 import '../shared/lists.dart';
 import '../shared/constants.dart';
@@ -49,7 +51,6 @@ class _OtherUsersState extends State<OtherUsers> {
         type: ele['type'],
         joinDate: DateTime.parse(ele['joinDate']),
         phone: ele['phone'],
-        amount: double.parse(ele['amount']),
         rest: double.parse(ele['rest']),
       );
       user.isUserWithCapital = user.type == 'loan' && user.rest != 0 && usersWithCapital.contains(user.name);
@@ -81,9 +82,6 @@ class _OtherUsersState extends State<OtherUsers> {
         users.sort((a, b) => _isAscending ? a.realName.compareTo(b.realName) : b.realName.compareTo(a.realName));
         break;
       case 3:
-        users.sort((a, b) => _isAscending ? a.amount.compareTo(b.amount) : b.amount.compareTo(a.amount));
-        break;
-      case 4:
         users.sort((a, b) => _isAscending ? a.rest.compareTo(b.rest) : b.rest.compareTo(a.rest));
         break;
     }
@@ -113,14 +111,14 @@ class _OtherUsersState extends State<OtherUsers> {
       ...[
         getText('type'),
       ].map((e) => dataColumn(context, e)),
-      ...[getText('amount'), getText('rest')].map((e) => sortableDataColumn(
-            context,
-            e,
-            (columnIndex, ascending) => setState(() {
-              _sortColumnIndex = columnIndex;
-              _isAscending = ascending;
-            }),
-          )),
+      sortableDataColumn(
+        context,
+        getText('rest'),
+        (columnIndex, ascending) => setState(() {
+          _sortColumnIndex = columnIndex;
+          _isAscending = ascending;
+        }),
+      ),
       if (isAdmin) dataColumn(context, ''),
     ];
 
@@ -138,7 +136,6 @@ class _OtherUsersState extends State<OtherUsers> {
                   userId: user.userId,
                   selectedName: user.name,
                   type: user.type,
-                  amount: user.amount,
                   rest: user.rest,
                   selectedTransactionType: user.type == 'loan' ? 2 : 3,
                 ),
@@ -148,7 +145,6 @@ class _OtherUsersState extends State<OtherUsers> {
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, user.realName, textAlign: TextAlign.start),
                 dataCell(context, getText(user.type)),
-                dataCell(context, myCurrency(user.amount), textAlign: TextAlign.end),
                 dataCell(context, myCurrency(user.rest), textAlign: TextAlign.end),
                 if (isAdmin)
                   DataCell(IconButton(
@@ -360,12 +356,11 @@ class _OtherUsersState extends State<OtherUsers> {
               onPressed: () => createExcel(
                     getText('otherUsers'),
                     [
-                      ['#', getText('name'), getText('type'), getText('amount'), getText('rest')],
+                      ['#', getText('name'), getText('type'), getText('rest')],
                       ...users.map((user) => [
                             users.indexOf(user) + 1,
                             user.realName,
                             getText(user.type),
-                            user.amount,
                             user.rest,
                           ]),
                     ],
@@ -374,21 +369,73 @@ class _OtherUsersState extends State<OtherUsers> {
                 Icons.file_download,
                 color: primaryColor,
               )),
-          (_search.isNotEmpty || _type != 'tout')
-              ? IconButton(
-                  onPressed: () => setState(() {
-                    _search = '';
-                    _controller.clear();
-                    context.read<Filter>().resetFilter();
-                  }),
-                  icon: Icon(
-                    Icons.update,
-                    color: primaryColor,
-                  ),
-                )
-              : const SizedBox(),
+          IconButton(
+            icon: Icon(
+              Icons.print,
+              color: primaryColor,
+            ),
+            onPressed: () {
+              createDialog(
+                context,
+                SizedBox(
+                  width: getWidth(context, .392),
+                  child: printPage(),
+                ),
+              );
+            },
+          ),
+          if (_search.isNotEmpty || _type != 'tout')
+            IconButton(
+              onPressed: () => setState(() {
+                _search = '';
+                _controller.clear();
+                context.read<Filter>().resetFilter();
+              }),
+              icon: Icon(
+                Icons.update,
+                color: primaryColor,
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  Widget printPage() {
+    final pdf = pw.Document();
+
+    pdf.addPage(pdfPage(
+      pdfPageFormat: PdfPageFormat.a5,
+      build: [
+        pw.Table.fromTextArray(
+          headers: [
+            getText('name'),
+            getText('type'),
+            getText('rest'),
+          ],
+          data: users.map((user) => [user.realName, getText(user.type), myCurrency(user.rest)]).toList(),
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+          cellStyle: const pw.TextStyle(fontSize: 10),
+          cellPadding: const pw.EdgeInsets.symmetric(horizontal: 8),
+          border: const pw.TableBorder(
+            horizontalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+            verticalInside: pw.BorderSide(width: .01, color: PdfColors.grey),
+            top: pw.BorderSide(width: .01, color: PdfColors.grey),
+            left: pw.BorderSide(width: .01, color: PdfColors.grey),
+            bottom: pw.BorderSide(width: .01, color: PdfColors.grey),
+            right: pw.BorderSide(width: .01, color: PdfColors.grey),
+          ),
+          cellAlignments: {
+            0: pw.Alignment.centerLeft,
+            1: pw.Alignment.center,
+            2: pw.Alignment.centerRight,
+            3: pw.Alignment.centerRight,
+          },
+        ),
+      ],
+    ));
+
+    return pdfPreview(context, pdf, 'Other Users');
   }
 }

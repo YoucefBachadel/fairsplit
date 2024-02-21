@@ -53,9 +53,9 @@ class _CalculationState extends State<Calculation> {
       'sql1': '''SELECT caisse, reserve, reserveProfit, reference FROM Settings;''',
       'sql2': '''SELECT userId, name, capital FROM Users WHERE type IN ('money','both');''',
       'sql3':
-          '''SELECT e.userId, u.name, e.effortPerc,  u.months FROM Effort e, Users u WHERE e.unitId = -1 AND e.userId = u.userId;''',
+          '''SELECT e.userId, u.name, e.effortPerc, u.months FROM Effort e, Users u WHERE e.unitId = -1 AND e.userId = u.userId;''',
       'sql4':
-          '''SELECT e.userId, u.name, e.effortPerc,  u.months FROM Effort e, Users u WHERE e.unitId = ${widget.unit.unitId} AND e.userId = u.userId;''',
+          '''SELECT e.userId, u.name, e.effortPerc, u.months FROM Effort e, Users u WHERE e.unitId = ${widget.unit.unitId} AND e.userId = u.userId;''',
       'sql5':
           '''SELECT t.userId,u.name, t.thresholdPerc FROM Threshold t, Users u WHERE t.unitId = ${widget.unit.unitId} AND t.userId = u.userId;''',
       'sql6':
@@ -101,6 +101,15 @@ class _CalculationState extends State<Calculation> {
     }
 
     unitEffortUsers.sort((a, b) => a.name.compareTo(b.name));
+
+    if (!isIntern) {
+      for (var user in globalEffortUsers) {
+        user.evaluation = 0;
+      }
+      for (var user in unitEffortUsers) {
+        user.evaluation = 0;
+      }
+    }
 
     for (var ele in res[4]) {
       thresholdUsers.add(
@@ -229,8 +238,11 @@ class _CalculationState extends State<Calculation> {
     }
 
     for (var user in unitEffortUsers) {
-      // user.effort = (caEffort * user.effortPerc / 100) * user.evaluation / 100;
+      // user.effort = (caEffort * user.effortPerc / 100);
       user.effort = caEffort * user.effortPerc / 100;
+
+      // for extern units we calculate the user evaluation and months
+      if (!isIntern) user.effort = calculateEvaluation(user.effort, user.evaluation) * user.monthsForExtern / 12;
       caTotalEffortUnit += user.effort;
     }
 
@@ -239,6 +251,7 @@ class _CalculationState extends State<Calculation> {
     for (var user in globalEffortUsers) {
       // user.effort = (caEffortGlobal * user.effortPerc / 100) * user.evaluation / 100;
       user.effort = caEffortGlobal * user.effortPerc / 100;
+      if (!isIntern) user.effort = calculateEvaluation(user.effort, user.evaluation) * user.monthsForExtern / 12;
     }
 
     //calculated money profit / number of days in month
@@ -332,28 +345,16 @@ class _CalculationState extends State<Calculation> {
     thresholdSQL += ' ON DUPLICATE KEY UPDATE threshold = threshold + VALUES(threshold);';
     foundingSQL += ' ON DUPLICATE KEY UPDATE founding = founding + VALUES(founding);';
 
-    int counter = 1;
-    Map<String, String> params = {};
-    if (moneyUsers.isNotEmpty) {
-      params['sql$counter'] = moneySQL;
-      counter++;
-    }
-    if (unitEffortUsers.isNotEmpty) {
-      params['sql$counter'] = effortUnitSQL;
-      counter++;
-    }
-    if (globalEffortUsers.isNotEmpty) {
-      params['sql$counter'] = effortGlobalSQL;
-      counter++;
-    }
-    if (thresholdUsers.isNotEmpty) {
-      params['sql$counter'] = thresholdSQL;
-      counter++;
-    }
-    if (foundingUsers.isNotEmpty) {
-      params['sql$counter'] = foundingSQL;
-      counter++;
-    }
+    List<String> sqls = [];
+    if (moneyUsers.isNotEmpty) sqls.add(moneySQL);
+
+    if (unitEffortUsers.isNotEmpty) sqls.add(effortUnitSQL);
+
+    if (globalEffortUsers.isNotEmpty) sqls.add(effortGlobalSQL);
+
+    if (thresholdUsers.isNotEmpty) sqls.add(thresholdSQL);
+
+    if (foundingUsers.isNotEmpty) sqls.add(foundingSQL);
 
     if (!isIntern) {
       //for extern unit we add the added profit to capital as transactions
@@ -376,47 +377,45 @@ class _CalculationState extends State<Calculation> {
       }
 
       String transactionSQL =
-          ''' INSERT INTO ${isNewYear ? 'transactiontemp' : 'transaction'} (reference,userId,userName,date,type,amount,${isNewYear ? '' : ' soldeUser,'}soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ''';
+          ''' INSERT INTO ${isNewYear ? 'transactiontemp' : 'transaction'} (reference,userId,userName,date,type,amount,${isNewYear ? '' : ' soldeUser,'}changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ''';
       String _type = unitProfitValue >= 0 ? 'in' : 'out';
       for (var user in moneyUsers) {
         user.capital += user.money + user.effort;
         if ((user.money + user.effort).abs() > 0.001) {
           transactionSQL +=
-              '''('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,${user.userId}, '${user.name}', '${DateTime.now()}' , '$_type' , ${(user.money + user.effort).abs()} ,  ${isNewYear ? '' : '${user.capital},'} $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords((user.money + user.effort).abs())}','','',''),''';
+              '''('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,${user.userId}, '${user.name}', '${DateTime.now()}' , '$_type' , ${(user.money + user.effort).abs()} ,  ${isNewYear ? '' : '${user.capital},'} 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords((user.money + user.effort).abs())}','','',''),''';
           reference++;
         }
       }
 
       transactionSQL = transactionSQL.substring(0, transactionSQL.length - 1) + ';';
 
-      params['sql$counter'] = transactionSQL;
+      sqls.add(transactionSQL);
+
       if (caReserve != 0) {
-        counter++;
-        params['sql$counter'] = isNewYear
-            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');'''
-            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${reserve + caReserve} ,$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');''';
+        sqls.add(isNewYear
+            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');'''
+            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${reserve + caReserve} , 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');''');
         reference++;
       }
       if (caReserveProfit != 0) {
-        counter++;
-        params['sql$counter'] =
-            '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit},$caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs())}','','','');''';
+        sqls.add(
+            '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit}, 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs())}','','','');''');
         reference++;
       }
-      counter++;
     }
 
-    params['sql$counter'] =
-        ''' UPDATE Units SET profit = profit + $unitProfitValue, profitability = profitability + $profitability, currentMonthOrYear = ${widget.unit.currentMonthOrYear + 1}  WHERE unitId = ${widget.unit.unitId}; ''';
-    counter++;
-    params['sql$counter'] =
-        '''INSERT INTO ProfitHistory(name, year, month, profit,profitability,unitProfitability,weightedCapital, reserve,reserveProfit, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',$currentYear,${!isIntern ? 0 : widget.unit.currentMonthOrYear},$unitProfitValue,$profitability,${caMoney / widget.unit.capital},${caMoney / profitability},$caReserve,$caReserveProfit,$caDonation,$caMoney,$caEffort,$caThreshold,$caFounding);''';
-    counter++;
-    params['sql$counter'] = isIntern
-        ? 'UPDATE settings SET profitability = profitability + $profitability , reserveYear = reserveYear + $caReserve , reserveProfit = reserveProfit + $caReserveProfit , donationProfit = donationProfit + $caDonation , reference = $reference;'
-        : 'UPDATE settings SET profitability = profitability + $profitability , reserve = reserve + $caReserve , reserveProfit = reserveProfit + $caReserveProfit , donationProfit = donationProfit + $caDonation , reference = $reference;';
-    await sqlQuery(insertUrl, params);
+    sqls.add(
+        ''' UPDATE Units SET profit = profit + $unitProfitValue, profitability = profitability + $profitability, currentMonthOrYear = ${widget.unit.currentMonthOrYear + 1}  WHERE unitId = ${widget.unit.unitId}; ''');
 
+    sqls.add(
+        '''INSERT INTO unithistory(name, year, month, capital, profit, profitability, unitProfitability, reserve, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',$currentYear,${!isIntern ? 0 : widget.unit.currentMonthOrYear},${widget.unit.capital},$unitProfitValue,$profitability,${caMoney / widget.unit.capital},$caReserve,$caDonation,$caMoney,$caEffort,$caThreshold,$caFounding);''');
+
+    sqls.add(isIntern
+        ? 'UPDATE settings SET profitability = profitability + $profitability , reserveYear = reserveYear + $caReserve , reserveProfit = reserveProfit + $caReserveProfit , donationProfit = donationProfit + $caDonation , reference = $reference;'
+        : 'UPDATE settings SET profitability = profitability + $profitability , reserve = reserve + $caReserve , reserveProfit = reserveProfit + $caReserveProfit , donationProfit = donationProfit + $caDonation , reference = $reference;');
+
+    await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
     snackBar(context, getMessage('calculationDone'));
   }
@@ -497,9 +496,22 @@ class _CalculationState extends State<Calculation> {
                                         if (!iscalculated) {
                                           try {
                                             unitProfitValue = double.parse(_unitProfitValue);
-                                            calculate();
+
+                                            if (!isIntern &&
+                                                (unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty ||
+                                                    globalEffortUsers
+                                                        .where((user) => user.evaluation == 0)
+                                                        .isNotEmpty)) {
+                                              snackBar(context, 'add effort users evaluations');
+                                              setState(() => bottemNavigationSelectedInex =
+                                                  unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty
+                                                      ? 4
+                                                      : 5);
+                                            } else {
+                                              calculate();
+                                            }
                                           } catch (e) {
-                                            snackBar(context, 'number only !!!');
+                                            snackBar(context, 'numbers only !!!');
                                           }
                                         }
                                       }),
@@ -512,7 +524,20 @@ class _CalculationState extends State<Calculation> {
                                         onPressed: () {
                                           try {
                                             unitProfitValue = double.parse(_unitProfitValue);
-                                            calculate();
+
+                                            if (!isIntern &&
+                                                (unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty ||
+                                                    globalEffortUsers
+                                                        .where((user) => user.evaluation == 0)
+                                                        .isNotEmpty)) {
+                                              snackBar(context, 'add effort users evaluations');
+                                              setState(() => bottemNavigationSelectedInex =
+                                                  unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty
+                                                      ? 4
+                                                      : 5);
+                                            } else {
+                                              calculate();
+                                            }
                                           } catch (e) {
                                             snackBar(context, 'number only !!!');
                                           }
@@ -573,7 +598,12 @@ class _CalculationState extends State<Calculation> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         infoItem(getText('capital'), myCurrency(widget.unit.capital), '', ''),
-        infoItem(getText('dailyProfit'), myCurrency(caMoneyProfitPerDay), '', ''),
+        infoItem(
+          getText('unitProfitability'),
+          myPercentage(caMoney / widget.unit.capital * 100),
+          getText('dailyProfit'),
+          myCurrency(caMoneyProfitPerDay),
+        ),
         infoItem(
           getText('profitability'),
           myPercentage(profitability * 100),
@@ -629,7 +659,7 @@ class _CalculationState extends State<Calculation> {
               : Row(
                   children: [
                     Expanded(flex: 2, child: myText(title1)),
-                    Expanded(flex: 3, child: myText(':      $value1')),
+                    Expanded(flex: 3, child: myText(':      $value1', fontFamily: 'IBM')),
                   ],
                 ),
         ),
@@ -641,7 +671,7 @@ class _CalculationState extends State<Calculation> {
               : Row(
                   children: [
                     Expanded(flex: 2, child: myText(title2)),
-                    Expanded(flex: 3, child: myText(':      $value2')),
+                    Expanded(flex: 3, child: myText(':      $value2', fontFamily: 'IBM')),
                   ],
                 ),
         ),
@@ -782,6 +812,8 @@ class _CalculationState extends State<Calculation> {
       '',
       getText('name'),
       '${getText('effort')} %',
+      if (!isIntern) getText('evaluation'),
+      if (!isIntern) getText('month'),
       getText('profit'),
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = unitEffortUsers
@@ -790,6 +822,22 @@ class _CalculationState extends State<Calculation> {
             dataCell(context, (unitEffortUsers.indexOf(user) + 1).toString()),
             dataCell(context, user.realName, textAlign: TextAlign.start),
             dataCell(context, user.effortPerc.toString()),
+            if (!isIntern)
+              DataCell(myTextField(context,
+                  isNumberOnly: true,
+                  noBorder: true,
+                  enabled: !iscalculated,
+                  hint: myPercentage(user.evaluation),
+                  onSubmited: (value) => setState(() {}),
+                  onChanged: ((value) => user.evaluation = double.parse(value)))),
+            if (!isIntern)
+              DataCell(myTextField(context,
+                  isNumberOnly: true,
+                  noBorder: true,
+                  enabled: !iscalculated,
+                  hint: user.monthsForExtern.toString(),
+                  onSubmited: (value) => setState(() {}),
+                  onChanged: ((value) => user.monthsForExtern = int.parse(value)))),
             dataCell(context, myCurrency(user.effort), textAlign: TextAlign.end),
           ]),
         )
@@ -812,6 +860,8 @@ class _CalculationState extends State<Calculation> {
       '',
       getText('name'),
       '${getText('effort')} %',
+      if (!isIntern) getText('evaluation'),
+      if (!isIntern) getText('month'),
       getText('profit'),
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = globalEffortUsers
@@ -820,6 +870,22 @@ class _CalculationState extends State<Calculation> {
             dataCell(context, (globalEffortUsers.indexOf(user) + 1).toString()),
             dataCell(context, user.realName, textAlign: TextAlign.start),
             dataCell(context, user.effortPerc.toString()),
+            if (!isIntern)
+              DataCell(myTextField(context,
+                  isNumberOnly: true,
+                  noBorder: true,
+                  enabled: !iscalculated,
+                  hint: myPercentage(user.evaluation),
+                  onSubmited: (value) => setState(() {}),
+                  onChanged: ((value) => user.evaluation = double.parse(value)))),
+            if (!isIntern)
+              DataCell(myTextField(context,
+                  isNumberOnly: true,
+                  noBorder: true,
+                  enabled: !iscalculated,
+                  hint: user.monthsForExtern.toString(),
+                  onSubmited: (value) => setState(() {}),
+                  onChanged: ((value) => user.monthsForExtern = int.parse(value)))),
             dataCell(context, myCurrency(user.effort), textAlign: TextAlign.end),
           ]),
         )

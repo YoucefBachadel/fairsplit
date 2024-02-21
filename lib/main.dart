@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fairsplit/providers/filter.dart';
 import 'package:fairsplit/screens/passage.dart';
-import 'package:fairsplit/screens/profit_history.dart';
+import 'package:fairsplit/screens/unit_history.dart';
 import 'package:fairsplit/shared/functions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -18,10 +18,9 @@ import 'screens/other_users.dart';
 import 'screens/units.dart';
 import 'shared/lists.dart';
 import 'screens/transactions.dart';
-import 'screens/user_history.dart';
+import 'screens/users_history.dart';
 import 'screens/users.dart';
 import 'screens/dashboard.dart';
-import 'screens/unit_history.dart';
 import 'shared/constants.dart';
 import 'shared/widgets.dart';
 
@@ -118,7 +117,6 @@ class _MyAppState extends State<MyApp> {
     'us': 2,
     'ou': 3,
     'tr': 4,
-    'prh': 5,
     'ush': 6,
     'unh': 7,
   };
@@ -129,7 +127,6 @@ class _MyAppState extends State<MyApp> {
     getText('users'),
     getText('otherUsers'),
     getText('transaction'),
-    getText('profitHistory'),
     getText('userHistory'),
     getText('unitHistory'),
   ];
@@ -140,9 +137,8 @@ class _MyAppState extends State<MyApp> {
     const Users(),
     const OtherUsers(),
     const Transactions(),
-    const ProfitHistory(),
-    const UserHistoryScreen(),
-    const UnitHistoryScreen(),
+    const UsersHistory(),
+    const UnitsHistory(),
   ];
 
   Future updateamountOnLetter() async {
@@ -202,16 +198,13 @@ class _MyAppState extends State<MyApp> {
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {
-      'sql1':
-          '''SELECT DISTINCT(Year(date)) AS year  FROM transaction 
+      'sql1': '''SELECT DISTINCT(Year(date)) AS year  FROM transaction 
           UNION SELECT DISTINCT(Year(date)) AS year FROM transactionothers 
           UNION SELECT DISTINCT(Year(date)) AS year FROM transactionsp 
           UNION SELECT DISTINCT(Year(date)) AS year FROM transactiontemp
-          UNION SELECT year FROM profithistory
           UNION SELECT year FROM userhistory
           UNION SELECT year FROM unithistory;''',
-      'sql2':
-          '''SELECT DISTINCT(userName) AS name FROM transaction
+      'sql2': '''SELECT DISTINCT(userName) AS name FROM transaction
           UNION SELECT DISTINCT(userName) AS name FROM transactionothers
           UNION SELECT DISTINCT(userName) AS name FROM transactiontemp WHERE userName <> 'reserve' AND userName <> 'reserveProfit'
           UNION SELECT name FROM users 

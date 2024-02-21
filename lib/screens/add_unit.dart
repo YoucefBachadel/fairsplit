@@ -83,9 +83,9 @@ class _AddUnitState extends State<AddUnit> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(context, .55),
       width: getWidth(context, .3),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             alignment: Alignment.center,
@@ -95,7 +95,7 @@ class _AddUnitState extends State<AddUnit> {
                     ? IconButton(
                         onPressed: () => createDialog(
                               context,
-                              delteConfirmation(
+                              deleteConfirmation(
                                 context,
                                 getMessage('deleteUnitConfitmation'),
                                 () => deleteUnit(widget.unit.unitId),
@@ -132,167 +132,163 @@ class _AddUnitState extends State<AddUnit> {
                   topRight: Radius.circular(20.0),
                 )),
           ),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              decoration: BoxDecoration(
-                  color: scaffoldColor,
-                  borderRadius: const BorderRadius.only(
-                    bottomRight: Radius.circular(20.0),
-                    bottomLeft: Radius.circular(20.0),
-                  )),
-              child: isLoading
-                  ? myProgress()
-                  : Center(
-                      child: SingleChildScrollView(
-                        child: Column(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            decoration: BoxDecoration(
+                color: scaffoldColor,
+                borderRadius: const BorderRadius.only(
+                  bottomRight: Radius.circular(20.0),
+                  bottomLeft: Radius.circular(20.0),
+                )),
+            child: isLoading
+                ? SizedBox(height: getHeight(context, .4), child: myProgress())
+                : Center(
+                    child: Column(
+                      children: [
+                        mySizedBox(context),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            mySizedBox(context),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Text(
-                                  getText('intern'),
-                                  style: Theme.of(context).textTheme.headlineSmall,
-                                ),
-                                Transform.scale(
-                                  scale: 1.8,
-                                  child: Switch(
-                                    value: isExtern,
-                                    onChanged: (value) => widget.unit.unitId != -1
-                                        ? null
-                                        : setState(
-                                            () {
-                                              isExtern = value;
-                                              if (isExtern) {
-                                                threshold = 0;
-                                                founding = 0;
-                                              }
-                                            },
-                                          ),
-                                    thumbColor: MaterialStateProperty.all(Colors.white),
-                                    trackColor: MaterialStateProperty.all(primaryColor),
-                                    hoverColor: Colors.transparent,
-                                  ),
-                                ),
-                                Text(
-                                  getText('extern'),
-                                  style: Theme.of(context).textTheme.headlineSmall,
-                                ),
-                              ],
+                            Text(
+                              getText('intern'),
+                              style: Theme.of(context).textTheme.headlineSmall,
                             ),
-                            mySizedBox(context),
-                            const Divider(),
-                            mySizedBox(context),
-                            Row(
-                              children: [
-                                Expanded(child: myText(getText('name'))),
-                                Expanded(
-                                  flex: 4,
-                                  child: myTextField(
-                                    context,
-                                    hint: name,
-                                    width: getWidth(context, .22),
-                                    onChanged: ((text) => name = text),
-                                  ),
-                                ),
-                              ],
+                            Transform.scale(
+                              scale: 1.8,
+                              child: Switch(
+                                value: isExtern,
+                                onChanged: (value) => widget.unit.unitId != -1
+                                    ? null
+                                    : setState(
+                                        () {
+                                          isExtern = value;
+                                          if (isExtern) {
+                                            threshold = 0;
+                                            founding = 0;
+                                          }
+                                        },
+                                      ),
+                                thumbColor: MaterialStateProperty.all(Colors.white),
+                                trackColor: MaterialStateProperty.all(primaryColor),
+                                hoverColor: Colors.transparent,
+                              ),
                             ),
-                            mySizedBox(context),
-                            Row(
-                              children: [
-                                Expanded(child: myText(getText('capital'))),
-                                Expanded(
-                                    flex: 4,
-                                    child: myTextField(
-                                      context,
-                                      hint: myCurrency(capital),
-                                      width: getWidth(context, .22),
-                                      isNumberOnly: true,
-                                      onChanged: (value) => capital = double.parse(value),
-                                    )),
-                              ],
+                            Text(
+                              getText('extern'),
+                              style: Theme.of(context).textTheme.headlineSmall,
                             ),
-                            mySizedBox(context),
-                            const Divider(),
-                            mySizedBox(context),
-                            Row(
-                              children: [
-                                Expanded(child: myText('${getText('reserve')} %')),
-                                Expanded(
-                                  child: myTextField(
-                                    context,
-                                    hint: myPercentage(reserve),
-                                    onChanged: ((text) => reserve = double.parse(text)),
-                                    isNumberOnly: true,
-                                  ),
-                                ),
-                                Expanded(child: myText('${getText('donation')} %')),
-                                Expanded(
-                                  child: myTextField(
-                                    context,
-                                    hint: myPercentage(donation),
-                                    onChanged: ((text) => donation = double.parse(text)),
-                                    isNumberOnly: true,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            mySizedBox(context),
-                            Row(
-                              children: [
-                                Expanded(child: myText('${getText('money')} %')),
-                                Expanded(
-                                  child: myTextField(
-                                    context,
-                                    hint: myPercentage(money),
-                                    onChanged: ((text) => money = double.parse(text)),
-                                    isNumberOnly: true,
-                                  ),
-                                ),
-                                Expanded(child: myText('${getText('effort')} %')),
-                                Expanded(
-                                  child: myTextField(
-                                    context,
-                                    hint: myPercentage(effort),
-                                    onChanged: ((text) => effort = double.parse(text)),
-                                    isNumberOnly: true,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            mySizedBox(context),
-                            Row(
-                              children: [
-                                Expanded(child: myText('${getText('threshold')} %')),
-                                Expanded(
-                                  child: myTextField(
-                                    context,
-                                    hint: myPercentage(threshold),
-                                    onChanged: ((text) => threshold = double.parse(text)),
-                                    isNumberOnly: true,
-                                    enabled: !isExtern,
-                                  ),
-                                ),
-                                Expanded(child: myText('${getText('founding')} %')),
-                                Expanded(
-                                  child: myTextField(
-                                    context,
-                                    hint: myPercentage(founding),
-                                    onChanged: ((text) => founding = double.parse(text)),
-                                    isNumberOnly: true,
-                                    enabled: !isExtern,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            mySizedBox(context),
-                            const Divider(),
                           ],
                         ),
-                      ),
+                        mySizedBox(context),
+                        const Divider(),
+                        mySizedBox(context),
+                        Row(
+                          children: [
+                            Expanded(child: myText(getText('name'))),
+                            Expanded(
+                              flex: 4,
+                              child: myTextField(
+                                context,
+                                hint: name,
+                                width: getWidth(context, .22),
+                                onChanged: ((text) => name = text),
+                              ),
+                            ),
+                          ],
+                        ),
+                        mySizedBox(context),
+                        Row(
+                          children: [
+                            Expanded(child: myText(getText('capital'))),
+                            Expanded(
+                                flex: 4,
+                                child: myTextField(
+                                  context,
+                                  hint: myCurrency(capital),
+                                  width: getWidth(context, .22),
+                                  isNumberOnly: true,
+                                  onChanged: (value) => capital = double.parse(value),
+                                )),
+                          ],
+                        ),
+                        mySizedBox(context),
+                        const Divider(),
+                        mySizedBox(context),
+                        Row(
+                          children: [
+                            Expanded(child: myText('${getText('reserve')} %')),
+                            Expanded(
+                              child: myTextField(
+                                context,
+                                hint: myPercentage(reserve),
+                                onChanged: ((text) => reserve = double.parse(text)),
+                                isNumberOnly: true,
+                              ),
+                            ),
+                            Expanded(child: myText('${getText('donation')} %')),
+                            Expanded(
+                              child: myTextField(
+                                context,
+                                hint: myPercentage(donation),
+                                onChanged: ((text) => donation = double.parse(text)),
+                                isNumberOnly: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                        mySizedBox(context),
+                        Row(
+                          children: [
+                            Expanded(child: myText('${getText('money')} %')),
+                            Expanded(
+                              child: myTextField(
+                                context,
+                                hint: myPercentage(money),
+                                onChanged: ((text) => money = double.parse(text)),
+                                isNumberOnly: true,
+                              ),
+                            ),
+                            Expanded(child: myText('${getText('effort')} %')),
+                            Expanded(
+                              child: myTextField(
+                                context,
+                                hint: myPercentage(effort),
+                                onChanged: ((text) => effort = double.parse(text)),
+                                isNumberOnly: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                        mySizedBox(context),
+                        Row(
+                          children: [
+                            Expanded(child: myText('${getText('threshold')} %')),
+                            Expanded(
+                              child: myTextField(
+                                context,
+                                hint: myPercentage(threshold),
+                                onChanged: ((text) => threshold = double.parse(text)),
+                                isNumberOnly: true,
+                                enabled: !isExtern,
+                              ),
+                            ),
+                            Expanded(child: myText('${getText('founding')} %')),
+                            Expanded(
+                              child: myTextField(
+                                context,
+                                hint: myPercentage(founding),
+                                onChanged: ((text) => founding = double.parse(text)),
+                                isNumberOnly: true,
+                                enabled: !isExtern,
+                              ),
+                            ),
+                          ],
+                        ),
+                        mySizedBox(context),
+                        const Divider(),
+                      ],
                     ),
-            ),
+                  ),
           ),
           mySizedBox(context),
           if (!isLoading) myButton(context, onTap: () => save()),

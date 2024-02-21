@@ -47,7 +47,6 @@ Map<String, String> constans = {
   'special': 'Special',
   'dashboard': 'Dashboard',
   'transaction': 'Transaction',
-  'profitHistory': 'Profit History',
   'userHistory': 'User History',
   'unitHistory': 'Unit History',
   'category': 'Category',
@@ -82,7 +81,8 @@ Map<String, String> constans = {
   'profitability': 'Profitability',
   'unitProfitability': 'Unit Profitability',
   'startCapital': 'Start Capital',
-  'endCapital': 'End Capital',
+  'endCapital': 'Capital 31-12',
+  'newCapital': 'Capital 01-01',
   'initialCapital': 'Initial Capital',
   'weightedCapital': 'Weighted Capital',
   'total': 'Total',
@@ -94,6 +94,7 @@ Map<String, String> constans = {
   'thresholdProfit': 'Threshold Profit',
   'foundingProfit': 'Founding Profit',
   'effortProfit': 'Effort Profit',
+  'externProfit': 'Extern Profit',
   'totalProfit': 'Total Profit',
   'emptyList': 'No Data To Show!!',
   'deleteConfirmation': 'Delete Confirmation',
@@ -124,7 +125,8 @@ Map<String, String> constans = {
   'unitsProfitability': 'Units Profitability',
   'dailyProfit': 'Daily Profit',
   'passage': 'Passage',
-  'materials': 'Materials'
+  'materials': 'Materials',
+  'print': 'Print',
 };
 
 Map<String, String> messages = {

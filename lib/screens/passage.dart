@@ -494,14 +494,12 @@ class _PassageState extends State<Passage> {
                           ],
                         ),
                         const Divider(),
-                        // if (bottemNavigationSelectedInex == 0) Expanded(child: informations()),
                         if (bottemNavigationSelectedInex == 0) Expanded(child: zakatUsersSelector()),
                         if (bottemNavigationSelectedInex == 1) Expanded(child: printDetails()),
                         const Divider(),
                         BottomNavigationBar(
                           type: BottomNavigationBarType.fixed,
                           items: <BottomNavigationBarItem>[
-                            // BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('info')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('zakat')),
                             BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('print')),
                           ],
@@ -518,47 +516,16 @@ class _PassageState extends State<Passage> {
                       ],
                     ),
                   ),
-                  printPreview(),
+                  Expanded(
+                    flex: 4,
+                    child: pdf.document.pdfPageList.pages.isEmpty
+                        ? Container(color: Colors.grey, child: emptyList(textColor: Colors.white))
+                        : pdfPreview(context, pdf, 'Passage_$currentYear', closeWhenDone: false),
+                  ),
                   SizedBox(width: getWidth(context, .01))
                 ]),
         ),
       ]),
-    );
-  }
-
-  Widget informations() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        infoItem(getText('year'), currentYear.toString()),
-        infoItem(getText('profitability'), profitability == 0 ? zero : myPercentage(profitability * 100)),
-        infoItem(getText('totalIn'), myCurrency(totalIn)),
-        infoItem(getText('totalOut'), myCurrency(totalOut)),
-        infoItem(getText('totalCapital'), myCurrency(totalCapital)),
-        infoItem('${getText('materials')} %', myPercentage(materialsValuePerc * 100)),
-        infoItem(getText('totalZakat'), myCurrency(totalZakat)),
-      ],
-    );
-  }
-
-  Widget printPreview() {
-    return Expanded(
-      flex: 4,
-      child: pdf.document.pdfPageList.pages.isEmpty
-          ? Container(color: Colors.grey, child: emptyList(textColor: Colors.white))
-          : pdfPreview(context, pdf, 'Passage_$currentYear', closeWhenDone: false),
-    );
-  }
-
-  Widget infoItem(String title, String value) {
-    return SizedBox(
-      width: getWidth(context, .25),
-      child: value.isEmpty
-          ? const SizedBox()
-          : Row(children: [
-              Expanded(flex: 2, child: myText(title)),
-              Expanded(flex: 3, child: myText(':      $value')),
-            ]),
     );
   }
 

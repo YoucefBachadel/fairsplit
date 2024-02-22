@@ -30,6 +30,7 @@ class _AddUserState extends State<AddUser> {
   bool isLoading = true;
   bool isMoney = false;
   bool isEffort = false;
+  bool isEffortGlobal = false;
 
   // this to check if has been changed, it will be modified on conferm or delete item
   bool thresholdsHasChanged = false;
@@ -131,9 +132,10 @@ class _AddUserState extends State<AddUser> {
           sqls.add(sql);
         }
         if (isEffort && efforts.isNotEmpty && (typeHasChanged || effortssHasChanged)) {
-          sql = 'INSERT INTO Effort(userId, unitId, effortPerc) VALUES ';
+          sql = 'INSERT INTO Effort(userId, unitId, effortPerc,globalUnits) VALUES ';
           for (var element in efforts) {
-            sql += '($_userId , ${element.unitId} , ${element.effortPerc}),';
+            sql +=
+                '''($_userId , ${element.unitId} , ${element.effortPerc} , '${efforts.first.globalUnits.join(',')}'),''';
           }
           sql = sql.substring(0, sql.length - 1);
           sql += ';';
@@ -418,7 +420,7 @@ class _AddUserState extends State<AddUser> {
                           2,
                           units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList(),
                         ),
-                      );
+                      ).whenComplete(() => setState(() {}));
                     },
                     icon: Icon(
                       Icons.add,
@@ -449,7 +451,7 @@ class _AddUserState extends State<AddUser> {
                                     //list of units contain only selected unit
                                     units: [Unit(unitId: e.unitId, name: getUnitName(allUnits, e.unitId))],
                                   ),
-                                ),
+                                ).whenComplete(() => setState(() {})),
                                 cells: [
                                   dataCell(context, getUnitName(allUnits, e.unitId), textAlign: TextAlign.start),
                                   dataCell(context, myPercentage(e.thresholdPerc)),
@@ -519,7 +521,7 @@ class _AddUserState extends State<AddUser> {
                     createDialog(
                       context,
                       unitSelect(3, units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
-                    );
+                    ).whenComplete(() => setState(() {}));
                   },
                   icon: Icon(
                     Icons.add,
@@ -550,7 +552,7 @@ class _AddUserState extends State<AddUser> {
                                     //list of units contain only selected unit
                                     units: [Unit(unitId: e.unitId, name: getUnitName(allUnits, e.unitId))],
                                   ),
-                                ),
+                                ).whenComplete(() => setState(() {})),
                                 cells: [
                                   dataCell(context, getUnitName(allUnits, e.unitId), textAlign: TextAlign.start),
                                   dataCell(context, myPercentage(e.foundingPerc)),
@@ -588,6 +590,7 @@ class _AddUserState extends State<AddUser> {
   }
 
   Widget effortDetail() {
+    if (efforts.isNotEmpty) isEffortGlobal = efforts.first.unitId == -1;
     return Container(
       height: getHeight(context, .44),
       width: getWidth(context, .22),
@@ -609,7 +612,7 @@ class _AddUserState extends State<AddUser> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
-              efforts.isNotEmpty && efforts[0].unitId == -1 || efforts.length == allUnits.length
+              efforts.isNotEmpty && isEffortGlobal || efforts.length == allUnits.length
                   ? const SizedBox()
                   : IconButton(
                       onPressed: () {
@@ -622,7 +625,13 @@ class _AddUserState extends State<AddUser> {
                               units: _effortsIds.isEmpty
                                   ? [Unit(unitId: -1, name: 'Global')] + allUnits
                                   : allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
-                        );
+                        ).whenComplete(() => setState(() {
+                              if (efforts.first.unitId == -1) {
+                                for (var unit in allUnits) {
+                                  efforts.first.globalUnits.add(unit.unitId);
+                                }
+                              }
+                            }));
                       },
                       icon: Icon(
                         Icons.add,
@@ -640,59 +649,80 @@ class _AddUserState extends State<AddUser> {
           child: efforts.isEmpty
               ? emptyList()
               : SingleChildScrollView(
-                  child: dataTable(
-                    context,
-                    columns: [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
-                    rows: efforts
-                        .map((e) => DataRow(
-                              onSelectChanged: (value) => createDialog(
-                                context,
-                                unitSelect(
-                                  1, listIndex: efforts.indexOf(e),
-                                  percentage: e.effortPerc,
-                                  //list of units contain only selected unit
-                                  units: [
-                                    Unit(
-                                      unitId: e.unitId,
-                                      name: getUnitName([Unit(unitId: -1, name: 'Global')] + allUnits, e.unitId),
-                                    )
+                  child: Column(
+                    children: [
+                      dataTable(
+                        context,
+                        columns:
+                            [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
+                        rows: efforts
+                            .map((e) => DataRow(
+                                  onSelectChanged: (value) => createDialog(
+                                    context,
+                                    unitSelect(
+                                      1, listIndex: efforts.indexOf(e),
+                                      percentage: e.effortPerc,
+                                      //list of units contain only selected unit
+                                      units: [
+                                        Unit(
+                                          unitId: e.unitId,
+                                          name: getUnitName([Unit(unitId: -1, name: 'Global')] + allUnits, e.unitId),
+                                        )
+                                      ],
+                                    ),
+                                  ).whenComplete(() => setState(() {})),
+                                  cells: [
+                                    dataCell(
+                                      context,
+                                      getUnitName([Unit(unitId: -1, name: 'Global')] + allUnits, e.unitId),
+                                      textAlign: TextAlign.start,
+                                    ),
+                                    dataCell(context, myPercentage(e.effortPerc)),
+                                    DataCell(
+                                      Center(
+                                        child: IconButton(
+                                            onPressed: () {
+                                              createDialog(
+                                                context,
+                                                deleteConfirmation(
+                                                  context,
+                                                  getMessage('deleteItem'),
+                                                  () => setState(() {
+                                                    effortssHasChanged = true;
+                                                    efforts.remove(e);
+                                                    Navigator.of(context).pop();
+                                                  }),
+                                                  authontication: false,
+                                                ),
+                                              );
+                                            },
+                                            icon: const Icon(
+                                              Icons.delete_forever,
+                                              color: Colors.red,
+                                            )),
+                                      ),
+                                    ),
                                   ],
-                                ),
-                              ),
-                              cells: [
-                                dataCell(
-                                  context,
-                                  getUnitName([Unit(unitId: -1, name: 'Global')] + allUnits, e.unitId),
-                                  textAlign: TextAlign.start,
-                                ),
-                                dataCell(context, myPercentage(e.effortPerc)),
-                                DataCell(
-                                  Center(
-                                    child: IconButton(
-                                        onPressed: () {
-                                          createDialog(
-                                            context,
-                                            deleteConfirmation(
-                                              context,
-                                              getMessage('deleteItem'),
-                                              () => setState(() {
-                                                effortssHasChanged = true;
-                                                efforts.remove(e);
-                                                Navigator.of(context).pop();
-                                              }),
-                                              authontication: false,
-                                            ),
-                                          );
-                                        },
-                                        icon: const Icon(
-                                          Icons.delete_forever,
-                                          color: Colors.red,
-                                        )),
-                                  ),
-                                ),
-                              ],
-                            ))
-                        .toList(),
+                                ))
+                            .toList(),
+                      ),
+                      if (isEffortGlobal) const Divider(),
+                      if (isEffortGlobal)
+                        ...allUnits
+                            .map((unit) => CheckboxListTile(
+                                  value: efforts.first.globalUnits.contains(unit.unitId),
+                                  title: myText(unit.name),
+                                  onChanged: (value) {
+                                    effortssHasChanged = true;
+                                    setState(() => value == null
+                                        ? null
+                                        : value
+                                            ? efforts.first.globalUnits.add(unit.unitId)
+                                            : efforts.first.globalUnits.remove(unit.unitId));
+                                  },
+                                ))
+                            .toList(),
+                    ],
                   ),
                 ),
         ),
@@ -777,112 +807,109 @@ class _AddUserState extends State<AddUser> {
   }) {
     //type 1:effort 2:threshold 3:founding
     int _selectedUnitId = units[0].unitId;
-    String _percentage = percentage.toString();
 
-    return Container(
-      width: getWidth(context, .29),
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: scaffoldColor,
-        border: Border.all(width: 2.0),
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(child: myText(getText('unit'))),
-              Expanded(
+    return StatefulBuilder(
+      builder: (context, setState) => Container(
+        width: getWidth(context, .29),
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: scaffoldColor,
+          border: Border.all(width: 2.0),
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(child: myText(getText('unit'))),
+                Expanded(
+                    flex: 3,
+                    child: myDropDown(
+                      context,
+                      value: _selectedUnitId,
+                      width: getWidth(context, .19),
+                      items: units.map((item) {
+                        return DropdownMenuItem(
+                          value: item.unitId,
+                          alignment: AlignmentDirectional.center,
+                          child: Text(item.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) => setState(() => _selectedUnitId = value as int),
+                    )),
+              ],
+            ),
+            mySizedBox(context),
+            Row(
+              children: [
+                Expanded(child: myText(getText('percentage'))),
+                Expanded(
                   flex: 3,
-                  child: myDropDown(
+                  child: myTextField(
                     context,
-                    value: _selectedUnitId,
-                    width: getWidth(context, .19),
-                    items: units.map((item) {
-                      return DropdownMenuItem(
-                        value: item.unitId,
-                        alignment: AlignmentDirectional.center,
-                        child: Text(item.name),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      _selectedUnitId = value as int;
-                    },
-                  )),
-            ],
-          ),
-          mySizedBox(context),
-          Row(
-            children: [
-              Expanded(child: myText(getText('percentage'))),
-              Expanded(
-                flex: 3,
-                child: myTextField(
-                  context,
-                  hint: myPercentage(percentage),
-                  onChanged: ((text) {
-                    _percentage = text;
-                  }),
-                  isNumberOnly: true,
+                    hint: myPercentage(percentage),
+                    onChanged: ((text) => percentage = double.parse(text)),
+                    isNumberOnly: true,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          mySizedBox(context),
-          myButton(
-            context,
-            icon: Icons.add,
-            text: getText('add'),
-            onTap: () {
-              percentage = double.parse(_percentage);
-              if (percentage != 0) {
-                switch (type) {
-                  case 1:
-                    effortssHasChanged = true;
-                    if (listIndex == -1) {
-                      efforts.add(Effort(
-                        userId: widget.user.userId,
-                        unitId: _selectedUnitId,
-                        effortPerc: percentage,
-                      ));
-                    } else {
-                      efforts[listIndex].effortPerc = percentage;
-                    }
-                    break;
-                  case 2:
-                    thresholdsHasChanged = true;
-                    if (listIndex == -1) {
-                      thresholds.add(my_threshold.Threshold(
-                        userId: widget.user.userId,
-                        unitId: _selectedUnitId,
-                        thresholdPerc: percentage,
-                      ));
-                    } else {
-                      thresholds[listIndex].thresholdPerc = percentage;
-                    }
-                    break;
-                  case 3:
-                    foundingssHasChanged = true;
-                    if (listIndex == -1) {
-                      foundings.add(Founding(
-                        userId: widget.user.userId,
-                        unitId: _selectedUnitId,
-                        foundingPerc: percentage,
-                      ));
-                    } else {
-                      foundings[listIndex].foundingPerc = percentage;
-                    }
-                    break;
-                }
+              ],
+            ),
+            mySizedBox(context),
+            myButton(
+              context,
+              icon: Icons.add,
+              text: getText('add'),
+              onTap: () {
+                if (percentage != 0) {
+                  switch (type) {
+                    case 1:
+                      effortssHasChanged = true;
+                      if (listIndex == -1) {
+                        efforts.add(Effort(
+                          userId: widget.user.userId,
+                          unitId: _selectedUnitId,
+                          effortPerc: percentage,
+                          globalUnits: {},
+                        ));
+                      } else {
+                        efforts[listIndex].effortPerc = percentage;
+                      }
+                      break;
+                    case 2:
+                      thresholdsHasChanged = true;
+                      if (listIndex == -1) {
+                        thresholds.add(my_threshold.Threshold(
+                          userId: widget.user.userId,
+                          unitId: _selectedUnitId,
+                          thresholdPerc: percentage,
+                        ));
+                      } else {
+                        thresholds[listIndex].thresholdPerc = percentage;
+                      }
+                      break;
+                    case 3:
+                      foundingssHasChanged = true;
+                      if (listIndex == -1) {
+                        foundings.add(Founding(
+                          userId: widget.user.userId,
+                          unitId: _selectedUnitId,
+                          foundingPerc: percentage,
+                        ));
+                      } else {
+                        foundings[listIndex].foundingPerc = percentage;
+                      }
+                      break;
+                  }
 
-                setState(() => Navigator.of(context).pop());
-              } else {
-                snackBar(context, getMessage('zeroValue'), duration: 5);
-              }
-            },
-          ),
-        ],
+                  Navigator.of(context).pop();
+                } else {
+                  snackBar(context, getMessage('zeroValue'), duration: 5);
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

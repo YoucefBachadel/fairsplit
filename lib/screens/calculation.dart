@@ -53,7 +53,7 @@ class _CalculationState extends State<Calculation> {
       'sql1': '''SELECT caisse, reserve, reserveProfit, reference FROM Settings;''',
       'sql2': '''SELECT userId, name, capital FROM Users WHERE type IN ('money','both');''',
       'sql3':
-          '''SELECT e.userId, u.name, e.effortPerc, u.months FROM Effort e, Users u WHERE e.unitId = -1 AND e.userId = u.userId;''',
+          '''SELECT e.userId, u.name, e.effortPerc, e.globalUnits, u.months FROM Effort e, Users u WHERE e.unitId = -1 AND e.userId = u.userId;''',
       'sql4':
           '''SELECT e.userId, u.name, e.effortPerc, u.months FROM Effort e, Users u WHERE e.unitId = ${widget.unit.unitId} AND e.userId = u.userId;''',
       'sql5':
@@ -84,10 +84,23 @@ class _CalculationState extends State<Calculation> {
     //add reserve to money users list
     moneyUsers.insert(0, User(userId: 0, name: getText('reserve'), capital: reserve));
 
+    Set<int> _userGlobalUbits = {};
+    String _globalUnitsData = '';
     for (var ele in res[2]) {
       if (!isIntern || (isIntern && ele['months'][widget.unit.currentMonthOrYear - 1] == '1')) {
-        globalEffortUsers.add(
-            User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
+        _userGlobalUbits.clear();
+        _globalUnitsData = ele['globalUnits'];
+
+        if (_globalUnitsData.isNotEmpty) {
+          for (var id in _globalUnitsData.split(',')) {
+            _userGlobalUbits.add(int.parse(id));
+          }
+        }
+
+        if (_userGlobalUbits.contains(widget.unit.unitId)) {
+          globalEffortUsers.add(
+              User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
+        }
       }
     }
 

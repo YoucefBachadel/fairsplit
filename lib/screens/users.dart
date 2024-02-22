@@ -110,7 +110,8 @@ class _UsersState extends State<Users> {
       //and with efforts
       if (_effortUnitFilter != -2) {
         for (var element in user.efforts) {
-          if (element.unitId == _effortUnitFilter) {
+          if (element.unitId == _effortUnitFilter ||
+              (element.unitId == -1 && element.globalUnits.contains(_effortUnitFilter))) {
             _iseffortFilter = true;
             user.effortPerc = element.effortPerc;
             break;
@@ -357,7 +358,9 @@ class _UsersState extends State<Users> {
                 if (_effortUnitFilter != -2) ...[
                   dataCell(
                     context,
-                    myPercentage(user.efforts.firstWhere((element) => element.unitId == _effortUnitFilter).effortPerc),
+                    myPercentage(user.efforts.first.unitId == -1
+                        ? user.efforts.first.effortPerc
+                        : user.efforts.firstWhere((element) => element.unitId == _effortUnitFilter).effortPerc),
                   ),
                   dataCell(
                     context,

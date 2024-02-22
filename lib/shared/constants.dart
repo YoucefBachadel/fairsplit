@@ -25,8 +25,8 @@ String zero = '-';
 late pw.Font pdfFont;
 late pw.Font pdfFontBold;
 
-String host = 'http://fairsplit.assala.com/php';
-// String host = 'http://fairsplit.assala.com/php_test';
+// String host = 'http://fairsplit.assala.com/php';
+String host = 'http://fairsplit.assala.com/php_test';
 
 Uri insertUrl = Uri.parse('$host/insert.php');
 Uri insertSPUrl = Uri.parse('$host/insertSP.php');

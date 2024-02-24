@@ -6,7 +6,6 @@ import 'package:pdf/widgets.dart' as pw;
 
 import '../models/unit_history.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 
@@ -172,33 +171,33 @@ class _UnitsHistoryState extends State<UnitsHistory> {
       dataColumn(context, ''),
       sortableDataColumn(
         context,
-        getText('name'),
+        'Name',
         (columnIndex, ascending) => setState(() {
           _sortColumnIndex = columnIndex;
           _isAscending = ascending;
         }),
       ),
-      dataColumn(context, getText('type')),
+      dataColumn(context, 'Type'),
       sortableDataColumn(
         context,
-        getText('year'),
+        'Year',
         (columnIndex, ascending) => setState(() {
           _sortColumnIndex = columnIndex;
           _isAscending = ascending;
         }),
       ),
-      dataColumn(context, getText('month')),
+      dataColumn(context, 'Month'),
       ...[
-        getText('capital'),
-        getText('profit'),
-        getText('profitability'),
-        getText('unitProfitability'),
-        getText('reserve'),
-        getText('donation'),
-        getText('money'),
-        getText('effort'),
-        getText('threshold'),
-        getText('founding'),
+        'Capital',
+        'Profit',
+        'Profitability',
+        'Unit Profitability',
+        'Reserve',
+        'Donation',
+        'Money',
+        'Effort',
+        'Threshold',
+        'Founding',
       ]
           .map((e) => sortableDataColumn(
                 context,
@@ -217,7 +216,7 @@ class _UnitsHistoryState extends State<UnitsHistory> {
             cells: [
               dataCell(context, (unitsHistory.indexOf(unitHistory) + 1).toString()),
               dataCell(context, unitHistory.name, textAlign: TextAlign.start),
-              dataCell(context, getText(unitHistory.type)),
+              dataCell(context, getText(unitsTypes, unitHistory.type)),
               dataCell(context, unitHistory.year.toString()),
               dataCell(
                 context,
@@ -283,25 +282,25 @@ class _UnitsHistoryState extends State<UnitsHistory> {
               children: [
                 Column(
                   children: [
-                    totalItem(context, getText('profit'), myCurrency(tprofit)),
-                    totalItem(context, getText('profitability'), myPercentage(tprofitability * 100)),
-                    totalItem(context, getText('unitProfitability'), myPercentage(tunitProfitability * 100)),
+                    totalItem(context, 'Profit', myCurrency(tprofit)),
+                    totalItem(context, 'Profitability', myPercentage(tprofitability * 100)),
+                    totalItem(context, 'Unit Profitability', myPercentage(tunitProfitability * 100)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .08), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('money'), myCurrency(tmoney)),
-                    totalItem(context, getText('reserve'), myCurrency(treserve)),
-                    totalItem(context, getText('donation'), myCurrency(tdonation)),
+                    totalItem(context, 'Money', myCurrency(tmoney)),
+                    totalItem(context, 'Reserve', myCurrency(treserve)),
+                    totalItem(context, 'Donation', myCurrency(tdonation)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .08), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('effort'), myCurrency(teffort)),
-                    totalItem(context, getText('threshold'), myCurrency(tthreshold)),
-                    totalItem(context, getText('founding'), myCurrency(tfounding)),
+                    totalItem(context, 'Effort', myCurrency(teffort)),
+                    totalItem(context, 'Threshold', myCurrency(tthreshold)),
+                    totalItem(context, 'Founding', myCurrency(tfounding)),
                   ],
                 ),
               ],
@@ -315,9 +314,9 @@ class _UnitsHistoryState extends State<UnitsHistory> {
 
   Widget searchBar() {
     Map<String, String> unitsTypesSearch = {
-      'tout': getText('tout'),
-      'intern': getText('intern'),
-      'extern': getText('extern'),
+      'tout': 'Tout',
+      'intern': 'Intern',
+      'extern': 'Extern',
     };
 
     return SingleChildScrollView(
@@ -329,21 +328,18 @@ class _UnitsHistoryState extends State<UnitsHistory> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('name'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Name', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
                 value: _name,
                 width: getWidth(context, .16),
                 color: _name == 'tout' ? Colors.grey : primaryColor,
-                items: [constans['tout'] ?? '', ...names].map((item) {
+                items: ['Tout', ...names].map((item) {
                   return DropdownMenuItem(
-                    value: item == constans['tout'] ? 'tout' : item,
+                    value: item == 'Tout' ? 'tout' : item,
                     alignment: AlignmentDirectional.center,
                     child: Text(item),
                   );
@@ -356,12 +352,9 @@ class _UnitsHistoryState extends State<UnitsHistory> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('type'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Type', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
@@ -369,7 +362,7 @@ class _UnitsHistoryState extends State<UnitsHistory> {
                 color: _type == 'tout' ? Colors.grey : primaryColor,
                 items: unitsTypesSearch.entries.map((item) {
                   return DropdownMenuItem(
-                    value: getKeyFromValue(item.value),
+                    value: getKeyFromValue(unitsTypesSearch, item.value),
                     alignment: AlignmentDirectional.center,
                     child: Text(item.value),
                   );
@@ -382,20 +375,20 @@ class _UnitsHistoryState extends State<UnitsHistory> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
                 child: Text(
-                  getText('year'),
-                  style: const TextStyle(fontSize: 14),
+                  'Year',
+                  style: TextStyle(fontSize: 14),
                 ),
               ),
               myDropDown(
                 context,
                 value: _year,
                 color: _year == 'tout' ? Colors.grey : primaryColor,
-                items: [constans['tout'] ?? '', ...years].map((item) {
+                items: ['Tout', ...years].map((item) {
                   return DropdownMenuItem(
-                    value: item == constans['tout'] ? 'tout' : item,
+                    value: item == 'Tout' ? 'tout' : item,
                     alignment: AlignmentDirectional.center,
                     child: Text(item),
                   );
@@ -408,20 +401,17 @@ class _UnitsHistoryState extends State<UnitsHistory> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('month'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Month', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
                 value: _month,
                 color: _month == 'tout' ? Colors.grey : primaryColor,
-                items: [constans['tout'] ?? '', ...monthsOfYear].map((item) {
+                items: ['Tout', ...monthsOfYear].map((item) {
                   return DropdownMenuItem(
-                    value: item == constans['tout'] ? 'tout' : item,
+                    value: item == 'Tout' ? 'tout' : item,
                     alignment: AlignmentDirectional.center,
                     child: Text(item),
                   );
@@ -433,29 +423,29 @@ class _UnitsHistoryState extends State<UnitsHistory> {
           mySizedBox(context),
           IconButton(
               onPressed: () => createExcel(
-                    getText('unithistory'),
+                    'Unit History',
                     [
                       [
                         '#',
-                        getText('name'),
-                        getText('type'),
-                        getText('year'),
-                        getText('month'),
-                        getText('capital'),
-                        getText('profit'),
-                        getText('profitability'),
-                        getText('unitProfitability'),
-                        getText('reserve'),
-                        getText('donation'),
-                        getText('money'),
-                        getText('effort'),
-                        getText('threshold'),
-                        getText('founding'),
+                        'Name',
+                        'Type',
+                        'Year',
+                        'Month',
+                        'Capital',
+                        'Profit',
+                        'Profitability',
+                        'Unit Profitability',
+                        'Reserve',
+                        'Donation',
+                        'Money',
+                        'Effort',
+                        'Threshold',
+                        'Founding',
                       ],
                       ...unitsHistory.map((unitHistory) => [
                             unitsHistory.indexOf(unitHistory) + 1,
                             unitHistory.name,
-                            getText(unitHistory.type),
+                            getText(unitsTypes, unitHistory.type),
                             unitHistory.year,
                             unitHistory.month == 0 ? '/' : monthsOfYear.elementAt(unitHistory.month - 1),
                             unitHistory.capital,
@@ -506,25 +496,25 @@ class _UnitsHistoryState extends State<UnitsHistory> {
       build: [
         pw.Table.fromTextArray(
           headers: [
-            getText('name'),
-            getText('type'),
-            getText('year'),
-            getText('month'),
-            getText('capital'),
-            getText('profit'),
-            getText('profitability'),
-            getText('unitProfitability'),
-            getText('reserve'),
-            getText('donation'),
-            getText('money'),
-            getText('effort'),
-            getText('threshold'),
-            getText('founding'),
+            'Name',
+            'Type',
+            'Year',
+            'Month',
+            'Capital',
+            'Profit',
+            'Profitability',
+            'Unit Profitability',
+            'Reserve',
+            'Donation',
+            'Money',
+            'Effort',
+            'Threshold',
+            'Founding',
           ],
           data: unitsHistory
               .map((unitHistory) => [
                     unitHistory.name,
-                    getText(unitHistory.type),
+                    getText(unitsTypes, unitHistory.type),
                     unitHistory.year,
                     unitHistory.month == 0 ? '/' : monthsOfYear.elementAt(unitHistory.month - 1),
                     myCurrency(unitHistory.capital),

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '/models/unit.dart';
 import '/models/user.dart';
@@ -82,7 +81,7 @@ class _CalculationState extends State<Calculation> {
     moneyUsers.sort((a, b) => a.name.compareTo(b.name));
 
     //add reserve to money users list
-    moneyUsers.insert(0, User(userId: 0, name: getText('reserve'), capital: reserve));
+    moneyUsers.insert(0, User(userId: 0, name: 'Reserve', capital: reserve));
 
     Set<int> _userGlobalUbits = {};
     String _globalUnitsData = '';
@@ -163,7 +162,7 @@ class _CalculationState extends State<Calculation> {
       Transaction transaction = Transaction(
         transactionId: int.parse(ele['transactionId']),
         userId: 0,
-        userName: getText('reserve'),
+        userName: 'Reserve',
         date: DateTime.parse(ele['date']),
         type: ele['type'],
         amount: double.parse(ele['amount']),
@@ -184,7 +183,7 @@ class _CalculationState extends State<Calculation> {
       Transaction transaction = Transaction(
         transactionId: int.parse(ele['transactionId']),
         userId: ele['userName'] == 'reserve' ? 0 : int.parse(ele['userId']),
-        userName: ele['userName'] == 'reserve' ? getText('reserve') : ele['userName'],
+        userName: ele['userName'] == 'reserve' ? 'Reserve' : ele['userName'],
         date: DateTime.parse(ele['date']),
         type: ele['type'],
         amount: double.parse(ele['amount']),
@@ -430,7 +429,7 @@ class _CalculationState extends State<Calculation> {
 
     await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-    snackBar(context, getMessage('calculationDone'));
+    snackBar(context, 'Calculation done successfully');
   }
 
   @override
@@ -578,13 +577,13 @@ class _CalculationState extends State<Calculation> {
                         const Divider(),
                         BottomNavigationBar(
                           type: BottomNavigationBarType.fixed,
-                          items: <BottomNavigationBarItem>[
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('info')),
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('money')),
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('threshold')),
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('founding')),
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('effortUnit')),
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('effortGlobal')),
+                          items: const <BottomNavigationBarItem>[
+                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Information'),
+                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Money'),
+                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Threshold'),
+                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Founding'),
+                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Effort Unit'),
+                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Effort Global'),
                           ],
                           selectedFontSize: 26,
                           unselectedFontSize: 18,
@@ -610,51 +609,50 @@ class _CalculationState extends State<Calculation> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        infoItem(getText('capital'), myCurrency(widget.unit.capital), '', ''),
+        infoItem('Capital', myCurrency(widget.unit.capital), '', ''),
         infoItem(
-          getText('unitProfitability'),
+          'Unit Profitability',
           myPercentage(caMoney / widget.unit.capital * 100),
-          getText('dailyProfit'),
+          'Daily Profit',
           myCurrency(caMoneyProfitPerDay),
         ),
         infoItem(
-          getText('profitability'),
+          'Profitability',
           myPercentage(profitability * 100),
-          getText('weightedCapital'),
+          'Weighted Capital',
           myCurrency(profitability == 0 ? 0 : caMoney / profitability),
         ),
-        infoItem('${getText('reserve')} %', myPercentage(widget.unit.reservePerc), getText('reserve'),
-            myCurrency(caReserve)),
+        infoItem('Reserve %', myPercentage(widget.unit.reservePerc), 'Reserve', myCurrency(caReserve)),
         infoItem(
-          '${getText('donation')} %',
+          'Donation %',
           myPercentage(widget.unit.donationPerc),
-          getText('donation'),
+          'Donation',
           myCurrency(caDonation),
         ),
-        infoItem('', '', getText('netProfit'), myCurrency(caNetProfit)),
+        infoItem('', '', 'Net Profit', myCurrency(caNetProfit)),
         infoItem(
-          '${getText('money')} %',
+          'Money %',
           myPercentage(widget.unit.moneyPerc),
-          getText('money'),
+          'Money',
           myCurrency(caMoney),
         ),
         infoItem(
-          '${getText('effort')} %',
+          'Effort %',
           myPercentage(widget.unit.effortPerc),
-          getText('effort'),
+          'Effort',
           myCurrency(caEffort),
         ),
-        infoItem('', '', getText('effortGlobal'), myCurrency(caEffortGlobal)),
+        infoItem('', '', 'Effort Global', myCurrency(caEffortGlobal)),
         infoItem(
-          '${getText('threshold')} %',
+          'Threshold %',
           myPercentage(widget.unit.thresholdPerc),
-          getText('threshold'),
+          'Threshold',
           myCurrency(caThreshold),
         ),
         infoItem(
-          '${getText('founding')} %',
+          'Founding %',
           myPercentage(widget.unit.foundingPerc),
-          getText('founding'),
+          'Founding',
           myCurrency(caFounding),
         ),
       ],
@@ -693,14 +691,9 @@ class _CalculationState extends State<Calculation> {
   }
 
   Widget money() {
-    List<DataColumn> column = [
-      '',
-      getText('name'),
-      getText('initialCapital'),
-      getText('capital'),
-      getText('weightedCapital'),
-      getText('profit')
-    ].map((e) => dataColumn(context, e)).toList();
+    List<DataColumn> column = ['', 'Name', 'Initial Capital', 'Capital', 'Weighted Capital', 'Profit']
+        .map((e) => dataColumn(context, e))
+        .toList();
     List<DataRow> rows = moneyUsers
         .map(
           (user) => DataRow(cells: [
@@ -722,21 +715,14 @@ class _CalculationState extends State<Calculation> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    myText('${getText('money')}  :  ${myCurrency(caMoney)} '),
+                    myText('Money  :  ${myCurrency(caMoney)} '),
                     mySizedBox(context),
                     if (caMoney != 0)
                       IconButton(
                           onPressed: () => createExcel(
                                 '${widget.unit.name} --- ${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : '${monthsOfYear[widget.unit.currentMonthOrYear - 1]} $currentYear'}',
                                 [
-                                  [
-                                    '#',
-                                    getText('name'),
-                                    getText('initialCapital'),
-                                    getText('capital'),
-                                    getText('weightedCapital'),
-                                    getText('profit')
-                                  ],
+                                  ['#', 'Name', 'Initial Capital', 'Capital', 'Weighted Capital', 'Profit'],
                                   ...moneyUsers.map((user) => [
                                         moneyUsers.indexOf(user) + 1,
                                         user.name,
@@ -763,9 +749,9 @@ class _CalculationState extends State<Calculation> {
   Widget threshold() {
     List<DataColumn> column = [
       '',
-      getText('name'),
-      '${getText('threshold')} %',
-      getText('profit'),
+      'Name',
+      'Threshold %',
+      'Profit',
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = thresholdUsers
         .map(
@@ -782,7 +768,7 @@ class _CalculationState extends State<Calculation> {
         : SingleChildScrollView(
             child: Column(
               children: [
-                myText('${getText('threshold')}  :  ${myCurrency(caThreshold)} '),
+                myText('Threshold  :  ${myCurrency(caThreshold)} '),
                 mySizedBox(context),
                 dataTable(context, columns: column, rows: rows),
               ],
@@ -793,9 +779,9 @@ class _CalculationState extends State<Calculation> {
   Widget founding() {
     List<DataColumn> column = [
       '',
-      getText('name'),
-      '${getText('founding')} %',
-      getText('profit'),
+      'Name',
+      'Founding %',
+      'Profit',
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = foundingUsers
         .map(
@@ -812,7 +798,7 @@ class _CalculationState extends State<Calculation> {
         : SingleChildScrollView(
             child: Column(
               children: [
-                myText('${getText('founding')}  :  ${myCurrency(caFounding)} '),
+                myText('Founding  :  ${myCurrency(caFounding)} '),
                 mySizedBox(context),
                 dataTable(context, columns: column, rows: rows),
               ],
@@ -823,11 +809,11 @@ class _CalculationState extends State<Calculation> {
   Widget effort() {
     List<DataColumn> column = [
       '',
-      getText('name'),
-      '${getText('effort')} %',
-      if (!isIntern) getText('evaluation'),
-      if (!isIntern) getText('month'),
-      getText('profit'),
+      'Name',
+      'Effort %',
+      if (!isIntern) 'Evaluation',
+      if (!isIntern) 'Month',
+      'Profit',
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = unitEffortUsers
         .map(
@@ -860,7 +846,7 @@ class _CalculationState extends State<Calculation> {
         : SingleChildScrollView(
             child: Column(
               children: [
-                myText('${getText('effort')}  :  ${myCurrency(caEffort)} '),
+                myText('Effort  :  ${myCurrency(caEffort)} '),
                 mySizedBox(context),
                 dataTable(context, columns: column, rows: rows),
               ],
@@ -871,11 +857,11 @@ class _CalculationState extends State<Calculation> {
   Widget global() {
     List<DataColumn> column = [
       '',
-      getText('name'),
-      '${getText('effort')} %',
-      if (!isIntern) getText('evaluation'),
-      if (!isIntern) getText('month'),
-      getText('profit'),
+      'Name',
+      'Effort %',
+      if (!isIntern) 'Evaluation',
+      if (!isIntern) 'Month',
+      'Profit',
     ].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = globalEffortUsers
         .map(
@@ -908,7 +894,7 @@ class _CalculationState extends State<Calculation> {
         : SingleChildScrollView(
             child: Column(
               children: [
-                myText('${getText('effortGlobal')}  :  ${myCurrency(caEffortGlobal)} '),
+                myText('Effort Global  :  ${myCurrency(caEffortGlobal)} '),
                 mySizedBox(context),
                 dataTable(context, columns: column, rows: rows),
               ],

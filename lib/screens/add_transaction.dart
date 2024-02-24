@@ -8,7 +8,6 @@ import '../shared/functions.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 import '../main.dart';
-import '../shared/lists.dart';
 
 class SelectTransactionCategoty extends StatelessWidget {
   const SelectTransactionCategoty({super.key});
@@ -26,11 +25,11 @@ class SelectTransactionCategoty extends StatelessWidget {
             alignment: Alignment.center,
             child: Row(
               children: [
-                Expanded(
+                const Expanded(
                   child: Text(
-                    getText('transaction'),
+                    'Transaction',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 20.0,
                     ),
@@ -236,7 +235,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
     if (_soldeCaisse < 0) {
       _testsChecked = false;
-      snackBar(context, getMessage('soldeCaisseZero'));
+      snackBar(context, 'Solde Caisse must be >= 0');
     } else {
       //get the current reference
       var res = await sqlQuery(selectUrl, {'sql1': 'SELECT reference FROM Settings'});
@@ -265,7 +264,7 @@ class _AddTransactionState extends State<AddTransaction> {
         }
         if (_solde < 0) {
           _testsChecked = false;
-          snackBar(context, getMessage('soldeZero'));
+          snackBar(context, 'Solde must be >= 0');
         } else {
           soldeForPrint = (category == 'reserve' && isNewYear) ? -0.01 : _solde;
           //insert the special transaction
@@ -298,7 +297,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
         if (type == 'out' && _amount.abs() > _totalUsersCapital) {
           _testsChecked = false;
-          snackBar(context, getMessage('amountTotalUserCapital'));
+          snackBar(context, 'amount > total users capitals');
         } else {
           //calculate the amount for each user
           for (var user in moneyUsers) {
@@ -364,7 +363,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             if (_soldeUser < 0 && !isNewYear) {
               _testsChecked = false;
-              snackBar(context, getMessage('capitalZero'));
+              snackBar(context, 'Capital must be >= 0');
             } else {
               soldeForPrint = isNewYear ? -0.01 : _soldeUser;
               //insert the transaction
@@ -379,7 +378,7 @@ class _AddTransactionState extends State<AddTransaction> {
             }
           } else {
             _testsChecked = false;
-            snackBar(context, getMessage('checkName'));
+            snackBar(context, 'Check The Name');
           }
         } else if (selectedTransactionType == 2) {
           //loan transaction
@@ -388,7 +387,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             if (_userRest < 0) {
               _testsChecked = false;
-              snackBar(context, getMessage('restZero'));
+              snackBar(context, 'Rest must be >= 0');
             } else {
               soldeForPrint = _userRest;
               //insert the transaction
@@ -403,7 +402,7 @@ class _AddTransactionState extends State<AddTransaction> {
             }
           } else {
             _testsChecked = false;
-            snackBar(context, getMessage('checkName'));
+            snackBar(context, 'Check The Name');
           }
         } else if (selectedTransactionType == 3) {
           //deposit transaction
@@ -412,7 +411,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
             if (_userRest < 0) {
               _testsChecked = false;
-              snackBar(context, getMessage('restZero'));
+              snackBar(context, 'Rest must be >= 0');
             } else {
               soldeForPrint = _userRest;
               //insert the transaction
@@ -427,7 +426,7 @@ class _AddTransactionState extends State<AddTransaction> {
             }
           } else {
             _testsChecked = false;
-            snackBar(context, getMessage('checkName'));
+            snackBar(context, 'Check The Name');
           }
         }
       }
@@ -453,7 +452,7 @@ class _AddTransactionState extends State<AddTransaction> {
                       ? 'loan'
                       : 'deposit',
           user: (selectedTransactionType == 0)
-              ? getText(category)
+              ? getText(compts, category)
               : (selectedTransactionType == 1)
                   ? selectedUser.realName
                   : selectedOtherUser.realName,
@@ -470,21 +469,21 @@ class _AddTransactionState extends State<AddTransaction> {
       );
     }
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp(index: widget.sourceTab)));
-    snackBar(context, getMessage('addTransaction'));
+    snackBar(context, 'Transaction added successfully');
   }
 
   @override
   void initState() {
     selectedTransactionType = widget.selectedTransactionType;
     appBarTitle = selectedTransactionType == 0
-        ? getText('special')
+        ? 'Special'
         : selectedTransactionType == 1
-            ? getText('user')
+            ? 'User'
             : selectedTransactionType == 2
-                ? getText('loan')
+                ? 'Loan'
                 : selectedTransactionType == 3
-                    ? getText('deposit')
-                    : getText('allUsers');
+                    ? 'Deposit'
+                    : 'All Users';
     loadData();
     super.initState();
   }
@@ -559,7 +558,7 @@ class _AddTransactionState extends State<AddTransaction> {
                     save();
                   } else {
                     setState(() => isLoading = false);
-                    snackBar(context, getMessage('wrongPassword'), duration: 1);
+                    snackBar(context, 'Wrong Password!!', duration: 1);
                   }
                 } else {
                   save();
@@ -573,21 +572,13 @@ class _AddTransactionState extends State<AddTransaction> {
   }
 
   Widget transactionInfo() {
-    Map<String, String> compts = {
-      'caisse': getText('caisse'),
-      'reserve': getText('reserve'),
-      'reserveProfit': getText('reserveProfit'),
-      'donation': getText('donation'),
-      'zakat': getText('zakat'),
-    };
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (selectedTransactionType == 0) // special transaction
           Row(
             children: [
-              Expanded(child: myText(getText('category'))),
+              Expanded(child: myText('Category')),
               Expanded(
                 flex: 4,
                 child: Container(
@@ -598,7 +589,7 @@ class _AddTransactionState extends State<AddTransaction> {
                       width: getWidth(context, .13),
                       items: compts.entries.map((item) {
                         return DropdownMenuItem(
-                          value: getKeyFromValue(item.value),
+                          value: getKeyFromValue(compts, item.value),
                           alignment: AlignmentDirectional.center,
                           child: Text(item.value),
                         );
@@ -612,7 +603,7 @@ class _AddTransactionState extends State<AddTransaction> {
         else if (selectedTransactionType == 1) // users transaction
           Row(
             children: [
-              Expanded(child: myText(getText('name'))),
+              Expanded(child: myText('Name')),
               Expanded(
                 flex: 4,
                 child: Autocomplete<User>(
@@ -709,7 +700,7 @@ class _AddTransactionState extends State<AddTransaction> {
         else // loan and deposit transaction
           Row(
             children: [
-              Expanded(child: myText(getText('name'))),
+              Expanded(child: myText('Name')),
               Expanded(
                 flex: 4,
                 child: Autocomplete<OtherUser>(
@@ -808,7 +799,7 @@ class _AddTransactionState extends State<AddTransaction> {
         mySizedBox(context),
         Row(
           children: [
-            Expanded(child: myText(getText('type'))),
+            Expanded(child: myText('Type')),
             Expanded(
               flex: 4,
               child: Row(
@@ -825,14 +816,14 @@ class _AddTransactionState extends State<AddTransaction> {
                       [Colors.green[800]!]
                     ],
                     initialLabelIndex: type == 'out' ? 0 : 1,
-                    labels: [getText('out'), getText('in')],
+                    labels: const ['Sortie', 'Entrie'],
                     onToggle: (index) => setState(() => type = index == 0 ? 'out' : 'in'),
                   ),
                   mySizedBox(context),
                   if (!(selectedTransactionType == 4 ||
                       (selectedTransactionType == 0 && category == 'caisse') ||
                       !isCaisseChanged))
-                    myText('${getText('caisse')} :   ${myCurrency(caisse)}'),
+                    myText('Caisse :   ${myCurrency(caisse)}'),
                 ],
               ),
             ),
@@ -841,7 +832,7 @@ class _AddTransactionState extends State<AddTransaction> {
         mySizedBox(context),
         Row(
           children: [
-            Expanded(child: myText(getText('amount'))),
+            Expanded(child: myText('Amount')),
             Expanded(
                 flex: 4,
                 child: Row(
@@ -884,12 +875,12 @@ class _AddTransactionState extends State<AddTransaction> {
                       }),
                       child: (selectedTransactionType == 0)
                           ? myText(
-                              '${getText('solde')} :   ${myCurrency(category == 'caisse' ? caisse : category == 'reserve' ? reserve : category == 'reserveProfit' ? reserveProfit : category == 'donation' ? donation : zakat)}')
+                              'Solde :   ${myCurrency(category == 'caisse' ? caisse : category == 'reserve' ? reserve : category == 'reserveProfit' ? reserveProfit : category == 'donation' ? donation : zakat)}')
                           : (selectedTransactionType == 1)
-                              ? myText('${getText('capital')} :   ${myCurrency(selectedUserCapital)}')
+                              ? myText('Capital :   ${myCurrency(selectedUserCapital)}')
                               : (selectedTransactionType == 4)
                                   ? const SizedBox()
-                                  : myText('${getText('rest')} :   ${myCurrency(rest)}'),
+                                  : myText('Rest :   ${myCurrency(rest)}'),
                     )
                   ],
                 )),
@@ -898,7 +889,7 @@ class _AddTransactionState extends State<AddTransaction> {
         mySizedBox(context),
         Row(
           children: [
-            Expanded(child: myText(getText('date'))),
+            Expanded(child: myText('Date')),
             Expanded(
               flex: 4,
               child: Row(
@@ -960,7 +951,7 @@ class _AddTransactionState extends State<AddTransaction> {
         if (selectedTransactionType == 4)
           Row(
             children: [
-              Expanded(child: myText(getText('password'))),
+              Expanded(child: myText('Password')),
               Expanded(
                   flex: 4,
                   child: Row(
@@ -1003,10 +994,10 @@ class _AddTransactionState extends State<AddTransaction> {
               minLines: 5,
               maxLines: 5,
               textDirection: TextDirection.rtl,
-              decoration: InputDecoration(
-                hintText: getText('note'),
-                contentPadding: const EdgeInsets.all(8),
-                border: const OutlineInputBorder(
+              decoration: const InputDecoration(
+                hintText: 'Note',
+                contentPadding: EdgeInsets.all(8),
+                border: OutlineInputBorder(
                   gapPadding: 0,
                   borderSide: BorderSide(width: 0.5),
                   borderRadius: BorderRadius.all(Radius.circular(12)),

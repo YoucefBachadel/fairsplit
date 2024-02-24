@@ -6,7 +6,6 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../main.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 import 'add_transaction.dart';
@@ -80,11 +79,11 @@ class _DashboardState extends State<Dashboard> {
               children: [
                 Row(
                   children: [
-                    [getText('caisse'), myCurrency(caisse), 'caisse'],
-                    [getText('reserve'), myCurrency(reserve), 'reserve'],
-                    [getText('reserveProfit'), myCurrency(reserveProfit), 'reserveProfit'],
-                    [getText('donation'), myCurrency(donation), 'donation'],
-                    [getText('zakat'), myCurrency(zakat), 'zakat'],
+                    ['Caisse', myCurrency(caisse), 'caisse'],
+                    ['Reserve', myCurrency(reserve), 'reserve'],
+                    ['Reserve Profit', myCurrency(reserveProfit), 'reserveProfit'],
+                    ['Donation', myCurrency(donation), 'donation'],
+                    ['Zakat', myCurrency(zakat), 'zakat'],
                   ]
                       .map((e) => boxCard(
                             e[0],
@@ -94,7 +93,7 @@ class _DashboardState extends State<Dashboard> {
                               context,
                               AddTransaction(
                                 sourceTab: 'da',
-                                category: getKeyFromValue(e[0]),
+                                category: e[2],
                                 selectedTransactionType: 0,
                               ),
                             ),
@@ -128,14 +127,11 @@ class _DashboardState extends State<Dashboard> {
                       Expanded(
                         child: Column(
                           children: [
-                            [getText('profitability'), profitability == 0 ? zero : myPercentage(profitability * 100)],
-                            [getText('totalProfit'), myCurrency(totalProfit)],
-                            [
-                              getText('weightedCapital'),
-                              profitability == 0 ? zero : myCurrency(totalProfit / profitability)
-                            ],
-                            [getText('totalLoan'), myCurrency(totalLoan)],
-                            [getText('totalDeposit'), myCurrency(totalDeposit)],
+                            ['Profitability', profitability == 0 ? zero : myPercentage(profitability * 100)],
+                            ['Total Profit', myCurrency(totalProfit)],
+                            ['Weighted Capital', profitability == 0 ? zero : myCurrency(totalProfit / profitability)],
+                            ['Total Laon', myCurrency(totalLoan)],
+                            ['Total Deposit', myCurrency(totalDeposit)],
                           ].map((e) => boxCard(e[0], e[1], false)).toList(),
                         ),
                       ),
@@ -186,7 +182,7 @@ class _DashboardState extends State<Dashboard> {
   Widget chart() {
     return SfCircularChart(
       title: ChartTitle(
-        text: getText('unitsProfitability'),
+        text: 'Units Profitability',
         textStyle: const TextStyle(fontSize: 24, color: Colors.black),
       ),
       tooltipBehavior: TooltipBehavior(

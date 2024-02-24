@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../models/other_user.dart';
 import '../main.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 
@@ -26,14 +25,14 @@ class _AddOtherUserState extends State<AddOtherUser> {
     await sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-    snackBar(context, getMessage('deleteUser'));
+    snackBar(context, 'User deleted successfully');
 
     setState(() => isLoading = false);
   }
 
   void save() async {
     if (name == '') {
-      snackBar(context, getMessage('emptyName'), duration: 5);
+      snackBar(context, 'Name can not be empty!!!', duration: 5);
     } else {
       setState(() => isLoading = true);
 
@@ -50,7 +49,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
 
       if (nameExist) {
         setState(() => isLoading = false);
-        snackBar(context, getMessage('existName'));
+        snackBar(context, 'Name already exist!!!');
       } else {
         await sqlQuery(insertUrl, {
           'sql1': isNew
@@ -61,7 +60,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
         userNames.add(name);
 
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
-        snackBar(context, widget.user.userId == -1 ? getMessage('addUser') : getMessage('updateUser'));
+        snackBar(context, widget.user.userId == -1 ? 'User added successfully' : 'User updated successfully');
       }
 
       setState(() => isLoading = false);
@@ -95,7 +94,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                               context,
                               deleteConfirmation(
                                 context,
-                                getMessage('deleteOtherUserConfirmation'),
+                                'Are you sure you want to delete this user!!',
                                 () => deleteUser(widget.user.userId),
                               ),
                             ),
@@ -106,7 +105,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                     : const SizedBox(),
                 Expanded(
                   child: Text(
-                    widget.user.userId == -1 ? getText('otherUser') : name,
+                    widget.user.userId == -1 ? 'Other User' : name,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
@@ -148,7 +147,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Text(
-                            getText('loan'),
+                            'Loan',
                             style: Theme.of(context).textTheme.headlineSmall,
                           ),
                           Transform.scale(
@@ -168,7 +167,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                             ),
                           ),
                           Text(
-                            getText('deposit'),
+                            'Deposit',
                             style: Theme.of(context).textTheme.headlineSmall,
                           ),
                         ],
@@ -178,7 +177,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                       mySizedBox(context),
                       Row(
                         children: [
-                          Expanded(child: myText(getText('name'))),
+                          Expanded(child: myText('Name')),
                           Expanded(
                             flex: 4,
                             child: myTextField(
@@ -193,7 +192,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                       mySizedBox(context),
                       Row(
                         children: [
-                          Expanded(child: myText(getText('joinDate'))),
+                          Expanded(child: myText('Join Date')),
                           Expanded(
                             flex: 4,
                             child: Row(
@@ -235,7 +234,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                       mySizedBox(context),
                       Row(
                         children: [
-                          Expanded(child: myText(getText('phone'))),
+                          Expanded(child: myText('Phone')),
                           Expanded(
                             flex: 4,
                             child: myTextField(

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:fairsplit/shared/functions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import 'lists.dart';
+import 'functions.dart';
 import 'constants.dart';
 
 Widget myProgress({Color? color}) {
@@ -52,7 +51,7 @@ Widget myButton(
                         color: Colors.white,
                       ),
                 const SizedBox(width: 6.0),
-                myText(text ?? getText('save'), color: textColor)
+                myText(text ?? 'Save', color: textColor)
               ],
             ),
     ),
@@ -149,7 +148,7 @@ Widget deleteConfirmation(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          getText('deleteConfirmation'),
+          'Delete Confirmation',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
@@ -167,7 +166,7 @@ Widget deleteConfirmation(
           noIcon: true,
           isLoading: isLoading,
           color: Colors.red,
-          text: getText('confirm'),
+          text: 'Confirm',
         )
       ],
     ),
@@ -180,7 +179,7 @@ Widget emptyList({Color textColor = Colors.grey}) {
   return Container(
     alignment: Alignment.center,
     child: Text(
-      getText('emptyList'),
+      'No Data To Show!!',
       style: TextStyle(fontSize: 30, color: textColor),
     ),
   );

@@ -25,8 +25,8 @@ String zero = '-';
 late pw.Font pdfFont;
 late pw.Font pdfFontBold;
 
-// String host = 'http://fairsplit.assala.com/php';
-String host = 'http://fairsplit.assala.com/php_test';
+String host = 'http://fairsplit.assala.com/php';
+// String host = 'http://fairsplit.assala.com/php_test';
 
 Uri insertUrl = Uri.parse('$host/insert.php');
 Uri insertSPUrl = Uri.parse('$host/insertSP.php');
@@ -58,3 +58,66 @@ double getWidth(BuildContext context, double size) => MediaQuery.of(context).siz
 double getHeight(BuildContext context, double size) => MediaQuery.of(context).size.height * size;
 
 Widget mySizedBox(BuildContext context) => SizedBox(height: getHeight(context, .01), width: getWidth(context, .005));
+
+List<String> monthsOfYear = [
+  'Janvier',
+  'Février',
+  'Mars',
+  'Avril',
+  'Mai',
+  'Juin',
+  'Juillet',
+  'Août',
+  'Septembre',
+  'Octobre',
+  'Novembre',
+  'Décembre',
+];
+
+List<String> selectTransactionType = [
+  'Special',
+  'User',
+  'Loan',
+  'Deposit',
+  if (isAdmin) 'All Users',
+];
+
+Map<String, String> userTypes = {
+  'money': 'Money',
+  'effort': 'Effort',
+  'both': 'Both',
+};
+
+Map<String, String> otherUserTypes = {
+  'loan': 'Loan',
+  'deposit': 'Deposit',
+};
+
+Map<String, String> unitsTypes = {
+  'intern': 'Intern',
+  'extern': 'Extern',
+};
+
+Map<String, String> compts = {
+  'caisse': 'Caisse',
+  'reserve': 'Reserve',
+  'reserveProfit': 'Reserve Profit',
+  'donation': 'Donation',
+  'zakat': 'Zakat',
+};
+
+Map<String, String> sources = {
+  'caisse': 'Caisse',
+  'reserve': 'Reserve',
+  'reserveProfit': 'Reserve Profit',
+  'donation': 'Donation',
+  'zakat': 'Zakat',
+  'user': 'User',
+  'loan': 'Loan',
+  'deposit': 'Deposit',
+};
+
+String getText(Map<String, String> list, String key) => list[key] ?? '';
+
+String getKeyFromValue(Map<String, String> list, String value) =>
+    list.keys.firstWhere((key) => list[key] == value, orElse: () => '');

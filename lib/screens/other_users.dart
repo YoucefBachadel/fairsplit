@@ -9,7 +9,6 @@ import '../screens/add_other_user.dart';
 import '../screens/add_transaction.dart';
 import '../providers/filter.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 
@@ -102,18 +101,18 @@ class _OtherUsersState extends State<OtherUsers> {
       dataColumn(context, ''),
       sortableDataColumn(
         context,
-        getText('name'),
+        'Name',
         (columnIndex, ascending) => setState(() {
           _sortColumnIndex = columnIndex;
           _isAscending = ascending;
         }),
       ),
       ...[
-        getText('type'),
+        'Type',
       ].map((e) => dataColumn(context, e)),
       sortableDataColumn(
         context,
-        getText('rest'),
+        'Rest',
         (columnIndex, ascending) => setState(() {
           _sortColumnIndex = columnIndex;
           _isAscending = ascending;
@@ -144,7 +143,7 @@ class _OtherUsersState extends State<OtherUsers> {
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, user.realName, textAlign: TextAlign.start),
-                dataCell(context, getText(user.type)),
+                dataCell(context, getText(otherUserTypes, user.type)),
                 dataCell(context, myCurrency(user.rest), textAlign: TextAlign.end),
                 if (isAdmin)
                   DataCell(IconButton(
@@ -162,7 +161,7 @@ class _OtherUsersState extends State<OtherUsers> {
           ? FloatingActionButton(
               mini: true,
               onPressed: () => _newUser(context, OtherUser()),
-              tooltip: getText('newUser'),
+              tooltip: 'New User',
               child: const Icon(Icons.add),
             )
           : null,
@@ -207,8 +206,8 @@ class _OtherUsersState extends State<OtherUsers> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              totalItem(context, getText('totalLoan'), myCurrency(totalLoan), isExpanded: false),
-              totalItem(context, getText('totalDeposit'), myCurrency(totalDeposit), isExpanded: false),
+              totalItem(context, 'Total Laon', myCurrency(totalLoan), isExpanded: false),
+              totalItem(context, 'Total Deposit', myCurrency(totalDeposit), isExpanded: false),
             ],
           ),
           mySizedBox(context),
@@ -219,9 +218,9 @@ class _OtherUsersState extends State<OtherUsers> {
 
   Widget searchBar() {
     Map<String, String> otherUsersTypesSearch = {
-      'tout': getText('tout'),
-      'loan': getText('loan'),
-      'deposit': getText('deposit'),
+      'tout': 'Tout',
+      'loan': 'Loan',
+      'deposit': 'Deposit',
     };
 
     return SingleChildScrollView(
@@ -233,12 +232,9 @@ class _OtherUsersState extends State<OtherUsers> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('name'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Name', style: TextStyle(fontSize: 14)),
               ),
               Autocomplete<String>(
                 onSelected: (item) => setState(() {
@@ -273,7 +269,7 @@ class _OtherUsersState extends State<OtherUsers> {
                         }
                       }),
                       decoration: textInputDecoration(
-                        hint: getText('search'),
+                        hint: 'Search...',
                         borderColor: _search.isEmpty ? Colors.grey : primaryColor,
                         prefixIcon: const Icon(Icons.search, size: 20.0),
                         suffixIcon: _controller.text.isEmpty
@@ -329,12 +325,9 @@ class _OtherUsersState extends State<OtherUsers> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('type'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Type', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
@@ -342,7 +335,7 @@ class _OtherUsersState extends State<OtherUsers> {
                 color: _type == 'tout' ? Colors.grey : primaryColor,
                 items: otherUsersTypesSearch.entries.map((item) {
                   return DropdownMenuItem(
-                    value: getKeyFromValue(item.value),
+                    value: getKeyFromValue(otherUsersTypesSearch, item.value),
                     alignment: AlignmentDirectional.center,
                     child: Text(item.value),
                   );
@@ -354,13 +347,13 @@ class _OtherUsersState extends State<OtherUsers> {
           mySizedBox(context),
           IconButton(
               onPressed: () => createExcel(
-                    getText('otherUsers'),
+                    'Other Users',
                     [
-                      ['#', getText('name'), getText('type'), getText('rest')],
+                      ['#', 'Name', 'Type', 'Rest'],
                       ...users.map((user) => [
                             users.indexOf(user) + 1,
                             user.realName,
-                            getText(user.type),
+                            getText(otherUserTypes, user.type),
                             user.rest,
                           ]),
                     ],
@@ -409,11 +402,12 @@ class _OtherUsersState extends State<OtherUsers> {
       build: [
         pw.Table.fromTextArray(
           headers: [
-            getText('name'),
-            getText('type'),
-            getText('rest'),
+            'Name',
+            'Type',
+            'Rest',
           ],
-          data: users.map((user) => [user.realName, getText(user.type), myCurrency(user.rest)]).toList(),
+          data:
+              users.map((user) => [user.realName, getText(otherUserTypes, user.type), myCurrency(user.rest)]).toList(),
           headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
           headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
           cellStyle: const pw.TextStyle(fontSize: 10),

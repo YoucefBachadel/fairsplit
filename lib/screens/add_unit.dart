@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../models/unit.dart';
 import '../main.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 
@@ -32,16 +31,16 @@ class _AddUnitState extends State<AddUnit> {
     });
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-    snackBar(context, getMessage('deleteUnit'));
+    snackBar(context, 'Unit deleted successfully');
 
     setState(() => isLoading = false);
   }
 
   void save() async {
     if (name == '') {
-      snackBar(context, getMessage('emptyName'), duration: 5);
+      snackBar(context, 'Name can not be empty!!!', duration: 5);
     } else if (capital == 0) {
-      snackBar(context, getMessage('capitalZero'));
+      snackBar(context, 'Capital must be >= 0');
     } else {
       setState(() => isLoading = true);
 
@@ -57,9 +56,9 @@ class _AddUnitState extends State<AddUnit> {
         });
 
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
-        snackBar(context, widget.unit.unitId == -1 ? getMessage('addUnit') : getMessage('updateUnit'));
+        snackBar(context, widget.unit.unitId == -1 ? 'Unit added successfully' : 'Unit updated successfully');
       } catch (e) {
-        snackBar(context, getMessage('checkData'), duration: 5);
+        snackBar(context, 'Check your data!!!', duration: 5);
       }
 
       setState(() => isLoading = false);
@@ -97,7 +96,7 @@ class _AddUnitState extends State<AddUnit> {
                               context,
                               deleteConfirmation(
                                 context,
-                                getMessage('deleteUnitConfitmation'),
+                                'Are you sure you want to delete this unit, once deleted all related information will be deleted too',
                                 () => deleteUnit(widget.unit.unitId),
                                 isLoading: isLoading,
                               ),
@@ -109,7 +108,7 @@ class _AddUnitState extends State<AddUnit> {
                     : const SizedBox(),
                 Expanded(
                   child: Text(
-                    widget.unit.unitId == -1 ? getText('unit') : name,
+                    widget.unit.unitId == -1 ? 'Unit' : name,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
@@ -150,7 +149,7 @@ class _AddUnitState extends State<AddUnit> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Text(
-                              getText('intern'),
+                              'Intern',
                               style: Theme.of(context).textTheme.headlineSmall,
                             ),
                             Transform.scale(
@@ -174,7 +173,7 @@ class _AddUnitState extends State<AddUnit> {
                               ),
                             ),
                             Text(
-                              getText('extern'),
+                              'Extern',
                               style: Theme.of(context).textTheme.headlineSmall,
                             ),
                           ],
@@ -184,7 +183,7 @@ class _AddUnitState extends State<AddUnit> {
                         mySizedBox(context),
                         Row(
                           children: [
-                            Expanded(child: myText(getText('name'))),
+                            Expanded(child: myText('Name')),
                             Expanded(
                               flex: 4,
                               child: myTextField(
@@ -199,7 +198,7 @@ class _AddUnitState extends State<AddUnit> {
                         mySizedBox(context),
                         Row(
                           children: [
-                            Expanded(child: myText(getText('capital'))),
+                            Expanded(child: myText('Capital')),
                             Expanded(
                                 flex: 4,
                                 child: myTextField(
@@ -216,7 +215,7 @@ class _AddUnitState extends State<AddUnit> {
                         mySizedBox(context),
                         Row(
                           children: [
-                            Expanded(child: myText('${getText('reserve')} %')),
+                            Expanded(child: myText('Reserve %')),
                             Expanded(
                               child: myTextField(
                                 context,
@@ -225,7 +224,7 @@ class _AddUnitState extends State<AddUnit> {
                                 isNumberOnly: true,
                               ),
                             ),
-                            Expanded(child: myText('${getText('donation')} %')),
+                            Expanded(child: myText('Donation %')),
                             Expanded(
                               child: myTextField(
                                 context,
@@ -239,7 +238,7 @@ class _AddUnitState extends State<AddUnit> {
                         mySizedBox(context),
                         Row(
                           children: [
-                            Expanded(child: myText('${getText('money')} %')),
+                            Expanded(child: myText('Money %')),
                             Expanded(
                               child: myTextField(
                                 context,
@@ -248,7 +247,7 @@ class _AddUnitState extends State<AddUnit> {
                                 isNumberOnly: true,
                               ),
                             ),
-                            Expanded(child: myText('${getText('effort')} %')),
+                            Expanded(child: myText('Effort %')),
                             Expanded(
                               child: myTextField(
                                 context,
@@ -262,7 +261,7 @@ class _AddUnitState extends State<AddUnit> {
                         mySizedBox(context),
                         Row(
                           children: [
-                            Expanded(child: myText('${getText('threshold')} %')),
+                            Expanded(child: myText('Threshold %')),
                             Expanded(
                               child: myTextField(
                                 context,
@@ -272,7 +271,7 @@ class _AddUnitState extends State<AddUnit> {
                                 enabled: !isExtern,
                               ),
                             ),
-                            Expanded(child: myText('${getText('founding')} %')),
+                            Expanded(child: myText('Founding %')),
                             Expanded(
                               child: myTextField(
                                 context,

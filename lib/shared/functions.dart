@@ -11,21 +11,35 @@ import 'package:syncfusion_flutter_xlsio/xlsio.dart';
 import 'package:universal_html/html.dart' show AnchorElement;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-void snackBar(BuildContext context, String message, {int duration = 3}) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-      elevation: 1.0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 2.0),
-        borderRadius: BorderRadius.circular(6.0),
-      ),
-      content: Text(
-        message,
-        textAlign: TextAlign.center,
-      ),
-      duration: Duration(seconds: duration),
-    ));
+void snackBar(BuildContext context, String message, {int duration = 3}) async {
+  showGeneralDialog(
+    context: context,
+    barrierColor: Colors.black.withOpacity(.1),
+    pageBuilder: (context, animation, secondaryAnimation) {
+      Future.delayed(Duration(seconds: duration), () {
+        Navigator.of(context).pop(); // Close the dialog
+      });
+      return Align(
+        alignment: Alignment.bottomCenter,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 Future createDialog(BuildContext context, Widget content, {bool dismissable = true}) {

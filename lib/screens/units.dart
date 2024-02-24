@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../models/unit.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 import 'add_unit.dart';
@@ -108,12 +107,12 @@ class _UnitsState extends State<Units> {
 
     List<DataColumn> columns = [
       ...[
-        getText('name'),
-        getText('type'),
-        getText('capital'),
-        '${getText('capital')} %',
-        getText('profit'),
-        getText('profitability'),
+        'Name',
+        'Type',
+        'Capital',
+        'Capital %',
+        'Profit',
+        'Profitability',
       ]
           .map((e) => sortableDataColumn(
                 context,
@@ -124,7 +123,7 @@ class _UnitsState extends State<Units> {
                 }),
               ))
           .toList(),
-      dataColumn(context, getText('month')),
+      dataColumn(context, 'Month'),
       if (isAdmin) dataColumn(context, ''),
     ];
 
@@ -133,7 +132,7 @@ class _UnitsState extends State<Units> {
               onSelectChanged: ((value) => isAdmin ? _newUnit(context, unit) : null),
               cells: [
                 dataCell(context, unit.name, textAlign: TextAlign.start),
-                dataCell(context, getText(unit.type), textAlign: TextAlign.start),
+                dataCell(context, getText(unitsTypes, unit.type), textAlign: TextAlign.start),
                 dataCell(context, myCurrency(unit.capital), textAlign: TextAlign.end),
                 dataCell(context, myPercentage(unit.capital * 100 / totalCapital)),
                 dataCell(context, myCurrency(unit.profit), textAlign: TextAlign.end),
@@ -164,7 +163,7 @@ class _UnitsState extends State<Units> {
           ? FloatingActionButton(
               mini: true,
               onPressed: () => _newUnit(context, Unit()),
-              tooltip: getText('newUnit'),
+              tooltip: 'New Unit',
               child: const Icon(Icons.add),
             )
           : null,
@@ -205,31 +204,31 @@ class _UnitsState extends State<Units> {
                   children: [
                     Column(
                       children: [
-                        myText(getText('intern')),
+                        myText('Intern'),
                         const SizedBox(width: 40, child: Divider()),
-                        totalItem(context, getText('count'), internCount.toString()),
-                        totalItem(context, getText('capital'), myCurrency(internCapital)),
-                        totalItem(context, '${getText('capital')} %', myPercentage(internCapital * 100 / totalCapital)),
-                        totalItem(context, getText('profit'), myCurrency(internProfit)),
-                        totalItem(context, getText('profitability'), myPercentage(internProfitability)),
+                        totalItem(context, 'Count', internCount.toString()),
+                        totalItem(context, 'Capital', myCurrency(internCapital)),
+                        totalItem(context, 'Capital %', myPercentage(internCapital * 100 / totalCapital)),
+                        totalItem(context, 'Profit', myCurrency(internProfit)),
+                        totalItem(context, 'Profitability', myPercentage(internProfitability)),
                       ],
                     ),
                     SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
                     Column(
                       children: [
-                        myText(getText('extern')),
+                        myText('Extern'),
                         const SizedBox(width: 40, child: Divider()),
-                        totalItem(context, getText('count'), externCount.toString()),
-                        totalItem(context, getText('capital'), myCurrency(externCapital)),
-                        totalItem(context, '${getText('capital')} %', myPercentage(externCapital * 100 / totalCapital)),
-                        totalItem(context, getText('profit'), myCurrency(externProfit)),
-                        totalItem(context, getText('profitability'), myPercentage(externProfitability)),
+                        totalItem(context, 'Count', externCount.toString()),
+                        totalItem(context, 'Capital', myCurrency(externCapital)),
+                        totalItem(context, 'Capital %', myPercentage(externCapital * 100 / totalCapital)),
+                        totalItem(context, 'Profit', myCurrency(externProfit)),
+                        totalItem(context, 'Profitability', myPercentage(externProfitability)),
                       ],
                     ),
                   ],
                 ),
                 SizedBox(width: getWidth(context, .4), child: const Divider()),
-                totalItem(context, getText('totalCapital'), myCurrency(totalCapital)),
+                totalItem(context, 'Total Capital', myCurrency(totalCapital)),
               ],
             )
           ],

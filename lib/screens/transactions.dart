@@ -6,7 +6,6 @@ import 'package:pdf/widgets.dart' as pw;
 import '../main.dart';
 import '../providers/filter.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../models/transaction.dart';
 import '../models/transaction_sp.dart';
 import '../shared/constants.dart';
@@ -131,7 +130,7 @@ class _TransactionsState extends State<Transactions> {
       allCaisseTransactions.add(Transaction(
         reference: ele['reference'],
         transactionId: int.parse(ele['transactionId']),
-        userName: getText(ele['category']),
+        userName: getText(compts, ele['category']),
         source: ele['category'],
         date: DateTime.parse(ele['date']),
         type: ele['type'],
@@ -167,7 +166,7 @@ class _TransactionsState extends State<Transactions> {
         allCaisseTransactions.add(Transaction(
           reference: ele['reference'],
           transactionId: int.parse(ele['transactionId']),
-          userName: (int.parse(ele['userId']) == -1) ? getText(ele['userName']) : ele['userName'],
+          userName: (int.parse(ele['userId']) == -1) ? 'Reserve' : ele['userName'],
           source: (int.parse(ele['userId']) == -1) ? ele['userName'] : 'user',
           date: DateTime.parse(ele['date']),
           type: ele['type'],
@@ -360,104 +359,104 @@ class _TransactionsState extends State<Transactions> {
 
     List<DataColumn> columnsTrans = [
       dataColumn(context, ''),
-      dataColumn(context, getText('reference')),
+      dataColumn(context, 'Reference'),
       sortableDataColumn(
           context,
-          getText('name'),
+          'Name',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransUser = columnIndex;
                 _isAscendingTransUser = ascending;
               })),
-      dataColumn(context, getText('category')),
+      dataColumn(context, 'Category'),
       sortableDataColumn(
           context,
-          getText('date'),
+          'Date',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransUser = columnIndex;
                 _isAscendingTransUser = ascending;
               })),
-      dataColumn(context, getText('type')),
+      dataColumn(context, 'Type'),
       sortableDataColumn(
           context,
-          getText('in'),
+          'Entrie',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransUser = columnIndex;
                 _isAscendingTransUser = ascending;
               })),
       sortableDataColumn(
           context,
-          getText('out'),
+          'Sortie',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransUser = columnIndex;
                 _isAscendingTransUser = ascending;
               })),
-      dataColumn(context, getText('soldeUser')),
-      dataColumn(context, getText('note')),
+      dataColumn(context, 'Solde User'),
+      dataColumn(context, 'Note'),
     ];
     List<DataColumn> columnsTransCaisse = [
       dataColumn(context, ''),
-      dataColumn(context, getText('reference')),
+      dataColumn(context, 'Reference'),
       sortableDataColumn(
           context,
-          getText('name'),
+          'Name',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransCaisse = columnIndex;
                 _isAscendingTransCaisse = ascending;
               })),
-      dataColumn(context, getText('category')),
+      dataColumn(context, 'Category'),
       sortableDataColumn(
           context,
-          getText('date'),
+          'Date',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransCaisse = columnIndex;
                 _isAscendingTransCaisse = ascending;
               })),
-      dataColumn(context, getText('type')),
+      dataColumn(context, 'Type'),
       sortableDataColumn(
           context,
-          getText('in'),
+          'Entrie',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransCaisse = columnIndex;
                 _isAscendingTransCaisse = ascending;
               })),
       sortableDataColumn(
           context,
-          getText('out'),
+          'Sortie',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransCaisse = columnIndex;
                 _isAscendingTransCaisse = ascending;
               })),
-      dataColumn(context, getText('soldeCaisse')),
-      dataColumn(context, getText('note')),
+      dataColumn(context, 'Solde Caisse'),
+      dataColumn(context, 'Note'),
     ];
     List<DataColumn> columnsTransSP = [
       dataColumn(context, ''),
-      dataColumn(context, getText('reference')),
-      dataColumn(context, getText('category')),
+      dataColumn(context, 'Reference'),
+      dataColumn(context, 'Category'),
       sortableDataColumn(
           context,
-          getText('date'),
+          'Date',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransSP = columnIndex;
                 _isAscendingTransSP = ascending;
               })),
-      dataColumn(context, getText('type')),
+      dataColumn(context, 'Type'),
       sortableDataColumn(
           context,
-          getText('in'),
+          'Entrie',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransSP = columnIndex;
                 _isAscendingTransSP = ascending;
               })),
       sortableDataColumn(
           context,
-          getText('out'),
+          'Sortie',
           (columnIndex, ascending) => setState(() {
                 _sortColumnIndexTransSP = columnIndex;
                 _isAscendingTransSP = ascending;
               })),
-      dataColumn(context, getText('solde')),
-      dataColumn(context, getText('note')),
+      dataColumn(context, 'Solde'),
+      dataColumn(context, 'Note'),
     ];
 
     List<DataRow> rowsTrans = transactions
@@ -482,9 +481,9 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
                 dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
-                dataCell(context, getText(transaction.source)),
+                dataCell(context, getText(sources, transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
+                dataCell(context, transaction.type == 'in' ? 'Entrie' : 'Sortie'),
                 dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
                     textAlign: TextAlign.end),
                 dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
@@ -532,9 +531,9 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, (transactions.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
                 dataCell(context, transaction.realUserName, textAlign: TextAlign.start),
-                dataCell(context, getText(transaction.source)),
+                dataCell(context, getText(sources, transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
+                dataCell(context, transaction.type == 'in' ? 'Entrie' : 'Sortie'),
                 dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
                     textAlign: TextAlign.end),
                 dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
@@ -568,7 +567,7 @@ class _TransactionsState extends State<Transactions> {
                     source: 'special',
                     type: transaction.type,
                     reference: transaction.reference,
-                    user: getText(transaction.category),
+                    user: getText(compts, transaction.category),
                     amount: transaction.amount,
                     solde: transaction.solde,
                     date: myDateFormate.format(transaction.date),
@@ -580,9 +579,9 @@ class _TransactionsState extends State<Transactions> {
               cells: [
                 dataCell(context, (transactionsSP.indexOf(transaction) + 1).toString()),
                 dataCell(context, transaction.reference),
-                dataCell(context, getText(transaction.category), textAlign: TextAlign.start),
+                dataCell(context, getText(compts, transaction.category), textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
-                dataCell(context, transaction.type == 'in' ? getText('in') : getText('out')),
+                dataCell(context, transaction.type == 'in' ? 'Entrie' : 'Sortie'),
                 dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
                     textAlign: TextAlign.end),
                 dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
@@ -614,6 +613,7 @@ class _TransactionsState extends State<Transactions> {
       floatingActionButton: FloatingActionButton(
         mini: true,
         onPressed: () => _newTransaction(context),
+        tooltip: 'New Transaction',
         child: const Icon(Icons.add),
       ),
       body: Container(
@@ -681,9 +681,9 @@ class _TransactionsState extends State<Transactions> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              totalItem(context, getText('totalIn'), myCurrency(totalIn), isExpanded: false),
-              totalItem(context, getText('totalOut'), myCurrency(totalOut), isExpanded: false),
-              totalItem(context, getText('total'), myCurrency(totalIn - totalOut), isExpanded: false),
+              totalItem(context, 'Total Entrie', myCurrency(totalIn), isExpanded: false),
+              totalItem(context, 'Total Sortie', myCurrency(totalOut), isExpanded: false),
+              totalItem(context, 'Total', myCurrency(totalIn - totalOut), isExpanded: false),
             ],
           ),
           mySizedBox(context),
@@ -694,28 +694,28 @@ class _TransactionsState extends State<Transactions> {
 
   Widget searchBar() {
     Map<String, String> transactionsCategorys = {
-      'users': getText('users'),
-      'caisse': getText('caisse'),
-      'specials': getText('specials'),
+      'users': 'Users',
+      'caisse': 'Caisse',
+      'specials': 'Specials',
     };
     Map<String, String> usersCategorys = {
-      'tout': getText('tout'),
-      'users': getText('user'),
-      'loans': getText('loan'),
-      'deposits': getText('deposit'),
+      'tout': 'Tout',
+      'user': 'User',
+      'loan': 'Loan',
+      'deposit': 'Deposit',
     };
     Map<String, String> comptsSearch = {
-      'tout': getText('tout'),
-      'caisse': getText('caisse'),
-      'reserve': getText('reserve'),
-      'reserveProfit': getText('reserveProfit'),
-      'donation': getText('donation'),
-      'zakat': getText('zakat'),
+      'tout': 'Tout',
+      'caisse': 'Caisse',
+      'reserve': 'Reserve',
+      'reserveProfit': 'Reserve Profit',
+      'donation': 'Donation',
+      'zakat': 'Zakat',
     };
     Map<String, String> transactionsTypesSearch = {
-      'tout': getText('tout'),
-      'in': getText('in'),
-      'out': getText('out'),
+      'tout': 'Tout',
+      'in': 'Entrie',
+      'out': 'Sortie',
     };
 
     return SingleChildScrollView(
@@ -727,19 +727,16 @@ class _TransactionsState extends State<Transactions> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('category'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Category', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
                 value: transactionCategory,
                 items: transactionsCategorys.entries.map((item) {
                   return DropdownMenuItem(
-                    value: getKeyFromValue(item.value),
+                    value: getKeyFromValue(transactionsCategorys, item.value),
                     alignment: AlignmentDirectional.center,
                     child: Text(item.value),
                   );
@@ -759,20 +756,20 @@ class _TransactionsState extends State<Transactions> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
                 child: Text(
-                  getText('year'),
-                  style: const TextStyle(fontSize: 14),
+                  'Year',
+                  style: TextStyle(fontSize: 14),
                 ),
               ),
               myDropDown(
                 context,
                 value: _year,
                 color: Colors.grey,
-                items: [constans['tout'] ?? '', ...years].map((item) {
+                items: ['Tout', ...years].map((item) {
                   return DropdownMenuItem(
-                    value: item == constans['tout'] ? 'tout' : item,
+                    value: item == 'Tout' ? 'tout' : item,
                     alignment: AlignmentDirectional.center,
                     child: Text(item),
                   );
@@ -791,12 +788,9 @@ class _TransactionsState extends State<Transactions> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('reference'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Reference', style: TextStyle(fontSize: 14)),
               ),
               SizedBox(
                 height: getHeight(context, textFeildHeight),
@@ -829,12 +823,9 @@ class _TransactionsState extends State<Transactions> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Text(
-                    getText('category'),
-                    style: const TextStyle(fontSize: 14),
-                  ),
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Text('Category', style: TextStyle(fontSize: 14)),
                 ),
                 myDropDown(
                   context,
@@ -843,7 +834,7 @@ class _TransactionsState extends State<Transactions> {
                   color: _compt == 'tout' ? Colors.grey : primaryColor,
                   items: comptsSearch.entries.map((item) {
                     return DropdownMenuItem(
-                      value: getKeyFromValue(item.value),
+                      value: getKeyFromValue(comptsSearch, item.value),
                       alignment: AlignmentDirectional.center,
                       child: Text(item.value),
                     );
@@ -863,12 +854,9 @@ class _TransactionsState extends State<Transactions> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Text(
-                    getText('category'),
-                    style: const TextStyle(fontSize: 14),
-                  ),
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Text('Category', style: TextStyle(fontSize: 14)),
                 ),
                 myDropDown(
                   context,
@@ -876,7 +864,7 @@ class _TransactionsState extends State<Transactions> {
                   color: _userCategory == 'tout' ? Colors.grey : primaryColor,
                   items: usersCategorys.entries.map((item) {
                     return DropdownMenuItem(
-                      value: getKeyFromValue(item.value),
+                      value: getKeyFromValue(usersCategorys, item.value),
                       alignment: AlignmentDirectional.center,
                       child: Text(item.value),
                     );
@@ -889,12 +877,9 @@ class _TransactionsState extends State<Transactions> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('type'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Type', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
@@ -902,7 +887,7 @@ class _TransactionsState extends State<Transactions> {
                 color: _type == 'tout' ? Colors.grey : primaryColor,
                 items: transactionsTypesSearch.entries.map((item) {
                   return DropdownMenuItem(
-                    value: getKeyFromValue(item.value),
+                    value: getKeyFromValue(transactionsTypesSearch, item.value),
                     alignment: AlignmentDirectional.center,
                     child: Text(item.value),
                   );
@@ -920,21 +905,18 @@ class _TransactionsState extends State<Transactions> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Text(
-                        getText('month'),
-                        style: const TextStyle(fontSize: 14),
-                      ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Text('Month', style: TextStyle(fontSize: 14)),
                     ),
                     myDropDown(
                       context,
                       value: _month,
                       width: getWidth(context, .072),
                       color: _month == 'tout' ? Colors.grey : primaryColor,
-                      items: [constans['tout'] ?? '', ...monthsOfYear].map((item) {
+                      items: ['Tout', ...monthsOfYear].map((item) {
                         return DropdownMenuItem(
-                          value: item == constans['tout'] ? 'tout' : item,
+                          value: item == 'Tout' ? 'tout' : item,
                           alignment: AlignmentDirectional.center,
                           child: Text(item),
                         );
@@ -959,11 +941,11 @@ class _TransactionsState extends State<Transactions> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
                 child: Text(
-                  getText('from'),
-                  style: const TextStyle(fontSize: 14),
+                  'From',
+                  style: TextStyle(fontSize: 14),
                 ),
               ),
               InkWell(
@@ -1003,12 +985,9 @@ class _TransactionsState extends State<Transactions> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('to'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('To', style: TextStyle(fontSize: 14)),
               ),
               InkWell(
                 onTap: () async {
@@ -1078,33 +1057,33 @@ class _TransactionsState extends State<Transactions> {
                 color: primaryColor,
               ),
               onPressed: () => createExcel(
-                    getText('transaction'),
+                    'Transaction',
                     [
                       [
                         '#',
-                        getText('reference'),
-                        if (transactionCategory == 'specials') getText('category') else getText('name'),
-                        if (transactionCategory == 'caisse' || transactionCategory == 'users') getText('source'),
-                        getText('date'),
-                        getText('type'),
-                        getText('in'),
-                        getText('out'),
+                        'Reference',
+                        if (transactionCategory == 'specials') 'Category' else 'Name',
+                        if (transactionCategory == 'caisse' || transactionCategory == 'users') 'Source',
+                        'Date',
+                        'Type',
+                        'Entrie',
+                        'Sortie',
                         if (transactionCategory == 'caisse')
-                          getText('soldeCaisse')
+                          'Solde Caisse'
                         else if (transactionCategory == 'specials')
-                          getText('solde')
+                          'Solde'
                         else
-                          getText('soldeUser'),
-                        getText('note'),
+                          'Solde User',
+                        'Note',
                       ],
                       if (transactionCategory == 'users')
                         ...transactions.map((trans) => [
                               transactions.indexOf(trans) + 1,
                               trans.reference,
                               trans.realUserName,
-                              getText(trans.source),
+                              getText(sources, trans.source),
                               myDateFormate.format(trans.date),
-                              trans.type == 'in' ? getText('in') : getText('out'),
+                              trans.type == 'in' ? 'Entrie' : 'Sortie',
                               trans.type == 'in' ? trans.amount : zero,
                               trans.type == 'out' ? trans.amount : zero,
                               trans.soldeUser != -0.01 ? trans.soldeUser : '/',
@@ -1115,9 +1094,9 @@ class _TransactionsState extends State<Transactions> {
                               transactions.indexOf(trans) + 1,
                               trans.reference,
                               trans.realUserName,
-                              getText(trans.source),
+                              getText(sources, trans.source),
                               myDateFormate.format(trans.date),
-                              trans.type == 'in' ? getText('in') : getText('out'),
+                              trans.type == 'in' ? 'Entrie' : 'Sortie',
                               trans.type == 'in' ? trans.amount : zero,
                               trans.type == 'out' ? trans.amount : zero,
                               trans.soldeCaisse,
@@ -1129,7 +1108,7 @@ class _TransactionsState extends State<Transactions> {
                               trans.reference,
                               trans.category,
                               myDateFormate.format(trans.date),
-                              trans.type == 'in' ? getText('in') : getText('out'),
+                              trans.type == 'in' ? 'Entrie' : 'Sortie',
                               trans.type == 'in' ? trans.amount : zero,
                               trans.type == 'out' ? trans.amount : zero,
                               trans.solde != -0.01 ? trans.solde : '/',
@@ -1195,12 +1174,9 @@ class _TransactionsState extends State<Transactions> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Text(
-            getText('name'),
-            style: const TextStyle(fontSize: 14),
-          ),
+        const Padding(
+          padding: EdgeInsets.only(left: 8.0),
+          child: Text('Name', style: TextStyle(fontSize: 14)),
         ),
         Autocomplete<String>(
           onSelected: onSeleted,
@@ -1230,7 +1206,7 @@ class _TransactionsState extends State<Transactions> {
                   }
                 }),
                 decoration: textInputDecoration(
-                  hint: getText('search'),
+                  hint: 'Search...',
                   borderColor: _searchController.text.isEmpty ? Colors.grey : primaryColor,
                   prefixIcon: const Icon(Icons.search, size: 20.0),
                   suffixIcon: _searchController.text.isEmpty
@@ -1312,7 +1288,7 @@ class _TransactionsState extends State<Transactions> {
       transactions.map((trans) {
         printTransactions.add({
           'date': myDateFormate.format(trans.date),
-          'source': getText(trans.source),
+          'source': getText(sources, trans.source),
           'name': trans.realUserName,
           'in': myCurrency(trans.type == 'in' ? trans.amount : 0),
           'out': myCurrency(trans.type == 'out' ? trans.amount : 0),

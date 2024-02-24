@@ -6,7 +6,6 @@ import '../models/threshold.dart' as my_threshold;
 import '../models/unit.dart';
 import '../main.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 import '../models/user.dart';
@@ -49,7 +48,7 @@ class _AddUserState extends State<AddUser> {
     });
 
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
-    snackBar(context, getMessage('deleteUser'));
+    snackBar(context, 'User deleted successfully');
 
     setState(() => isLoading = false);
   }
@@ -65,7 +64,7 @@ class _AddUserState extends State<AddUser> {
 
   void save() async {
     if (name == '') {
-      snackBar(context, getMessage('emptyName'), duration: 5);
+      snackBar(context, 'Name can not be empty!!!', duration: 5);
     } else {
       setState(() => isLoading = true);
 
@@ -80,7 +79,7 @@ class _AddUserState extends State<AddUser> {
 
       if (nameExist) {
         setState(() => isLoading = false);
-        snackBar(context, getMessage('existName'));
+        snackBar(context, 'Name already exist!!!');
       } else {
         int _userId = widget.user.userId;
         List<String> sqls = [];
@@ -145,7 +144,7 @@ class _AddUserState extends State<AddUser> {
 
         if (sqls.isNotEmpty) await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
-        snackBar(context, isNew ? getMessage('addUser') : getMessage('updateUser'));
+        snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');
       }
       setState(() => isLoading = false);
     }
@@ -191,7 +190,7 @@ class _AddUserState extends State<AddUser> {
                             context,
                             deleteConfirmation(
                               context,
-                              getMessage('deleteUserConfirmation'),
+                              'Are you sure you want to delete this user, once deleted all related information will be deleted too',
                               () => deleteUser(widget.user.userId),
                             ),
                           ),
@@ -201,7 +200,7 @@ class _AddUserState extends State<AddUser> {
                       )),
                 Expanded(
                   child: Text(
-                    widget.user.userId == -1 ? getText('user') : name,
+                    widget.user.userId == -1 ? 'User' : name,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
@@ -266,15 +265,15 @@ class _AddUserState extends State<AddUser> {
 
   Widget information() {
     Map<String, String> usersTypes = {
-      if (efforts.isEmpty) 'money': getText('money'),
-      if (thresholds.isEmpty && foundings.isEmpty) 'effort': getText('effort'),
-      'both': getText('both'),
+      if (efforts.isEmpty) 'money': 'Money',
+      if (thresholds.isEmpty && foundings.isEmpty) 'effort': 'Effort',
+      'both': 'Both',
     };
     return Column(
       children: [
         Row(
           children: [
-            Expanded(child: myText(getText('name'))),
+            Expanded(child: myText('Name')),
             Expanded(
               flex: 4,
               child: myTextField(
@@ -291,7 +290,7 @@ class _AddUserState extends State<AddUser> {
         mySizedBox(context),
         Row(
           children: [
-            Expanded(child: myText(getText('type'))),
+            Expanded(child: myText('Type')),
             Expanded(
               flex: 4,
               child: Container(
@@ -302,7 +301,7 @@ class _AddUserState extends State<AddUser> {
                   width: getWidth(context, .13),
                   items: usersTypes.entries.map((item) {
                     return DropdownMenuItem(
-                      value: getKeyFromValue(item.value),
+                      value: getKeyFromValue(usersTypes, item.value),
                       alignment: AlignmentDirectional.center,
                       child: Text(item.value),
                     );
@@ -323,7 +322,7 @@ class _AddUserState extends State<AddUser> {
         mySizedBox(context),
         Row(
           children: [
-            Expanded(child: myText(getText('joinDate'))),
+            Expanded(child: myText('Join Date')),
             Expanded(
               flex: 4,
               child: Row(
@@ -365,7 +364,7 @@ class _AddUserState extends State<AddUser> {
         mySizedBox(context),
         Row(
           children: [
-            Expanded(child: myText(getText('phone'))),
+            Expanded(child: myText('Phone')),
             Expanded(
               flex: 4,
               child: myTextField(
@@ -403,7 +402,7 @@ class _AddUserState extends State<AddUser> {
               children: [
                 Expanded(
                   child: Text(
-                    getText('threshold'),
+                    'Threshold',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
@@ -440,7 +439,7 @@ class _AddUserState extends State<AddUser> {
                 : SingleChildScrollView(
                     child: dataTable(
                       context,
-                      columns: [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
+                      columns: ['Unit', 'Percentage', ''].map((e) => dataColumn(context, e)).toList(),
                       rows: thresholds
                           .map((e) => DataRow(
                                 onSelectChanged: (value) => createDialog(
@@ -463,7 +462,7 @@ class _AddUserState extends State<AddUser> {
                                               context,
                                               deleteConfirmation(
                                                 context,
-                                                getMessage('deleteItem'),
+                                                'Are you sure you want to delete this item',
                                                 () => setState(() {
                                                   thresholdsHasChanged = true;
                                                   thresholds.remove(e);
@@ -508,7 +507,7 @@ class _AddUserState extends State<AddUser> {
             children: [
               Expanded(
                 child: Text(
-                  getText('founding'),
+                  'Founding',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
@@ -541,7 +540,7 @@ class _AddUserState extends State<AddUser> {
                 : SingleChildScrollView(
                     child: dataTable(
                       context,
-                      columns: [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
+                      columns: ['Unit', 'Percentage', ''].map((e) => dataColumn(context, e)).toList(),
                       rows: foundings
                           .map((e) => DataRow(
                                 onSelectChanged: (value) => createDialog(
@@ -564,7 +563,7 @@ class _AddUserState extends State<AddUser> {
                                               context,
                                               deleteConfirmation(
                                                 context,
-                                                getMessage('deleteItem'),
+                                                'Are you sure you want to delete this item',
                                                 () => setState(() {
                                                   foundingssHasChanged = true;
                                                   foundings.remove(e);
@@ -608,7 +607,7 @@ class _AddUserState extends State<AddUser> {
             children: [
               Expanded(
                 child: Text(
-                  getText('effort'),
+                  'Effort',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
@@ -653,8 +652,7 @@ class _AddUserState extends State<AddUser> {
                     children: [
                       dataTable(
                         context,
-                        columns:
-                            [getText('unit'), getText('percentage'), ''].map((e) => dataColumn(context, e)).toList(),
+                        columns: ['Unit', 'Percentage', ''].map((e) => dataColumn(context, e)).toList(),
                         rows: efforts
                             .map((e) => DataRow(
                                   onSelectChanged: (value) => createDialog(
@@ -686,7 +684,7 @@ class _AddUserState extends State<AddUser> {
                                                 context,
                                                 deleteConfirmation(
                                                   context,
-                                                  getMessage('deleteItem'),
+                                                  'Are you sure you want to delete this item',
                                                   () => setState(() {
                                                     effortssHasChanged = true;
                                                     efforts.remove(e);
@@ -738,7 +736,7 @@ class _AddUserState extends State<AddUser> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              myText(getText('evaluation')),
+              myText('Evaluation'),
               myTextField(
                 context,
                 hint: myPercentage(evaluation),
@@ -822,7 +820,7 @@ class _AddUserState extends State<AddUser> {
           children: [
             Row(
               children: [
-                Expanded(child: myText(getText('unit'))),
+                Expanded(child: myText('Unit')),
                 Expanded(
                     flex: 3,
                     child: myDropDown(
@@ -843,7 +841,7 @@ class _AddUserState extends State<AddUser> {
             mySizedBox(context),
             Row(
               children: [
-                Expanded(child: myText(getText('percentage'))),
+                Expanded(child: myText('Percentage')),
                 Expanded(
                   flex: 3,
                   child: myTextField(
@@ -859,7 +857,7 @@ class _AddUserState extends State<AddUser> {
             myButton(
               context,
               icon: Icons.add,
-              text: getText('add'),
+              text: 'Add',
               onTap: () {
                 if (percentage != 0) {
                   switch (type) {
@@ -904,7 +902,7 @@ class _AddUserState extends State<AddUser> {
 
                   Navigator.of(context).pop();
                 } else {
-                  snackBar(context, getMessage('zeroValue'), duration: 5);
+                  snackBar(context, 'Value can not be zero!!', duration: 5);
                 }
               },
             ),

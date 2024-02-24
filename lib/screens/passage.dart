@@ -10,7 +10,6 @@ import '../models/transaction.dart';
 import '../models/unit.dart';
 import '../models/user.dart';
 import '../shared/constants.dart';
-import '../shared/lists.dart';
 
 class Passage extends StatefulWidget {
   const Passage({super.key});
@@ -280,7 +279,7 @@ class _PassageState extends State<Passage> {
 
     await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'da')));
-    snackBar(context, getMessage('passageDone'));
+    snackBar(context, 'Passage done successfully');
   }
 
   Future buildPdf() async {
@@ -364,11 +363,11 @@ class _PassageState extends State<Passage> {
           alignment: Alignment.center,
           child: Row(
             children: [
-              Expanded(
+              const Expanded(
                 child: Text(
-                  getText('passage'),
+                  'Passage',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 20.0,
                   ),
@@ -404,7 +403,7 @@ class _PassageState extends State<Passage> {
                             const Spacer(),
                             Column(
                               children: [
-                                Text(getText('zakat')),
+                                const Text('Zakat'),
                                 myTextField(
                                   context,
                                   controller: zakatController,
@@ -420,7 +419,7 @@ class _PassageState extends State<Passage> {
                             mySizedBox(context),
                             Column(
                               children: [
-                                Text(getText('materials')),
+                                const Text('Materials'),
                                 myTextField(
                                   context,
                                   controller: materialsController,
@@ -435,7 +434,7 @@ class _PassageState extends State<Passage> {
                             const Spacer(),
                             myButton(
                               context,
-                              text: isCalculated ? getText('passage') : 'Calculate',
+                              text: isCalculated ? 'Passage' : 'Calculate',
                               noIcon: true,
                               width: getWidth(context, .08),
                               enabled: isCalculated
@@ -476,7 +475,7 @@ class _PassageState extends State<Passage> {
                                                 Navigator.pop(context);
                                               },
                                               noIcon: true,
-                                              text: getText('confirm'),
+                                              text: 'Confirm',
                                             )
                                           ],
                                         ),
@@ -499,9 +498,9 @@ class _PassageState extends State<Passage> {
                         const Divider(),
                         BottomNavigationBar(
                           type: BottomNavigationBarType.fixed,
-                          items: <BottomNavigationBarItem>[
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('zakat')),
-                            BottomNavigationBarItem(icon: const Icon(Icons.add), label: getText('print')),
+                          items: const <BottomNavigationBarItem>[
+                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Zakat'),
+                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Print'),
                           ],
                           selectedFontSize: 26,
                           unselectedFontSize: 18,
@@ -590,7 +589,7 @@ class _PassageState extends State<Passage> {
                   child: dataTable(
                     context,
                     columns: [
-                      dataColumn(context, getText('name')),
+                      dataColumn(context, 'Name'),
                       dataColumn(context, 'Out'),
                       dataColumn(context, 'Out To Zakat'),
                     ],
@@ -655,7 +654,7 @@ class _PassageState extends State<Passage> {
           children: [
             Row(
               children: [
-                Expanded(child: myText(getText('type'))),
+                Expanded(child: myText('Type')),
                 Expanded(
                   flex: 4,
                   child: Row(

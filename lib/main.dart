@@ -3,10 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:fairsplit/providers/filter.dart';
-import 'package:fairsplit/screens/passage.dart';
-import 'package:fairsplit/screens/unit_history.dart';
-import 'package:fairsplit/shared/functions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -14,9 +10,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '/providers/filter.dart';
+import '/screens/passage.dart';
+import '/screens/unit_history.dart';
+import '/shared/functions.dart';
 import 'screens/other_users.dart';
 import 'screens/units.dart';
-import 'shared/lists.dart';
 import 'screens/transactions.dart';
 import 'screens/users_history.dart';
 import 'screens/users.dart';
@@ -122,13 +121,13 @@ class _MyAppState extends State<MyApp> {
   };
 
   List<String> tabs = [
-    getText('dashboard'),
-    getText('units'),
-    getText('users'),
-    getText('otherUsers'),
-    getText('transaction'),
-    getText('userHistory'),
-    getText('unitHistory'),
+    'Dashboard',
+    'Units',
+    'Users',
+    'Other Users',
+    'Transaction',
+    'User History',
+    'Unit History',
   ];
 
   List<Widget> tabScreens = [
@@ -300,7 +299,7 @@ class _MyAppState extends State<MyApp> {
                                     border: Border.all(color: primaryColor),
                                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                                   ),
-                                  child: myText(getText('passage'), color: primaryColor)),
+                                  child: myText('Passage', color: primaryColor)),
                             ),
                           mySizedBox(context),
                           InkWell(
@@ -383,7 +382,7 @@ class _MyAppState extends State<MyApp> {
       setState(() => isLoading = true);
 
       if (_password.contains('"') || _password.contains('\'')) {
-        snackBar(context, getMessage('wrongPassword'), duration: 1);
+        snackBar(context, 'Wrong Password!!', duration: 1);
       } else {
         var res = await sqlQuery(selectUrl, {
           'sql1': '''SELECT IF(user = '$_password',1,IF(admin = '$_password',2,0)) AS password FROM settings;''',
@@ -394,7 +393,7 @@ class _MyAppState extends State<MyApp> {
 
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'da')));
         } else {
-          snackBar(context, getMessage('wrongPassword'), duration: 1);
+          snackBar(context, 'Wrong Password!!', duration: 1);
         }
       }
       setState(() => isLoading = false);
@@ -419,16 +418,10 @@ class _MyAppState extends State<MyApp> {
                   topLeft: Radius.circular(20.0),
                   topRight: Radius.circular(20.0),
                 )),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    getText('password'),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white, fontSize: 20.0),
-                  ),
-                ),
-              ],
+            child: const Text(
+              'Password',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white, fontSize: 20.0),
             ),
           ),
           Expanded(
@@ -447,7 +440,7 @@ class _MyAppState extends State<MyApp> {
                 myButton(
                   context,
                   noIcon: true,
-                  text: getText('confirm'),
+                  text: 'Confirm',
                   isLoading: isLoading,
                   onTap: onTap,
                 ),

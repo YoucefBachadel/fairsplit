@@ -9,7 +9,6 @@ import '../models/founding.dart';
 import '../models/threshold.dart';
 import '../providers/filter.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../models/unit.dart';
 import '../models/user.dart';
 import '../shared/constants.dart';
@@ -110,8 +109,7 @@ class _UsersState extends State<Users> {
       //and with efforts
       if (_effortUnitFilter != -2) {
         for (var element in user.efforts) {
-          if (element.unitId == _effortUnitFilter ||
-              (element.unitId == -1 && element.globalUnits.contains(_effortUnitFilter))) {
+          if (element.unitId == _effortUnitFilter) {
             _iseffortFilter = true;
             user.effortPerc = element.effortPerc;
             break;
@@ -271,26 +269,26 @@ class _UsersState extends State<Users> {
       dataColumn(context, ''),
       sortableDataColumn(
         context,
-        getText('name'),
+        'Name',
         (columnIndex, ascending) => setState(() {
           _sortColumnIndex = columnIndex;
           _isAscending = ascending;
         }),
       ),
-      dataColumn(context, getText('type')),
+      dataColumn(context, 'Type'),
       ...[
-        getText('capital'),
-        getText('weightedCapital'),
-        getText('initialCapital'),
-        getText('totalIn'),
-        getText('totalOut'),
-        getText('money'),
-        getText('threshold'),
-        getText('founding'),
-        getText('effort'),
-        if (_thresholdUnitFilter != -2) '${getText('threshold')} %',
-        if (_foundingUnitFilter != -2) '${getText('founding')} %',
-        if (_effortUnitFilter != -2) ...['${getText('effort')} %', getText('evaluation')],
+        'Capital',
+        'Weighted Capital',
+        'Initial Capital',
+        'Total Entrie',
+        'Total Sortie',
+        'Money',
+        'Threshold',
+        'Founding',
+        'Effort',
+        if (_thresholdUnitFilter != -2) 'Threshold %',
+        if (_foundingUnitFilter != -2) 'Founding %',
+        if (_effortUnitFilter != -2) ...['Effort %', 'Evaluation'],
       ].map(
         (e) => sortableDataColumn(
           context,
@@ -330,7 +328,7 @@ class _UsersState extends State<Users> {
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, user.realName, textAlign: TextAlign.start),
-                dataCell(context, getText(user.type)),
+                dataCell(context, getText(userTypes, user.type)),
                 dataCell(context, myCurrency(user.capital), textAlign: TextAlign.end),
                 dataCell(context, myCurrency(user.weightedCapital), textAlign: TextAlign.end),
                 dataCell(context, myCurrency(user.initialCapital), textAlign: TextAlign.end),
@@ -383,7 +381,7 @@ class _UsersState extends State<Users> {
           ? FloatingActionButton(
               mini: true,
               onPressed: () => _newUser(context, User()),
-              tooltip: getText('newUser'),
+              tooltip: 'New User',
               child: const Icon(Icons.add),
             )
           : null,
@@ -430,22 +428,22 @@ class _UsersState extends State<Users> {
               children: [
                 Column(
                   children: [
-                    totalItem(context, getText('capital'), myCurrency(tcapital)),
-                    totalItem(context, getText('initialCapital'), myCurrency(tinitialCapital)),
+                    totalItem(context, 'Capital', myCurrency(tcapital)),
+                    totalItem(context, 'Initial Capital', myCurrency(tinitialCapital)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .05), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('money'), myCurrency(tmoney)),
-                    totalItem(context, getText('effort'), myCurrency(teffort)),
+                    totalItem(context, 'Money', myCurrency(tmoney)),
+                    totalItem(context, 'Effort', myCurrency(teffort)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .05), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('threshold'), myCurrency(tthreshold)),
-                    totalItem(context, getText('founding'), myCurrency(tfounding)),
+                    totalItem(context, 'Threshold', myCurrency(tthreshold)),
+                    totalItem(context, 'Founding', myCurrency(tfounding)),
                   ],
                 ),
               ],
@@ -459,10 +457,10 @@ class _UsersState extends State<Users> {
 
   Widget searchBar() {
     Map<String, String> usersTypesSearch = {
-      'tout': getText('tout'),
-      'money': getText('money'),
-      'effort': getText('effort'),
-      'both': getText('both'),
+      'tout': 'Tout',
+      'money': 'Money',
+      'effort': 'Effort',
+      'both': 'Both',
     };
 
     return SingleChildScrollView(
@@ -474,12 +472,9 @@ class _UsersState extends State<Users> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('name'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Name', style: TextStyle(fontSize: 14)),
               ),
               Autocomplete<String>(
                 onSelected: (item) => setState(() => _search = item),
@@ -512,7 +507,7 @@ class _UsersState extends State<Users> {
                         }
                       }),
                       decoration: textInputDecoration(
-                        hint: getText('search'),
+                        hint: 'Search...',
                         borderColor: _search.isEmpty ? Colors.grey : primaryColor,
                         prefixIcon: const Icon(Icons.search, size: 20.0),
                         suffixIcon: _controller.text.isEmpty
@@ -568,12 +563,9 @@ class _UsersState extends State<Users> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('type'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Type', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
@@ -581,7 +573,7 @@ class _UsersState extends State<Users> {
                 color: _type == 'tout' ? Colors.grey : primaryColor,
                 items: usersTypesSearch.entries.map((item) {
                   return DropdownMenuItem(
-                    value: getKeyFromValue(item.value),
+                    value: getKeyFromValue(usersTypesSearch, item.value),
                     alignment: AlignmentDirectional.center,
                     child: Text(item.value),
                   );
@@ -598,20 +590,16 @@ class _UsersState extends State<Users> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('threshold'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Threshold', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
                 value: _thresholdUnitFilter,
                 width: getWidth(context, .14),
                 color: _thresholdUnitFilter == -2 ? Colors.grey : primaryColor,
-                items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] +
-                        units.where((element) => element.type == 'intern').toList())
+                items: ([Unit(unitId: -2, name: 'Tout')] + units.where((element) => element.type == 'intern').toList())
                     .map((item) {
                   return DropdownMenuItem(
                     value: item.unitId,
@@ -631,20 +619,16 @@ class _UsersState extends State<Users> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('founding'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Founding', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
                 value: _foundingUnitFilter,
                 width: getWidth(context, .14),
                 color: _foundingUnitFilter == -2 ? Colors.grey : primaryColor,
-                items: ([Unit(unitId: -2, name: constans['tout'] ?? '')] +
-                        units.where((element) => element.type == 'intern').toList())
+                items: ([Unit(unitId: -2, name: 'Tout')] + units.where((element) => element.type == 'intern').toList())
                     .map((item) {
                   return DropdownMenuItem(
                     value: item.unitId,
@@ -664,24 +648,16 @@ class _UsersState extends State<Users> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('effort'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Effort', style: TextStyle(fontSize: 14)),
               ),
               myDropDown(
                 context,
                 value: _effortUnitFilter,
                 width: getWidth(context, .14),
                 color: _effortUnitFilter == -2 ? Colors.grey : primaryColor,
-                items: ([
-                          Unit(unitId: -2, name: constans['tout'] ?? ''),
-                          Unit(unitId: -1, name: constans['global'] ?? '')
-                        ] +
-                        units)
-                    .map((item) {
+                items: ([Unit(unitId: -2, name: 'Tout'), Unit(unitId: -1, name: 'Global')] + units).map((item) {
                   return DropdownMenuItem(
                     value: item.unitId,
                     alignment: AlignmentDirectional.center,
@@ -699,44 +675,42 @@ class _UsersState extends State<Users> {
           mySizedBox(context),
           IconButton(
               onPressed: () => createExcel(
-                    getText('users'),
+                    'Users',
                     [
                       [
                         '#',
-                        getText('name'),
-                        getText('phone'),
-                        getText('joinDate'),
-                        getText('type'),
-                        getText('capital'),
-                        getText('weightedCapital'),
-                        getText('initialCapital'),
-                        getText('totalIn'),
-                        getText('totalOut'),
-                        getText('money'),
-                        getText('moneyExtern'),
-                        getText('effort'),
-                        getText('threshold'),
-                        getText('founding'),
-                        if (_thresholdUnitFilter != -2) getText('threshold'),
-                        if (_foundingUnitFilter != -2) getText('founding'),
-                        if (_effortUnitFilter != -2) ...[getText('effort'), getText('evaluation')]
+                        'Name',
+                        'Phone',
+                        'Join Date',
+                        'Type',
+                        'Capital',
+                        'Weighted Capital',
+                        'Initial Capital',
+                        'Total Entrie',
+                        'Total Sortie',
+                        'Money',
+                        'Threshold',
+                        'Founding',
+                        'Effort',
+                        if (_thresholdUnitFilter != -2) 'Threshold',
+                        if (_foundingUnitFilter != -2) 'Founding',
+                        if (_effortUnitFilter != -2) ...['Effort', 'Evaluation']
                       ],
                       ...users.map((user) => [
                             users.indexOf(user) + 1,
                             user.realName,
                             user.phone,
                             myDateFormate.format(user.joinDate),
-                            getText(user.type),
+                            getText(userTypes, user.type),
                             user.capital,
                             user.weightedCapital,
                             user.initialCapital,
                             user.totalIn,
                             user.totalOut,
-                            user.money,
-                            user.moneyExtern,
-                            user.effort + user.effortExtern,
+                            user.money + user.moneyExtern,
                             user.threshold,
                             user.founding,
+                            user.effort + user.effortExtern,
                             if (_thresholdUnitFilter != -2) user.thresholdPerc,
                             if (_foundingUnitFilter != -2) user.foundingPerc,
                             if (_effortUnitFilter != -2) ...[user.effortPerc, user.evaluation]
@@ -785,22 +759,22 @@ class _UsersState extends State<Users> {
       build: [
         pw.Table.fromTextArray(
           headers: [
-            getText('name'),
-            getText('type'),
-            getText('capital'),
-            getText('weightedCapital'),
-            getText('initialCapital'),
-            getText('totalIn'),
-            getText('totalOut'),
-            getText('money'),
-            getText('threshold'),
-            getText('founding'),
-            getText('effort'),
+            'Name',
+            'Type',
+            'Capital',
+            'Weighted Capital',
+            'Initial Capital',
+            'Total Entrie',
+            'Total Sortie',
+            'Money',
+            'Threshold',
+            'Founding',
+            'Effort',
           ],
           data: users
               .map((user) => [
                     user.realName,
-                    getText(user.type),
+                    getText(userTypes, user.type),
                     myCurrency(user.capital),
                     myCurrency(user.weightedCapital),
                     myCurrency(user.initialCapital),

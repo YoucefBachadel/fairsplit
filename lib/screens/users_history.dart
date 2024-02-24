@@ -4,7 +4,6 @@ import 'package:pdf/widgets.dart' as pw;
 
 import '../models/user_history.dart';
 import '../shared/functions.dart';
-import '../shared/lists.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
 
@@ -209,21 +208,21 @@ class _UsersHistoryState extends State<UsersHistory> {
     List<DataColumn> columns = [
       dataColumn(context, ''),
       ...[
-        getText('name'),
-        getText('year'),
-        getText('startCapital'),
-        getText('totalIn'),
-        getText('totalOut'),
-        getText('endCapital'),
-        getText('weightedCapital'),
-        getText('money'),
-        getText('threshold'),
-        getText('founding'),
-        getText('effort'),
-        getText('externProfit'),
-        getText('totalProfit'),
-        getText('newCapital'),
-        getText('zakat'),
+        'Name',
+        'Year',
+        'Start Capital',
+        'Total Entrie',
+        'Total Sortie',
+        'Capital 31-12',
+        'Weighted Capital',
+        'Money',
+        'Threshold',
+        'Founding',
+        'Effort',
+        'Extern Profit',
+        'Total Profit',
+        'Capital 01-01',
+        'Zakat',
       ]
           .map((e) => sortableDataColumn(
                 context,
@@ -307,25 +306,25 @@ class _UsersHistoryState extends State<UsersHistory> {
               children: [
                 Column(
                   children: [
-                    totalItem(context, getText('startCapital'), myCurrency(tStartCapital)),
-                    totalItem(context, getText('endCapital'), myCurrency(tEndCapital)),
-                    totalItem(context, getText('newCapital'), myCurrency(tNewCapital)),
+                    totalItem(context, 'Start Capital', myCurrency(tStartCapital)),
+                    totalItem(context, 'Capital 31-12', myCurrency(tEndCapital)),
+                    totalItem(context, 'Capital 01-01', myCurrency(tNewCapital)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .08), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('money'), myCurrency(tMoney)),
-                    totalItem(context, getText('zakat'), myCurrency(tZakat)),
-                    totalItem(context, getText('totalProfit'), myCurrency(tTotalProfit)),
+                    totalItem(context, 'Money', myCurrency(tMoney)),
+                    totalItem(context, 'Zakat', myCurrency(tZakat)),
+                    totalItem(context, 'Total Profit', myCurrency(tTotalProfit)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .08), child: const VerticalDivider(width: 50)),
                 Column(
                   children: [
-                    totalItem(context, getText('effort'), myCurrency(tEffort)),
-                    totalItem(context, getText('threshold'), myCurrency(tThreshold)),
-                    totalItem(context, getText('founding'), myCurrency(tFounding)),
+                    totalItem(context, 'Effort', myCurrency(tEffort)),
+                    totalItem(context, 'Threshold', myCurrency(tThreshold)),
+                    totalItem(context, 'Founding', myCurrency(tFounding)),
                   ],
                 ),
               ],
@@ -347,12 +346,9 @@ class _UsersHistoryState extends State<UsersHistory> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  getText('name'),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text('Name', style: TextStyle(fontSize: 14)),
               ),
               Autocomplete<String>(
                 onSelected: (item) => setState(() => _search = item),
@@ -384,7 +380,7 @@ class _UsersHistoryState extends State<UsersHistory> {
                         }
                       }),
                       decoration: textInputDecoration(
-                        hint: getText('search'),
+                        hint: 'Search...',
                         borderColor: _search.isEmpty ? Colors.grey : primaryColor,
                         prefixIcon: const Icon(Icons.search, size: 20.0),
                         suffixIcon: _controller.text.isEmpty
@@ -442,20 +438,20 @@ class _UsersHistoryState extends State<UsersHistory> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
                 child: Text(
-                  getText('year'),
-                  style: const TextStyle(fontSize: 14),
+                  'Year',
+                  style: TextStyle(fontSize: 14),
                 ),
               ),
               myDropDown(
                 context,
                 value: _year,
                 color: _year == 'tout' ? Colors.grey : primaryColor,
-                items: [constans['tout'] ?? '', ...years].map((item) {
+                items: ['Tout', ...years].map((item) {
                   return DropdownMenuItem(
-                    value: item == constans['tout'] ? 'tout' : item,
+                    value: item == 'Tout' ? 'tout' : item,
                     alignment: AlignmentDirectional.center,
                     child: Text(item),
                   );
@@ -469,24 +465,25 @@ class _UsersHistoryState extends State<UsersHistory> {
           mySizedBox(context),
           IconButton(
               onPressed: () => createExcel(
-                    getText('userHistory'),
+                    'User History',
                     [
                       [
                         '#',
-                        getText('name'),
-                        getText('type'),
-                        getText('year'),
-                        getText('startCapital'),
-                        getText('totalIn'),
-                        getText('totalOut'),
-                        getText('moneyProfit'),
-                        getText('effortProfit'),
-                        getText('thresholdProfit'),
-                        getText('foundingProfit'),
-                        getText('externProfit'),
-                        getText('totalProfit'),
-                        getText('newCapital'),
-                        getText('zakat'),
+                        'Name',
+                        'Year',
+                        'Start Capital',
+                        'Total Entrie',
+                        'Total Sortie',
+                        'Capital 31-12',
+                        'Weighted Capital',
+                        'Money',
+                        'Threshold',
+                        'Founding',
+                        'Effort',
+                        'Extern Profit',
+                        'Total Profit',
+                        'Capital 01-01',
+                        'Zakat',
                       ],
                       ...usersHistory.map((user) => [
                             usersHistory.indexOf(user) + 1,
@@ -498,9 +495,9 @@ class _UsersHistoryState extends State<UsersHistory> {
                             user.endCapital,
                             user.weightedCapital,
                             user.moneyProfit,
-                            user.effortProfit,
                             user.thresholdProfit,
                             user.foundingProfit,
+                            user.effortProfit,
                             user.externProfit,
                             user.totalProfit,
                             user.newCapital,
@@ -542,19 +539,19 @@ class _UsersHistoryState extends State<UsersHistory> {
       build: [
         pw.Table.fromTextArray(
           headers: [
-            getText('name'),
-            getText('year'),
-            getText('startCapital'),
-            getText('totalIn'),
-            getText('totalOut'),
-            getText('endCapital'),
-            getText('money'),
-            getText('threshold'),
-            getText('founding'),
-            getText('effort'),
-            getText('externProfit'),
-            getText('newCapital'),
-            getText('zakat'),
+            'Name',
+            'Year',
+            'Start Capital',
+            'Total Entrie',
+            'Total Sortie',
+            'Capital 31-12',
+            'Money',
+            'Threshold',
+            'Founding',
+            'Effort',
+            'Extern Profit',
+            'Capital 01-01',
+            'Zakat',
           ],
           data: usersHistory
               .map((userHistory) => [

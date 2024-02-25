@@ -337,8 +337,8 @@ class _PassageState extends State<Passage> {
           if (user.founding != 0) userInfoItem('أرباح التأسيس', myCurrency(user.founding)),
           if (user.effort + user.effortExtern != 0)
             userInfoItem('أرباح الجهد', myCurrency(user.effort + user.effortExtern)),
+          userInfoItem('رأس المال الجديد (دون حذف الزكاة)', myCurrency(user.newCapital)),
           if (user.zakat != 0) userInfoItem('الزكاة', myCurrency(user.zakat)),
-          userInfoItem('رأس المال الجديد', myCurrency(user.newCapital)),
         ]),
       ),
       pdfSizedBox(context),

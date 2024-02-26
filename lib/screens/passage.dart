@@ -131,7 +131,9 @@ class _PassageState extends State<Passage> {
     //calculate zakat for each user
     materialsValuePerc = materialsValue / totalCapital;
     for (var user in users) {
-      double _userCapitalForZakat = user.newCapital - (user.newCapital * materialsValuePerc);
+      double _userZakatCapital = user.newCapital + user.moneyExtern + user.effortExtern;
+      double _userCapitalForZakat = _userZakatCapital - (_userZakatCapital * materialsValuePerc);
+      // double _userCapitalForZakat = user.newCapital - (user.newCapital * materialsValuePerc);
       if (_userCapitalForZakat >= zakatQuorum) {
         user.zakat = _userCapitalForZakat * 0.026;
         totalZakat += user.zakat;

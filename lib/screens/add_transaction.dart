@@ -361,7 +361,7 @@ class _AddTransactionState extends State<AddTransaction> {
           if (selectedName.isNotEmpty && (users.isEmpty || nameWrite)) {
             double _soldeUser = selectedUser.capital + _amount;
 
-            if (_soldeUser < 0 && !isNewYear) {
+            if (_soldeUser < 0) {
               _testsChecked = false;
               snackBar(context, 'Capital must be >= 0');
             } else {

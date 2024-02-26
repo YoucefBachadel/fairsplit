@@ -34,8 +34,6 @@ class _PassageState extends State<Passage> {
   bool isLoading = true, isCalculating = false, isCalculated = false;
   String printIntro = '', printConclusion = '';
   PdfPageFormat pageFormat = PdfPageFormat.a5;
-  final TextEditingController _introController = TextEditingController();
-  final TextEditingController _conclusionController = TextEditingController();
 
   void loadData() async {
     var data = await sqlQuery(selectUrl, {
@@ -141,9 +139,14 @@ class _PassageState extends State<Passage> {
       }
     }
 
-    await buildPdf();
-    isCalculated = true;
-    setState(() => isCalculating = false);
+    for (var user in users) {
+      pdf.addPage(page(user));
+    }
+
+    setState(() {
+      isCalculated = true;
+      isCalculating = false;
+    });
   }
 
   void passage() async {
@@ -280,16 +283,6 @@ class _PassageState extends State<Passage> {
     await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'da')));
     snackBar(context, 'Passage done successfully');
-  }
-
-  Future buildPdf() async {
-    pdf = pw.Document();
-    for (var user in users) {
-      pdf.addPage(page(user));
-    }
-    printIntro = _introController.text;
-    printConclusion = _conclusionController.text;
-    setState(() {});
   }
 
   pw.Widget userInfoItem(String titel, String data) {
@@ -493,25 +486,7 @@ class _PassageState extends State<Passage> {
                           ],
                         ),
                         const Divider(),
-                        if (bottemNavigationSelectedInex == 0) Expanded(child: zakatUsersSelector()),
-                        if (bottemNavigationSelectedInex == 1) Expanded(child: printDetails()),
-                        const Divider(),
-                        BottomNavigationBar(
-                          type: BottomNavigationBarType.fixed,
-                          items: const <BottomNavigationBarItem>[
-                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Zakat'),
-                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Print'),
-                          ],
-                          selectedFontSize: 26,
-                          unselectedFontSize: 18,
-                          currentIndex: bottemNavigationSelectedInex,
-                          onTap: (index) => setState(() => bottemNavigationSelectedInex = index),
-                          selectedIconTheme: const IconThemeData(opacity: 0.0, size: 0),
-                          unselectedIconTheme: const IconThemeData(opacity: 0.0, size: 0),
-                          selectedItemColor: primaryColor,
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                        ),
+                        Expanded(child: isCalculated ? zakatUsersSelector() : printDetails()),
                       ],
                     ),
                   ),
@@ -676,19 +651,18 @@ class _PassageState extends State<Passage> {
                     ],
                   ),
                 ),
-                FloatingActionButton(onPressed: () => buildPdf(), mini: true, child: const Icon(Icons.refresh)),
               ],
             ),
             mySizedBox(context),
             myText('Introduction'),
             mySizedBox(context),
             TextFormField(
-              controller: _introController,
               style: const TextStyle(fontSize: 16),
               textAlign: TextAlign.start,
-              minLines: 12,
-              maxLines: 12,
+              minLines: 14,
+              maxLines: 14,
               textDirection: TextDirection.rtl,
+              onChanged: (value) => printIntro = value,
               decoration: const InputDecoration(
                 hintTextDirection: TextDirection.rtl,
                 contentPadding: EdgeInsets.all(12),
@@ -703,12 +677,12 @@ class _PassageState extends State<Passage> {
             myText('Conclusion'),
             mySizedBox(context),
             TextFormField(
-              controller: _conclusionController,
               style: const TextStyle(fontSize: 16),
               textAlign: TextAlign.start,
-              minLines: 12,
-              maxLines: 12,
+              minLines: 14,
+              maxLines: 14,
               textDirection: TextDirection.rtl,
+              onChanged: (value) => printConclusion = value,
               decoration: const InputDecoration(
                 hintTextDirection: TextDirection.rtl,
                 contentPadding: EdgeInsets.all(12),

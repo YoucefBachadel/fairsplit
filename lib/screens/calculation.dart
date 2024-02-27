@@ -476,129 +476,114 @@ class _CalculationState extends State<Calculation> {
                 )),
           ),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(20.0),
-                  bottomLeft: Radius.circular(20.0),
-                ),
-              ),
-              child: isloading
-                  ? myProgress()
-                  : Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    myTextField(
-                                      context,
-                                      controller: controller,
-                                      hint: myCurrency(unitProfitHint),
-                                      width: getWidth(context, .18),
-                                      onChanged: ((text) => _unitProfitValue = text),
-                                      autoFocus: true,
-                                      onSubmited: ((text) {
-                                        if (!iscalculated) {
-                                          try {
-                                            unitProfitValue = double.parse(_unitProfitValue);
+            child: isloading
+                ? myProgress()
+                : Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  myTextField(
+                                    context,
+                                    controller: controller,
+                                    hint: myCurrency(unitProfitHint),
+                                    width: getWidth(context, .18),
+                                    onChanged: ((text) => _unitProfitValue = text),
+                                    autoFocus: true,
+                                    onSubmited: ((text) {
+                                      if (!iscalculated) {
+                                        try {
+                                          unitProfitValue = double.parse(_unitProfitValue);
 
-                                            if (!isIntern &&
-                                                (unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty ||
-                                                    globalEffortUsers
-                                                        .where((user) => user.evaluation == 0)
-                                                        .isNotEmpty)) {
-                                              snackBar(context, 'add effort users evaluations');
-                                              setState(() => bottemNavigationSelectedInex =
-                                                  unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty
-                                                      ? 4
-                                                      : 5);
-                                            } else {
-                                              calculate();
-                                            }
-                                          } catch (e) {
-                                            snackBar(context, 'numbers only !!!');
+                                          if (!isIntern &&
+                                              (unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty ||
+                                                  globalEffortUsers.where((user) => user.evaluation == 0).isNotEmpty)) {
+                                            snackBar(context, 'add effort users evaluations');
+                                            setState(() => bottemNavigationSelectedInex =
+                                                unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty
+                                                    ? 4
+                                                    : 5);
+                                          } else {
+                                            calculate();
                                           }
+                                        } catch (e) {
+                                          snackBar(context, 'numbers only !!!');
                                         }
-                                      }),
-                                      enabled: !iscalculated,
-                                    ),
-                                    if (!iscalculated)
-                                      IconButton(
-                                        icon: Icon(Icons.play_arrow, color: secondaryColor),
-                                        hoverColor: Colors.transparent,
-                                        onPressed: () {
-                                          try {
-                                            unitProfitValue = double.parse(_unitProfitValue);
-
-                                            if (!isIntern &&
-                                                (unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty ||
-                                                    globalEffortUsers
-                                                        .where((user) => user.evaluation == 0)
-                                                        .isNotEmpty)) {
-                                              snackBar(context, 'add effort users evaluations');
-                                              setState(() => bottemNavigationSelectedInex =
-                                                  unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty
-                                                      ? 4
-                                                      : 5);
-                                            } else {
-                                              calculate();
-                                            }
-                                          } catch (e) {
-                                            snackBar(context, 'number only !!!');
-                                          }
-                                        },
-                                      )
-                                  ],
-                                ),
-                              ),
-                              !iscalculated
-                                  ? const SizedBox()
-                                  : myButton(context, width: getWidth(context, .07), onTap: () {
-                                      setState(() => isloading = true);
-                                      save();
+                                      }
                                     }),
-                            ],
-                          ),
-                        ),
-                        const Divider(),
-                        if (bottemNavigationSelectedInex == 0) Expanded(child: information()),
-                        if (bottemNavigationSelectedInex == 1) Expanded(child: money()),
-                        if (bottemNavigationSelectedInex == 2) Expanded(child: threshold()),
-                        if (bottemNavigationSelectedInex == 3) Expanded(child: founding()),
-                        if (bottemNavigationSelectedInex == 4) Expanded(child: effort()),
-                        if (bottemNavigationSelectedInex == 5) Expanded(child: global()),
-                        const Divider(),
-                        BottomNavigationBar(
-                          type: BottomNavigationBarType.fixed,
-                          items: const <BottomNavigationBarItem>[
-                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Information'),
-                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Money'),
-                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Threshold'),
-                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Founding'),
-                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Effort Unit'),
-                            BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Effort Global'),
+                                    enabled: !iscalculated,
+                                  ),
+                                  if (!iscalculated)
+                                    IconButton(
+                                      icon: Icon(Icons.play_arrow, color: secondaryColor),
+                                      hoverColor: Colors.transparent,
+                                      onPressed: () {
+                                        try {
+                                          unitProfitValue = double.parse(_unitProfitValue);
+
+                                          if (!isIntern &&
+                                              (unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty ||
+                                                  globalEffortUsers.where((user) => user.evaluation == 0).isNotEmpty)) {
+                                            snackBar(context, 'add effort users evaluations');
+                                            setState(() => bottemNavigationSelectedInex =
+                                                unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty
+                                                    ? 4
+                                                    : 5);
+                                          } else {
+                                            calculate();
+                                          }
+                                        } catch (e) {
+                                          snackBar(context, 'number only !!!');
+                                        }
+                                      },
+                                    )
+                                ],
+                              ),
+                            ),
+                            if (iscalculated)
+                              myButton(context, width: getWidth(context, .07), onTap: () {
+                                setState(() => isloading = true);
+                                save();
+                              }),
                           ],
-                          selectedFontSize: 26,
-                          unselectedFontSize: 18,
-                          currentIndex: bottemNavigationSelectedInex,
-                          onTap: (index) => setState(() => bottemNavigationSelectedInex = index),
-                          selectedIconTheme: const IconThemeData(opacity: 0.0, size: 0),
-                          unselectedIconTheme: const IconThemeData(opacity: 0.0, size: 0),
-                          selectedItemColor: primaryColor,
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
                         ),
-                        mySizedBox(context),
-                      ],
-                    ),
-            ),
+                      ),
+                      const Divider(),
+                      if (bottemNavigationSelectedInex == 0) Expanded(child: information()),
+                      if (bottemNavigationSelectedInex == 1) Expanded(child: money()),
+                      if (bottemNavigationSelectedInex == 2) Expanded(child: threshold()),
+                      if (bottemNavigationSelectedInex == 3) Expanded(child: founding()),
+                      if (bottemNavigationSelectedInex == 4) Expanded(child: effort()),
+                      if (bottemNavigationSelectedInex == 5) Expanded(child: global()),
+                      const Divider(),
+                      BottomNavigationBar(
+                        type: BottomNavigationBarType.fixed,
+                        items: const <BottomNavigationBarItem>[
+                          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Information'),
+                          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Money'),
+                          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Threshold'),
+                          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Founding'),
+                          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Effort Unit'),
+                          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Effort Global'),
+                        ],
+                        selectedFontSize: 26,
+                        unselectedFontSize: 18,
+                        currentIndex: bottemNavigationSelectedInex,
+                        onTap: (index) => setState(() => bottemNavigationSelectedInex = index),
+                        selectedIconTheme: const IconThemeData(opacity: 0.0, size: 0),
+                        unselectedIconTheme: const IconThemeData(opacity: 0.0, size: 0),
+                        selectedItemColor: primaryColor,
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                      ),
+                      mySizedBox(context),
+                    ],
+                  ),
           ),
         ],
       ),

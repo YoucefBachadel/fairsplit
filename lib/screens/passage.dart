@@ -31,13 +31,14 @@ class _PassageState extends State<Passage> {
   double materialsValuePerc = 0;
   int reference = 0;
   int bottemNavigationSelectedInex = 0;
-  bool isLoading = true, isCalculating = false, isCalculated = false;
+  bool isLoading = true, isCalculated = false, isPrinted = false;
   String printIntro = '', printConclusion = '';
   PdfPageFormat pageFormat = PdfPageFormat.a5;
 
   void loadData() async {
     var data = await sqlQuery(selectUrl, {
-      'sql1': '''SELECT u.*,
+      'sql1':
+          '''SELECT u.*,
                     (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'in') AS totalIn,
                     (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'out') AS totalOut 
             FROM Users u;''',
@@ -141,14 +142,7 @@ class _PassageState extends State<Passage> {
       }
     }
 
-    for (var user in users) {
-      pdf.addPage(page(user));
-    }
-
-    setState(() {
-      isCalculated = true;
-      isCalculating = false;
-    });
+    setState(() => isCalculated = true);
   }
 
   void passage() async {
@@ -332,14 +326,25 @@ class _PassageState extends State<Passage> {
           if (user.founding != 0) userInfoItem('أرباح التأسيس', myCurrency(user.founding)),
           if (user.effort + user.effortExtern != 0)
             userInfoItem('أرباح الجهد', myCurrency(user.effort + user.effortExtern)),
-          userInfoItem('رأس المال الجديد (دون حذف الزكاة)', myCurrency(user.newCapital)),
-          if (user.zakat != 0) userInfoItem('الزكاة', myCurrency(user.zakat)),
+          userInfoItem('''رأس المال الجديد${user.zakatOut || user.zakatOutToZakatCaisse ? ' (دون حذف الزكاة)' : ''}''',
+              myCurrency(user.newCapital)),
+          if (user.zakatOut || user.zakatOutToZakatCaisse) userInfoItem('الزكاة', myCurrency(user.zakat)),
         ]),
       ),
       pdfSizedBox(context),
       if (printConclusion.isNotEmpty) pdfData(printConclusion),
       pdfSizedBox(context),
     ]);
+  }
+
+  Widget printPageBuilder() {
+    pdf = pw.Document();
+
+    for (var user in users) {
+      pdf.addPage(page(user));
+    }
+
+    return SizedBox(width: getWidth(context, .392), child: pdfPreview(context, pdf, 'Passage_$currentYear'));
   }
 
   @override
@@ -386,183 +391,185 @@ class _PassageState extends State<Passage> {
         Expanded(
           child: isLoading
               ? myProgress()
-              : Row(children: [
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      children: [
-                        mySizedBox(context),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Spacer(),
-                            Column(
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                const Text('Zakat'),
-                                myTextField(
-                                  context,
-                                  controller: zakatController,
-                                  hint: myCurrency(zakatQuorum),
-                                  width: getWidth(context, .10),
-                                  isNumberOnly: true,
-                                  autoFocus: true,
-                                  onChanged: ((text) => setState(() => _zakatQuorum = text)),
-                                  enabled: !isCalculated,
+                                Column(
+                                  children: [
+                                    const Text('Zakat'),
+                                    myTextField(
+                                      context,
+                                      controller: zakatController,
+                                      hint: myCurrency(zakatQuorum),
+                                      width: getWidth(context, .10),
+                                      isNumberOnly: true,
+                                      autoFocus: true,
+                                      onChanged: ((text) => setState(() => _zakatQuorum = text)),
+                                      enabled: !isCalculated,
+                                    ),
+                                  ],
                                 ),
+                                mySizedBox(context),
+                                Column(
+                                  children: [
+                                    const Text('Materials'),
+                                    myTextField(
+                                      context,
+                                      controller: materialsController,
+                                      hint: myCurrency(materialsValue),
+                                      width: getWidth(context, .10),
+                                      isNumberOnly: true,
+                                      onChanged: ((text) => setState(() => _materialsValue = text)),
+                                      enabled: !isCalculated,
+                                    ),
+                                  ],
+                                ),
+                                if (zakatController.text.isNotEmpty && materialsController.text.isNotEmpty)
+                                  IconButton(
+                                    icon: Icon(Icons.play_arrow, color: secondaryColor),
+                                    hoverColor: Colors.transparent,
+                                    onPressed: () {
+                                      zakatQuorum = double.parse(_zakatQuorum);
+                                      materialsValue = double.parse(_materialsValue);
+                                      calculate();
+                                    },
+                                  )
                               ],
                             ),
-                            mySizedBox(context),
-                            Column(
-                              children: [
-                                const Text('Materials'),
-                                myTextField(
-                                  context,
-                                  controller: materialsController,
-                                  hint: myCurrency(materialsValue),
-                                  width: getWidth(context, .10),
-                                  isNumberOnly: true,
-                                  onChanged: ((text) => setState(() => _materialsValue = text)),
-                                  enabled: !isCalculated,
-                                ),
-                              ],
-                            ),
-                            const Spacer(),
+                          ),
+                          if (isCalculated)
                             myButton(
                               context,
-                              text: isCalculated ? 'Passage' : 'Calculate',
+                              width: getWidth(context, .07),
+                              text: 'Passage',
                               noIcon: true,
-                              width: getWidth(context, .08),
-                              enabled: isCalculated
-                                  ? true
-                                  : zakatController.text.isNotEmpty && materialsController.text.isNotEmpty,
-                              isLoading: isCalculated ? false : isCalculating,
+                              enabled: isPrinted,
                               onTap: () async {
-                                if (isCalculated) {
-                                  await createDialog(
-                                      context,
-                                      Container(
-                                        padding: const EdgeInsets.all(12.0),
-                                        decoration: BoxDecoration(
-                                          color: scaffoldColor,
-                                          border: Border.all(width: 2.0),
-                                          borderRadius: BorderRadius.circular(12.0),
-                                        ),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              'Passage Confirmation',
-                                              textAlign: TextAlign.center,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headlineMedium
-                                                  ?.copyWith(fontWeight: FontWeight.bold),
-                                            ),
-                                            SizedBox(width: getWidth(context, .16), child: const Divider()),
-                                            mySizedBox(context),
-                                            myButton(
-                                              context,
-                                              onTap: () {
-                                                setState(() => isLoading = true);
-                                                passage();
-                                                Navigator.pop(context);
-                                              },
-                                              noIcon: true,
-                                              text: 'Confirm',
-                                            )
-                                          ],
-                                        ),
+                                await createDialog(
+                                    context,
+                                    Container(
+                                      padding: const EdgeInsets.all(12.0),
+                                      decoration: BoxDecoration(
+                                        color: scaffoldColor,
+                                        border: Border.all(width: 2.0),
+                                        borderRadius: BorderRadius.circular(12.0),
                                       ),
-                                      dismissable: true);
-                                } else {
-                                  setState(() => isCalculating = true);
-                                  zakatQuorum = double.parse(_zakatQuorum);
-                                  materialsValue = double.parse(_materialsValue);
-                                  calculate();
-                                }
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Passage Confirmation',
+                                            textAlign: TextAlign.center,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headlineMedium
+                                                ?.copyWith(fontWeight: FontWeight.bold),
+                                          ),
+                                          SizedBox(width: getWidth(context, .16), child: const Divider()),
+                                          mySizedBox(context),
+                                          myButton(
+                                            context,
+                                            onTap: () {
+                                              setState(() => isLoading = true);
+                                              passage();
+                                              Navigator.pop(context);
+                                            },
+                                            noIcon: true,
+                                            text: 'Confirm',
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    dismissable: true);
                               },
                             ),
-                            const Spacer(),
+                        ],
+                      ),
+                      const Divider(),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            zakatUsersSelector(),
+                            const VerticalDivider(),
+                            Expanded(child: printDetails()),
                           ],
                         ),
-                        const Divider(),
-                        Expanded(child: isCalculated ? zakatUsersSelector() : printDetails()),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    flex: 4,
-                    child: pdf.document.pdfPageList.pages.isEmpty
-                        ? Container(color: Colors.grey, child: emptyList(textColor: Colors.white))
-                        : pdfPreview(context, pdf, 'Passage_$currentYear', closeWhenDone: false),
-                  ),
-                  SizedBox(width: getWidth(context, .01))
-                ]),
+                ),
         ),
       ]),
     );
   }
 
   Widget zakatUsersSelector() {
-    return Column(
-      children: [
-        if (zakatUsers.isNotEmpty)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return zakatUsers.isEmpty
+        ? SizedBox(width: getWidth(context, .35), child: emptyList())
+        : Column(
             children: [
-              SizedBox(
-                  width: getWidth(context, .18),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 16.0),
-                    child: myText(
-                        'Selected : ${zakatUsers.where((user) => user.zakatOut || user.zakatOutToZakatCaisse).length}'),
-                  )),
-              SizedBox(
-                width: getWidth(context, .065),
-                child: CheckboxListTile(
-                  value: zakatUsers.length == zakatUsers.where((user) => user.zakatOut).length,
-                  title: myText('All'),
-                  onChanged: (value) => setState(() {
-                    if (value == true) {
-                      for (var user in zakatUsers) {
-                        user.zakatOut = true;
-                        user.zakatOutToZakatCaisse = false;
-                      }
-                    } else if (value == false) {
-                      for (var user in zakatUsers) {
-                        user.zakatOut = false;
-                      }
-                    }
-                  }),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                      width: getWidth(context, .21),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: myText(
+                            'Selected : ${zakatUsers.where((user) => user.zakatOut || user.zakatOutToZakatCaisse).length}'),
+                      )),
+                  SizedBox(
+                    width: getWidth(context, .07),
+                    child: CheckboxListTile(
+                      value: zakatUsers.length == zakatUsers.where((user) => user.zakatOut).length,
+                      title: myText('All'),
+                      onChanged: (value) => setState(() {
+                        if (value == true) {
+                          for (var user in zakatUsers) {
+                            user.zakatOut = true;
+                            user.zakatOutToZakatCaisse = false;
+                          }
+                        } else if (value == false) {
+                          for (var user in zakatUsers) {
+                            user.zakatOut = false;
+                          }
+                        }
+                      }),
+                    ),
+                  ),
+                  SizedBox(
+                    width: getWidth(context, .07),
+                    child: CheckboxListTile(
+                      value: zakatUsers.length == zakatUsers.where((user) => user.zakatOutToZakatCaisse).length,
+                      title: myText('All'),
+                      onChanged: (value) => setState(() {
+                        if (value == true) {
+                          for (var user in zakatUsers) {
+                            user.zakatOutToZakatCaisse = true;
+                            user.zakatOut = false;
+                          }
+                        } else if (value == false) {
+                          for (var user in zakatUsers) {
+                            user.zakatOutToZakatCaisse = false;
+                          }
+                        }
+                      }),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(
-                width: getWidth(context, .065),
-                child: CheckboxListTile(
-                  value: zakatUsers.length == zakatUsers.where((user) => user.zakatOutToZakatCaisse).length,
-                  title: myText('All'),
-                  onChanged: (value) => setState(() {
-                    if (value == true) {
-                      for (var user in zakatUsers) {
-                        user.zakatOutToZakatCaisse = true;
-                        user.zakatOut = false;
-                      }
-                    } else if (value == false) {
-                      for (var user in zakatUsers) {
-                        user.zakatOutToZakatCaisse = false;
-                      }
-                    }
-                  }),
-                ),
-              ),
-            ],
-          ),
-        Expanded(
-          child: zakatUsers.isEmpty
-              ? emptyList()
-              : SingleChildScrollView(
+              Expanded(
+                child: SingleChildScrollView(
                   child: dataTable(
                     context,
                     columns: [
@@ -574,7 +581,7 @@ class _PassageState extends State<Passage> {
                         .map((e) => DataRow(cells: [
                               DataCell(Container(
                                 alignment: Alignment.centerLeft,
-                                width: getWidth(context, .18),
+                                width: getWidth(context, .2),
                                 child: Text(
                                   e.realName,
                                   overflow: TextOverflow.ellipsis,
@@ -582,7 +589,7 @@ class _PassageState extends State<Passage> {
                                 ),
                               )),
                               DataCell(Container(
-                                width: getWidth(context, .05),
+                                width: getWidth(context, .06),
                                 alignment: Alignment.center,
                                 child: Center(
                                   child: Checkbox(
@@ -599,7 +606,7 @@ class _PassageState extends State<Passage> {
                                 ),
                               )),
                               DataCell(Container(
-                                width: getWidth(context, .05),
+                                width: getWidth(context, .06),
                                 alignment: Alignment.center,
                                 child: Checkbox(
                                   value: e.zakatOutToZakatCaisse,
@@ -617,9 +624,9 @@ class _PassageState extends State<Passage> {
                         .toList(),
                   ),
                 ),
-        ),
-      ],
-    );
+              ),
+            ],
+          );
   }
 
   Widget printDetails() {
@@ -648,11 +655,22 @@ class _PassageState extends State<Passage> {
                         ],
                         initialLabelIndex: pageFormat == PdfPageFormat.a5 ? 0 : 1,
                         labels: const ['A5', 'A4'],
-                        onToggle: (index) => pageFormat = index == 0 ? PdfPageFormat.a5 : PdfPageFormat.a4,
+                        onToggle: (index) {
+                          pageFormat = index == 0 ? PdfPageFormat.a5 : PdfPageFormat.a4;
+                          setState(() => isPrinted = false);
+                        },
                       ),
                     ],
                   ),
                 ),
+                if (isCalculated)
+                  FloatingActionButton(
+                      mini: true,
+                      child: const Icon(Icons.print),
+                      onPressed: () async {
+                        setState(() => isPrinted = true);
+                        await createDialog(context, printPageBuilder(), dismissable: true);
+                      })
               ],
             ),
             mySizedBox(context),
@@ -664,7 +682,10 @@ class _PassageState extends State<Passage> {
               minLines: 14,
               maxLines: 14,
               textDirection: TextDirection.rtl,
-              onChanged: (value) => printIntro = value,
+              onChanged: (value) {
+                printIntro = value;
+                setState(() => isPrinted = false);
+              },
               decoration: const InputDecoration(
                 hintTextDirection: TextDirection.rtl,
                 contentPadding: EdgeInsets.all(12),
@@ -684,7 +705,10 @@ class _PassageState extends State<Passage> {
               minLines: 14,
               maxLines: 14,
               textDirection: TextDirection.rtl,
-              onChanged: (value) => printConclusion = value,
+              onChanged: (value) {
+                printConclusion = value;
+                setState(() => isPrinted = false);
+              },
               decoration: const InputDecoration(
                 hintTextDirection: TextDirection.rtl,
                 contentPadding: EdgeInsets.all(12),

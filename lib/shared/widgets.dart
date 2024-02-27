@@ -317,7 +317,7 @@ Widget totalItem(BuildContext context, String title, String value, {bool isExpan
   );
 }
 
-Widget pdfPreview(BuildContext context, pw.Document pdf, String name, {bool closeWhenDone = true}) {
+Widget pdfPreview(BuildContext context, pw.Document pdf, String name) {
   return Stack(
     children: [
       PdfPreview(
@@ -333,7 +333,7 @@ Widget pdfPreview(BuildContext context, pw.Document pdf, String name, {bool clos
         right: 16,
         child: FloatingActionButton(
           mini: true,
-          onPressed: () => printPdf(context, pdf.save(), closeWhenDone),
+          onPressed: () => printPdf(context, pdf.save()),
           child: const Icon(Icons.print),
         ),
       ),
@@ -353,7 +353,7 @@ Widget pdfPreview(BuildContext context, pw.Document pdf, String name, {bool clos
 
             if (fileName != null) {
               final File file = File('$fileName.pdf');
-              await file.writeAsBytes(await pdf.save()).then((value) => closeWhenDone ? Navigator.pop(context) : null);
+              await file.writeAsBytes(await pdf.save());
             }
           },
           child: const Icon(Icons.download),

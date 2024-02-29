@@ -425,7 +425,7 @@ class _CalculationState extends State<Calculation> {
         '''INSERT INTO unithistory(name, year, month, capital, profit, profitability, unitProfitability, reserve, donation, money, effort, threshold, founding) VALUES ('${widget.unit.name}',$currentYear,${!isIntern ? 0 : widget.unit.currentMonthOrYear},${widget.unit.capital},$unitProfitValue,$profitability,${caMoney / widget.unit.capital},$caReserve,$caDonation,$caMoney,$caEffort,$caThreshold,$caFounding);''');
 
     sqls.add(isIntern
-        ? 'UPDATE settings SET profitability = profitability + $profitability , reserveYear = reserveYear + $caReserve , reserveProfit = reserveProfit + $caReserveProfit , donationProfit = donationProfit + $caDonation , reference = $reference;'
+        ? 'UPDATE settings SET profitability = profitability + $profitability , reserveYear = reserveYear + $caReserve , reserveProfitIntern = reserveProfitIntern + $caReserveProfit , donationProfitIntern = donationProfitIntern + $caDonation ;'
         : 'UPDATE settings SET profitability = profitability + $profitability , reserve = reserve + $caReserve , reserveProfit = reserveProfit + $caReserveProfit , donationProfit = donationProfit + $caDonation , reference = $reference;');
 
     await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});

@@ -1,3 +1,4 @@
+import 'package:fairsplit/main.dart';
 import 'package:fairsplit/screens/calculation.dart';
 import 'package:flutter/material.dart';
 
@@ -27,7 +28,7 @@ class _UnitsState extends State<Units> {
   int internCount = 0, externCount = 0;
 
   int? _sortColumnIndex = 0;
-  bool _isAscending = true;
+  bool _isAscending = true, isResetting = false;
   final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
   void _newUnit(BuildContext context, Unit unit) async => await createDialog(context, AddUnit(unit: unit));
@@ -95,6 +96,26 @@ class _UnitsState extends State<Units> {
     }
   }
 
+  void resetInterUnits() async {
+    var res = await sqlQuery(selectUrl,
+        {'sql1': '''SELECT SUM(profitability) AS totalInternProfitability FROM units WHERE type = 'intern';'''});
+
+    var data = res[0][0];
+    double totalInternProfitability = double.parse(data['totalInternProfitability']);
+
+    List<String> sqls = [];
+
+    sqls.add('''UPDATE units SET profit=0,profitability=0,currentMonthOrYear=1 WHERE type = 'intern';''');
+    sqls.add('UPDATE users SET money=0,threshold=0,founding=0,effort=0;');
+    sqls.add('''DELETE FROM unithistory WHERE year = $currentYear AND month != 0;''');
+    sqls.add(
+        'UPDATE settings SET profitability= profitability - $totalInternProfitability,reserveProfitIntern=0,donationProfitIntern=0;');
+
+    await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
+    snackBar(context, 'Reset Intern Units Done successfully');
+  }
+
   @override
   void initState() {
     loadUnits();
@@ -124,7 +145,53 @@ class _UnitsState extends State<Units> {
               ))
           .toList(),
       dataColumn(context, 'Month'),
-      if (isAdmin) dataColumn(context, ''),
+      if (isAdmin)
+        DataColumn(
+          label: myIconButton(
+            icon: Icons.refresh,
+            color: primaryColor,
+            onPressed: () async {
+              await createDialog(
+                context,
+                dismissable: true,
+                StatefulBuilder(
+                  builder: (context, setState) => Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: scaffoldColor,
+                      border: Border.all(width: 2.0),
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Reset Intern Units',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: getWidth(context, .16), child: const Divider()),
+                        mySizedBox(context),
+                        myButton(
+                          context,
+                          noIcon: true,
+                          text: 'Reset',
+                          isLoading: isResetting,
+                          onTap: () {
+                            setState(() => isResetting = true);
+                            resetInterUnits();
+                          },
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
     ];
 
     List<DataRow> rows = units

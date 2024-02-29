@@ -44,7 +44,7 @@ class _PassageState extends State<Passage> {
       'sql2': 'SELECT * FROM Units;',
       'sql3': 'SELECT * FROM transactiontemp;',
       'sql4':
-          'SELECT caisse, reserve, donation, reserveYear, reserveProfit, donationProfit, zakat, reference FROM settings;',
+          'SELECT caisse, reserve, donation, reserveYear, reserveProfit, reserveProfitIntern, donationProfit, donationProfitIntern, zakat, reference FROM settings;',
     });
     var dataUsers = data[0];
     var dataUnits = data[1];
@@ -54,9 +54,9 @@ class _PassageState extends State<Passage> {
     caisse = double.parse(dataSettings['caisse']);
     reserve = double.parse(dataSettings['reserve']);
     reserveYear = double.parse(dataSettings['reserveYear']);
-    reserveProfit = double.parse(dataSettings['reserveProfit']);
+    reserveProfit = double.parse(dataSettings['reserveProfit']) + double.parse(dataSettings['reserveProfitIntern']);
     donation = double.parse(dataSettings['donation']);
-    donationProfit = double.parse(dataSettings['donationProfit']);
+    donationProfit = double.parse(dataSettings['donationProfit']) + double.parse(dataSettings['donationProfitIntern']);
     zakat = double.parse(dataSettings['zakat']);
     reference = int.parse(dataSettings['reference']);
 
@@ -132,7 +132,7 @@ class _PassageState extends State<Passage> {
     double _reserveForZakat = reserve + reserveYear + reserveProfit;
 
     //calculate zakat for each user
-    materialsValuePerc = materialsValue / (totalCapital + _reserveForZakat);
+    materialsValuePerc = materialsValue / (totalCapital + reserve);
 
     if (_reserveForZakat - (_reserveForZakat * materialsValuePerc) >= zakatQuorum) {
       reserveZakat = (_reserveForZakat - (_reserveForZakat * materialsValuePerc)) * 0.026;
@@ -281,7 +281,7 @@ class _PassageState extends State<Passage> {
 
     //update setting
     sqls.add(
-        'UPDATE settings SET caisse=$caisse ,reserve=$reserve ,reserveYear=0 ,donation=$donation ,zakat=$zakat ,profitability=0 ,donationProfit=0 ,currentYear=$currentYear ,reference=$reference');
+        'UPDATE settings SET caisse=$caisse ,reserve=$reserve ,reserveYear=0 ,donation=$donation ,zakat=$zakat ,profitability=0 ,reserveProfit=$reserveProfit ,reserveProfitIntern=0 ,donationProfit=0 ,donationProfitIntern=0 ,currentYear=$currentYear ,reference=$reference');
 
     //update unit informations
     sqls.add('UPDATE units SET profit=0,profitability=0;');

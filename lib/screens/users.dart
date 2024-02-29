@@ -47,8 +47,7 @@ class _UsersState extends State<Users> {
       'sql1': 'SELECT * FROM Threshold;',
       'sql2': 'SELECT * FROM Founding;',
       'sql3': 'SELECT * FROM Effort;',
-      'sql4':
-          '''SELECT u.*,
+      'sql4': '''SELECT u.*,
                     (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'in' AND Year(date) = $currentYear) AS totalIn,
                     (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'out' AND Year(date) = $currentYear) AS totalOut 
             FROM Users u;''',
@@ -128,8 +127,8 @@ class _UsersState extends State<Users> {
 
         tcapital += user.capital;
         tinitialCapital += user.initialCapital;
-        tmoney += user.money;
-        teffort += user.effort;
+        tmoney += user.money + user.moneyExtern;
+        teffort += user.effort + user.effortExtern;
         tthreshold += user.threshold;
         tfounding += user.founding;
       }

@@ -185,7 +185,7 @@ class _AddUserState extends State<AddUser> {
             child: Row(
               children: [
                 if (widget.user.userId != -1 && widget.user.capital == 0)
-                  IconButton(
+                  myIconButton(
                       onPressed: () => createDialog(
                             context,
                             deleteConfirmation(
@@ -194,10 +194,7 @@ class _AddUserState extends State<AddUser> {
                               () => deleteUser(widget.user.userId),
                             ),
                           ),
-                      icon: const Icon(
-                        Icons.delete_forever,
-                        color: Colors.white,
-                      )),
+                      icon: Icons.delete_forever),
                 Expanded(
                   child: Text(
                     widget.user.userId == -1 ? 'User' : name,
@@ -208,12 +205,7 @@ class _AddUserState extends State<AddUser> {
                     ),
                   ),
                 ),
-                IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                    ))
+                myIconButton(onPressed: () => Navigator.pop(context), icon: Icons.close)
               ],
             ),
             decoration: BoxDecoration(
@@ -338,11 +330,9 @@ class _AddUserState extends State<AddUser> {
                       ),
                       child: myText(myDateFormate.format(joinDate))),
                   mySizedBox(context),
-                  IconButton(
-                    icon: Icon(
-                      Icons.calendar_month,
-                      color: primaryColor,
-                    ),
+                  myIconButton(
+                    icon: Icons.calendar_month,
+                    color: primaryColor,
                     onPressed: () async {
                       final DateTime? selected = await showDatePicker(
                         context: context,
@@ -407,7 +397,7 @@ class _AddUserState extends State<AddUser> {
                   ),
                 ),
                 if (thresholds.length != allUnits.where((element) => element.type == 'intern').length)
-                  IconButton(
+                  myIconButton(
                     onPressed: () {
                       final _allIds =
                           allUnits.where((element) => element.type == 'intern').map((e) => e.unitId).toSet();
@@ -421,10 +411,8 @@ class _AddUserState extends State<AddUser> {
                         ),
                       ).whenComplete(() => setState(() {}));
                     },
-                    icon: Icon(
-                      Icons.add,
-                      color: primaryColor,
-                    ),
+                    icon: Icons.add,
+                    color: primaryColor,
                   ),
               ],
             ),
@@ -456,26 +444,25 @@ class _AddUserState extends State<AddUser> {
                                   dataCell(context, myPercentage(e.thresholdPerc)),
                                   DataCell(
                                     Center(
-                                      child: IconButton(
-                                          onPressed: () {
-                                            createDialog(
+                                      child: myIconButton(
+                                        onPressed: () {
+                                          createDialog(
+                                            context,
+                                            deleteConfirmation(
                                               context,
-                                              deleteConfirmation(
-                                                context,
-                                                'Are you sure you want to delete this item',
-                                                () => setState(() {
-                                                  thresholdsHasChanged = true;
-                                                  thresholds.remove(e);
-                                                  Navigator.of(context).pop();
-                                                }),
-                                                authontication: false,
-                                              ),
-                                            );
-                                          },
-                                          icon: const Icon(
-                                            Icons.delete_forever,
-                                            color: Colors.red,
-                                          )),
+                                              'Are you sure you want to delete this item',
+                                              () => setState(() {
+                                                thresholdsHasChanged = true;
+                                                thresholds.remove(e);
+                                                Navigator.of(context).pop();
+                                              }),
+                                              authontication: false,
+                                            ),
+                                          );
+                                        },
+                                        icon: Icons.delete_forever,
+                                        color: Colors.red,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -512,7 +499,7 @@ class _AddUserState extends State<AddUser> {
                 ),
               ),
               if (foundings.length != allUnits.where((element) => element.type == 'intern').length)
-                IconButton(
+                myIconButton(
                   onPressed: () {
                     final _allIds = allUnits.where((element) => element.type == 'intern').map((e) => e.unitId).toSet();
                     final _foundingsIds = foundings.map((e) => e.unitId).toSet();
@@ -522,10 +509,8 @@ class _AddUserState extends State<AddUser> {
                       unitSelect(3, units: allUnits.where((element) => _filteredIds.contains(element.unitId)).toList()),
                     ).whenComplete(() => setState(() {}));
                   },
-                  icon: Icon(
-                    Icons.add,
-                    color: primaryColor,
-                  ),
+                  icon: Icons.add,
+                  color: primaryColor,
                 ),
             ],
           ),
@@ -557,26 +542,25 @@ class _AddUserState extends State<AddUser> {
                                   dataCell(context, myPercentage(e.foundingPerc)),
                                   DataCell(
                                     Center(
-                                      child: IconButton(
-                                          onPressed: () {
-                                            createDialog(
+                                      child: myIconButton(
+                                        onPressed: () {
+                                          createDialog(
+                                            context,
+                                            deleteConfirmation(
                                               context,
-                                              deleteConfirmation(
-                                                context,
-                                                'Are you sure you want to delete this item',
-                                                () => setState(() {
-                                                  foundingssHasChanged = true;
-                                                  foundings.remove(e);
-                                                  Navigator.of(context).pop();
-                                                }),
-                                                authontication: false,
-                                              ),
-                                            );
-                                          },
-                                          icon: const Icon(
-                                            Icons.delete_forever,
-                                            color: Colors.red,
-                                          )),
+                                              'Are you sure you want to delete this item',
+                                              () => setState(() {
+                                                foundingssHasChanged = true;
+                                                foundings.remove(e);
+                                                Navigator.of(context).pop();
+                                              }),
+                                              authontication: false,
+                                            ),
+                                          );
+                                        },
+                                        icon: Icons.delete_forever,
+                                        color: Colors.red,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -613,7 +597,7 @@ class _AddUserState extends State<AddUser> {
               ),
               efforts.isNotEmpty && isEffortGlobal || efforts.length == allUnits.length
                   ? const SizedBox()
-                  : IconButton(
+                  : myIconButton(
                       onPressed: () {
                         final _allIds = allUnits.map((e) => e.unitId).toSet();
                         final _effortsIds = efforts.map((e) => e.unitId).toSet();
@@ -632,10 +616,8 @@ class _AddUserState extends State<AddUser> {
                               }
                             }));
                       },
-                      icon: Icon(
-                        Icons.add,
-                        color: primaryColor,
-                      ),
+                      icon: Icons.add,
+                      color: primaryColor,
                     ),
             ],
           ),
@@ -678,26 +660,25 @@ class _AddUserState extends State<AddUser> {
                                     dataCell(context, myPercentage(e.effortPerc)),
                                     DataCell(
                                       Center(
-                                        child: IconButton(
-                                            onPressed: () {
-                                              createDialog(
+                                        child: myIconButton(
+                                          onPressed: () {
+                                            createDialog(
+                                              context,
+                                              deleteConfirmation(
                                                 context,
-                                                deleteConfirmation(
-                                                  context,
-                                                  'Are you sure you want to delete this item',
-                                                  () => setState(() {
-                                                    effortssHasChanged = true;
-                                                    efforts.remove(e);
-                                                    Navigator.of(context).pop();
-                                                  }),
-                                                  authontication: false,
-                                                ),
-                                              );
-                                            },
-                                            icon: const Icon(
-                                              Icons.delete_forever,
-                                              color: Colors.red,
-                                            )),
+                                                'Are you sure you want to delete this item',
+                                                () => setState(() {
+                                                  effortssHasChanged = true;
+                                                  efforts.remove(e);
+                                                  Navigator.of(context).pop();
+                                                }),
+                                                authontication: false,
+                                              ),
+                                            );
+                                          },
+                                          icon: Icons.delete_forever,
+                                          color: Colors.red,
+                                        ),
                                       ),
                                     ),
                                   ],

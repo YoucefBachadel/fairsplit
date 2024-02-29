@@ -3,10 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:printing/printing.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart';
 import 'package:universal_html/html.dart' show AnchorElement;
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -162,11 +159,4 @@ String getIntToWord(int number) {
   }
 
   return 'Number out of range';
-}
-
-void printPdf(BuildContext context, Future<Uint8List> pdf) async {
-  await Printing.layoutPdf(
-    usePrinterSettings: true,
-    onLayout: (PdfPageFormat format) async => pdf,
-  );
 }

@@ -35,12 +35,7 @@ class SelectTransactionCategoty extends StatelessWidget {
                     ),
                   ),
                 ),
-                IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                    ))
+                myIconButton(onPressed: () => Navigator.pop(context), icon: Icons.close)
               ],
             ),
             decoration: BoxDecoration(
@@ -132,18 +127,25 @@ class _AddTransactionState extends State<AddTransaction> {
   List<OtherUser> loanUsers = [], depositUsers = [];
   User selectedUser = User();
   OtherUser selectedOtherUser = OtherUser();
-  TextEditingController controller = TextEditingController();
+  TextEditingController amountOnLetterController = TextEditingController();
+  TextEditingController noteController = TextEditingController();
 
   String amountOnLetter = '';
   String intermediates = '';
   String printingNotes = '';
   String reciver = '';
   double soldeForPrint = 0;
-  List<String> recivers = [];
+  List<String> recivers = [], noteLabls = [];
 
-  void loadRecivers() async {
-    for (var item in (await sqlQuery(reciversUrl, {}))['data']) {
+  void loadConstants() async {
+    var data = await sqlQuery(constantsUrl, {});
+
+    for (var item in data['recivers']) {
       recivers.add(item.toString());
+    }
+
+    for (var item in data['noteLabels']) {
+      noteLabls.add(item.toString());
     }
   }
 
@@ -216,8 +218,6 @@ class _AddTransactionState extends State<AddTransaction> {
         depositUsers.sort((a, b) => a.realName.compareTo(b.realName));
       }
     }
-
-    loadRecivers();
 
     setState(() => isLoading = false);
   }
@@ -442,7 +442,7 @@ class _AddTransactionState extends State<AddTransaction> {
     if (selectedTransactionType != 4) {
       await createDialog(
         context,
-        dismissable: true,
+        dismissable: isAdmin,
         PrintTransaction(
           source: (selectedTransactionType == 0)
               ? 'special'
@@ -485,6 +485,7 @@ class _AddTransactionState extends State<AddTransaction> {
                     ? 'Deposit'
                     : 'All Users';
     loadData();
+    loadConstants();
     super.initState();
   }
 
@@ -509,12 +510,7 @@ class _AddTransactionState extends State<AddTransaction> {
                     ),
                   ),
                 ),
-                IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                    ))
+                myIconButton(onPressed: () => Navigator.pop(context), icon: Icons.close)
               ],
             ),
             decoration: BoxDecoration(
@@ -649,12 +645,14 @@ class _AddTransactionState extends State<AddTransaction> {
                             ),
                             suffixIcon: widget.sourceTab != 'tr' || textEditingController.text.isEmpty
                                 ? const SizedBox()
-                                : IconButton(
+                                : myIconButton(
                                     onPressed: () => setState(() {
-                                          textEditingController.clear();
-                                          selectedName = '';
-                                        }),
-                                    icon: const Icon(Icons.clear, size: 20.0)),
+                                      textEditingController.clear();
+                                      selectedName = '';
+                                    }),
+                                    icon: Icons.clear,
+                                    color: Colors.grey,
+                                  ),
                           ),
                         ));
                   },
@@ -750,12 +748,14 @@ class _AddTransactionState extends State<AddTransaction> {
                             ),
                             suffixIcon: widget.sourceTab != 'tr' || textEditingController.text.isEmpty
                                 ? const SizedBox()
-                                : IconButton(
+                                : myIconButton(
                                     onPressed: () => setState(() {
-                                          textEditingController.clear();
-                                          selectedName = '';
-                                        }),
-                                    icon: const Icon(Icons.clear, size: 20.0)),
+                                      textEditingController.clear();
+                                      selectedName = '';
+                                    }),
+                                    icon: Icons.clear,
+                                    color: Colors.grey,
+                                  ),
                           ),
                         ));
                   },
@@ -905,11 +905,9 @@ class _AddTransactionState extends State<AddTransaction> {
                       ),
                       child: myText(myDateFormate.format(date))),
                   mySizedBox(context),
-                  IconButton(
-                    icon: Icon(
-                      Icons.calendar_month,
-                      color: primaryColor,
-                    ),
+                  myIconButton(
+                    icon: Icons.calendar_month,
+                    color: primaryColor,
                     onPressed: () async {
                       final DateTime? selected = await showDatePicker(
                         context: context,
@@ -980,28 +978,37 @@ class _AddTransactionState extends State<AddTransaction> {
             ),
           ]),
         mySizedBox(context),
+        Row(
+          children: [
+            myText('Note'),
+            mySizedBox(context),
+            myIconButton(
+                icon: Icons.view_list_sharp,
+                onPressed: () => createDialog(context, noteLabelsSelector(), dismissable: true),
+                color: primaryColor),
+          ],
+        ),
+        mySizedBox(context),
         Container(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-            ),
-            child: TextFormField(
-              onChanged: ((value) => note = value),
-              style: const TextStyle(fontSize: 16),
-              maxLength: 350,
-              minLines: 5,
-              maxLines: 5,
-              textDirection: TextDirection.rtl,
-              decoration: const InputDecoration(
-                hintText: 'Note',
-                contentPadding: EdgeInsets.all(8),
-                border: OutlineInputBorder(
-                  gapPadding: 0,
-                  borderSide: BorderSide(width: 0.5),
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
+          child: TextFormField(
+            controller: noteController,
+            onChanged: ((value) => note = value),
+            style: const TextStyle(fontSize: 16),
+            maxLength: 350,
+            minLines: 5,
+            maxLines: 5,
+            textDirection: TextDirection.rtl,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.all(8),
+              hintTextDirection: TextDirection.rtl,
+              border: OutlineInputBorder(
+                gapPadding: 0,
+                borderSide: BorderSide(width: 0.5),
+                borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
             ),
           ),
@@ -1022,7 +1029,7 @@ class _AddTransactionState extends State<AddTransaction> {
               mySizedBox(context),
               TextFormField(
                 style: const TextStyle(fontSize: 16),
-                controller: controller,
+                controller: amountOnLetterController,
                 minLines: 1,
                 maxLines: 2,
                 textAlign: TextAlign.center,
@@ -1034,12 +1041,13 @@ class _AddTransactionState extends State<AddTransaction> {
                     borderSide: BorderSide(width: 0.5),
                     borderRadius: BorderRadius.all(Radius.circular(12)),
                   ),
-                  prefixIcon: IconButton(
+                  prefixIcon: myIconButton(
                       onPressed: () => setState(() {
                             amountOnLetter = numberToArabicWords(double.parse(amount).abs());
-                            controller.text = amountOnLetter;
+                            amountOnLetterController.text = amountOnLetter;
                           }),
-                      icon: Icon(Icons.calculate, color: primaryColor)),
+                      icon: Icons.calculate,
+                      color: primaryColor),
                 ),
                 onChanged: (value) => setState(() => amountOnLetter = value),
               ),
@@ -1139,6 +1147,27 @@ class _AddTransactionState extends State<AddTransaction> {
           onChanged: (value) => setState(() => printingNotes = value),
         ),
       ],
+    );
+  }
+
+  Widget noteLabelsSelector() {
+    return SingleChildScrollView(
+      child: Column(
+          children: noteLabls
+              .map((e) => InkWell(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: myText(e),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        note = e;
+                        noteController.text = e;
+                      });
+                      Navigator.pop(context);
+                    },
+                  ))
+              .toList()),
     );
   }
 }

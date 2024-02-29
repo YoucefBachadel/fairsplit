@@ -91,7 +91,7 @@ class _AddUnitState extends State<AddUnit> {
             child: Row(
               children: [
                 widget.unit.unitId != -1
-                    ? IconButton(
+                    ? myIconButton(
                         onPressed: () => createDialog(
                               context,
                               deleteConfirmation(
@@ -101,10 +101,7 @@ class _AddUnitState extends State<AddUnit> {
                                 isLoading: isLoading,
                               ),
                             ),
-                        icon: const Icon(
-                          Icons.delete_forever,
-                          color: Colors.white,
-                        ))
+                        icon: Icons.delete_forever)
                     : const SizedBox(),
                 Expanded(
                   child: Text(
@@ -116,12 +113,7 @@ class _AddUnitState extends State<AddUnit> {
                     ),
                   ),
                 ),
-                IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                    ))
+                myIconButton(onPressed: () => Navigator.pop(context), icon: Icons.close)
               ],
             ),
             decoration: BoxDecoration(

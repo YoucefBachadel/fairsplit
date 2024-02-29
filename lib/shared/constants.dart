@@ -19,6 +19,7 @@ Color scaffoldColor = Colors.white; // const Color(0xFFf0f2f5); //0XFF99bcc4
 
 double textFeildHeight = .045;
 double dropDownWidth = .065;
+double defaultIconSize = 18;
 
 String zero = '-';
 
@@ -31,7 +32,8 @@ String host = 'http://fairsplit.assala.com/php';
 Uri insertUrl = Uri.parse('$host/insert.php');
 Uri insertSPUrl = Uri.parse('$host/insertSP.php');
 Uri selectUrl = Uri.parse('$host/select.php');
-Uri reciversUrl = Uri.parse('$host/recivers.php');
+Uri constantsUrl = Uri.parse('$host/constants.php');
+Uri noteLabelsUrl = Uri.parse('$host/noteLabels.php');
 
 dynamic sqlQuery(Uri uri, dynamic params) async {
   var res = await http.post(uri, body: jsonEncode(params));

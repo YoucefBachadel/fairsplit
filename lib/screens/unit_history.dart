@@ -421,66 +421,64 @@ class _UnitsHistoryState extends State<UnitsHistory> {
             ],
           ),
           mySizedBox(context),
-          IconButton(
-              onPressed: () => createExcel(
-                    'Unit History',
-                    [
-                      [
-                        '#',
-                        'Name',
-                        'Type',
-                        'Year',
-                        'Month',
-                        'Capital',
-                        'Profit',
-                        'Profitability',
-                        'Unit Profitability',
-                        'Reserve',
-                        'Donation',
-                        'Money',
-                        'Effort',
-                        'Threshold',
-                        'Founding',
-                      ],
-                      ...unitsHistory.map((unitHistory) => [
-                            unitsHistory.indexOf(unitHistory) + 1,
-                            unitHistory.name,
-                            getText(unitsTypes, unitHistory.type),
-                            unitHistory.year,
-                            unitHistory.month == 0 ? '/' : monthsOfYear.elementAt(unitHistory.month - 1),
-                            unitHistory.capital,
-                            unitHistory.profit,
-                            myPercentage(unitHistory.profitability * 100),
-                            myPercentage(unitHistory.unitProfitability * 100),
-                            unitHistory.reserve,
-                            unitHistory.donation,
-                            unitHistory.money,
-                            unitHistory.effort,
-                            unitHistory.threshold,
-                            unitHistory.founding,
-                          ])
-                    ],
-                  ),
-              icon: Icon(
-                Icons.file_download,
-                color: primaryColor,
-              )),
-          IconButton(
-            icon: Icon(Icons.print, color: primaryColor),
+          myIconButton(
+            onPressed: () => createExcel(
+              'Unit History',
+              [
+                [
+                  '#',
+                  'Name',
+                  'Type',
+                  'Year',
+                  'Month',
+                  'Capital',
+                  'Profit',
+                  'Profitability',
+                  'Unit Profitability',
+                  'Reserve',
+                  'Donation',
+                  'Money',
+                  'Effort',
+                  'Threshold',
+                  'Founding',
+                ],
+                ...unitsHistory.map((unitHistory) => [
+                      unitsHistory.indexOf(unitHistory) + 1,
+                      unitHistory.name,
+                      getText(unitsTypes, unitHistory.type),
+                      unitHistory.year,
+                      unitHistory.month == 0 ? '/' : monthsOfYear.elementAt(unitHistory.month - 1),
+                      unitHistory.capital,
+                      unitHistory.profit,
+                      myPercentage(unitHistory.profitability * 100),
+                      myPercentage(unitHistory.unitProfitability * 100),
+                      unitHistory.reserve,
+                      unitHistory.donation,
+                      unitHistory.money,
+                      unitHistory.effort,
+                      unitHistory.threshold,
+                      unitHistory.founding,
+                    ])
+              ],
+            ),
+            icon: Icons.file_download,
+            color: primaryColor,
+          ),
+          myIconButton(
+            icon: Icons.print,
+            color: primaryColor,
             onPressed: () => createDialog(context, SizedBox(child: printPage())),
           ),
           if (_name != 'tout' || _year != 'tout' || _month != 'tout' || _type != 'tout')
-            IconButton(
+            myIconButton(
               onPressed: () => setState(() {
                 _name = 'tout';
                 _year = 'tout';
                 _month = 'tout';
                 _type = 'tout';
               }),
-              icon: Icon(
-                Icons.update,
-                color: primaryColor,
-              ),
+              icon: Icons.update,
+              color: primaryColor,
             ),
         ],
       ),

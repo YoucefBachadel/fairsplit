@@ -47,7 +47,8 @@ class _UsersState extends State<Users> {
       'sql1': 'SELECT * FROM Threshold;',
       'sql2': 'SELECT * FROM Founding;',
       'sql3': 'SELECT * FROM Effort;',
-      'sql4': '''SELECT u.*,
+      'sql4':
+          '''SELECT u.*,
                     (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'in' AND Year(date) = $currentYear) AS totalIn,
                     (SELECT COALESCE(SUM(amount),0)FROM transaction t WHERE t.userId =u.userId AND t.type = 'out' AND Year(date) = $currentYear) AS totalOut 
             FROM Users u;''',
@@ -366,11 +367,13 @@ class _UsersState extends State<Users> {
                   ),
                 ],
                 if (isAdmin)
-                  DataCell(IconButton(
-                    onPressed: () => _newUser(context, user),
-                    hoverColor: Colors.transparent,
-                    icon: Icon(Icons.edit, size: 22, color: primaryColor),
-                  )),
+                  DataCell(
+                    myIconButton(
+                      onPressed: () => _newUser(context, user),
+                      icon: Icons.edit,
+                      color: primaryColor,
+                    ),
+                  ),
               ],
             ))
         .toList();
@@ -512,14 +515,15 @@ class _UsersState extends State<Users> {
                         prefixIcon: const Icon(Icons.search, size: 20.0),
                         suffixIcon: _controller.text.isEmpty
                             ? null
-                            : IconButton(
+                            : myIconButton(
                                 onPressed: () {
                                   setState(() {
                                     _controller.clear();
                                     _search = '';
                                   });
                                 },
-                                icon: const Icon(Icons.clear, size: 20.0)),
+                                icon: Icons.clear,
+                                color: Colors.grey),
                       ),
                     ),
                   );
@@ -673,56 +677,56 @@ class _UsersState extends State<Users> {
             ],
           ),
           mySizedBox(context),
-          IconButton(
-              onPressed: () => createExcel(
-                    'Users',
-                    [
-                      [
-                        '#',
-                        'Name',
-                        'Phone',
-                        'Join Date',
-                        'Type',
-                        'Capital',
-                        'Weighted Capital',
-                        'Initial Capital',
-                        'Total Entrie',
-                        'Total Sortie',
-                        'Money',
-                        'Threshold',
-                        'Founding',
-                        'Effort',
-                        if (_thresholdUnitFilter != -2) 'Threshold',
-                        if (_foundingUnitFilter != -2) 'Founding',
-                        if (_effortUnitFilter != -2) ...['Effort', 'Evaluation']
-                      ],
-                      ...users.map((user) => [
-                            users.indexOf(user) + 1,
-                            user.realName,
-                            user.phone,
-                            myDateFormate.format(user.joinDate),
-                            getText(userTypes, user.type),
-                            user.capital,
-                            user.weightedCapital,
-                            user.initialCapital,
-                            user.totalIn,
-                            user.totalOut,
-                            user.money + user.moneyExtern,
-                            user.threshold,
-                            user.founding,
-                            user.effort + user.effortExtern,
-                            if (_thresholdUnitFilter != -2) user.thresholdPerc,
-                            if (_foundingUnitFilter != -2) user.foundingPerc,
-                            if (_effortUnitFilter != -2) ...[user.effortPerc, user.evaluation]
-                          ])
-                    ],
-                  ),
-              icon: Icon(
-                Icons.file_download,
-                color: primaryColor,
-              )),
-          IconButton(
-            icon: Icon(Icons.print, color: primaryColor),
+          myIconButton(
+            onPressed: () => createExcel(
+              'Users',
+              [
+                [
+                  '#',
+                  'Name',
+                  'Phone',
+                  'Join Date',
+                  'Type',
+                  'Capital',
+                  'Weighted Capital',
+                  'Initial Capital',
+                  'Total Entrie',
+                  'Total Sortie',
+                  'Money',
+                  'Threshold',
+                  'Founding',
+                  'Effort',
+                  if (_thresholdUnitFilter != -2) 'Threshold',
+                  if (_foundingUnitFilter != -2) 'Founding',
+                  if (_effortUnitFilter != -2) ...['Effort', 'Evaluation']
+                ],
+                ...users.map((user) => [
+                      users.indexOf(user) + 1,
+                      user.realName,
+                      user.phone,
+                      myDateFormate.format(user.joinDate),
+                      getText(userTypes, user.type),
+                      user.capital,
+                      user.weightedCapital,
+                      user.initialCapital,
+                      user.totalIn,
+                      user.totalOut,
+                      user.money + user.moneyExtern,
+                      user.threshold,
+                      user.founding,
+                      user.effort + user.effortExtern,
+                      if (_thresholdUnitFilter != -2) user.thresholdPerc,
+                      if (_foundingUnitFilter != -2) user.foundingPerc,
+                      if (_effortUnitFilter != -2) ...[user.effortPerc, user.evaluation]
+                    ])
+              ],
+            ),
+            icon: Icons.file_download,
+            color: primaryColor,
+          ),
+          myIconButton(
+            icon: Icons.print,
+            color: primaryColor,
             onPressed: () => createDialog(context, SizedBox(child: printPage())),
           ),
           if (_controller.text.isNotEmpty ||
@@ -730,7 +734,7 @@ class _UsersState extends State<Users> {
               _thresholdUnitFilter != -2 ||
               _foundingUnitFilter != -2 ||
               _effortUnitFilter != -2)
-            IconButton(
+            myIconButton(
               onPressed: () => setState(() {
                 _search = '';
                 _controller.clear();
@@ -740,10 +744,8 @@ class _UsersState extends State<Users> {
                 _effortUnitFilter = -2;
                 if (_sortColumnIndex! > 8) _sortColumnIndex = 1;
               }),
-              icon: Icon(
-                Icons.update,
-                color: primaryColor,
-              ),
+              icon: Icons.update,
+              color: primaryColor,
             ),
         ],
       ),

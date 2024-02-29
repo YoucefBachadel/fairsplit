@@ -40,7 +40,7 @@ class PrintTransaction extends StatelessWidget {
 
     return SizedBox(
       width: getWidth(context, .392),
-      child: pdfPreview(context, pdf, reference),
+      child: pdfPreview(context, pdf, reference, closeWhenDone: true),
     );
   }
 

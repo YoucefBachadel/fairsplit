@@ -220,6 +220,7 @@ class _CalculationState extends State<Calculation> {
         }
       }
       //set initial capital of user
+      if (user.capital.abs() < 0.001) user.capital = 0;
       user.initialCapital = user.capital;
     }
 
@@ -460,12 +461,10 @@ class _CalculationState extends State<Calculation> {
                     ),
                   ),
                 ),
-                IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                    ))
+                myIconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icons.close,
+                )
               ],
             ),
             decoration: BoxDecoration(
@@ -519,9 +518,9 @@ class _CalculationState extends State<Calculation> {
                                     enabled: !iscalculated,
                                   ),
                                   if (!iscalculated)
-                                    IconButton(
-                                      icon: Icon(Icons.play_arrow, color: secondaryColor),
-                                      hoverColor: Colors.transparent,
+                                    myIconButton(
+                                      icon: Icons.play_arrow,
+                                      color: secondaryColor,
                                       onPressed: () {
                                         try {
                                           unitProfitValue = double.parse(_unitProfitValue);
@@ -703,25 +702,24 @@ class _CalculationState extends State<Calculation> {
                     myText('Money  :  ${myCurrency(caMoney)} '),
                     mySizedBox(context),
                     if (caMoney != 0)
-                      IconButton(
-                          onPressed: () => createExcel(
-                                '${widget.unit.name} --- ${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : '${monthsOfYear[widget.unit.currentMonthOrYear - 1]} $currentYear'}',
-                                [
-                                  ['#', 'Name', 'Initial Capital', 'Capital', 'Weighted Capital', 'Profit'],
-                                  ...moneyUsers.map((user) => [
-                                        moneyUsers.indexOf(user) + 1,
-                                        user.name,
-                                        user.initialCapital,
-                                        user.capital,
-                                        profitability == 0 ? 0 : user.money / profitability,
-                                        user.money,
-                                      ])
-                                ],
-                              ),
-                          icon: Icon(
-                            Icons.file_download,
-                            color: primaryColor,
-                          )),
+                      myIconButton(
+                        onPressed: () => createExcel(
+                          '${widget.unit.name} --- ${widget.unit.type == 'extern' ? widget.unit.currentMonthOrYear : '${monthsOfYear[widget.unit.currentMonthOrYear - 1]} $currentYear'}',
+                          [
+                            ['#', 'Name', 'Initial Capital', 'Capital', 'Weighted Capital', 'Profit'],
+                            ...moneyUsers.map((user) => [
+                                  moneyUsers.indexOf(user) + 1,
+                                  user.name,
+                                  user.initialCapital,
+                                  user.capital,
+                                  profitability == 0 ? 0 : user.money / profitability,
+                                  user.money,
+                                ])
+                          ],
+                        ),
+                        icon: Icons.file_download,
+                        color: primaryColor,
+                      ),
                   ],
                 ),
                 mySizedBox(context),

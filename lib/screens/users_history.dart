@@ -385,14 +385,15 @@ class _UsersHistoryState extends State<UsersHistory> {
                         prefixIcon: const Icon(Icons.search, size: 20.0),
                         suffixIcon: _controller.text.isEmpty
                             ? null
-                            : IconButton(
+                            : myIconButton(
                                 onPressed: () {
                                   setState(() {
                                     _controller.clear();
                                     _search = '';
                                   });
                                 },
-                                icon: const Icon(Icons.clear, size: 20.0)),
+                                icon: Icons.clear,
+                                color: Colors.grey),
                       ),
                     ),
                   );
@@ -463,67 +464,65 @@ class _UsersHistoryState extends State<UsersHistory> {
             ],
           ),
           mySizedBox(context),
-          IconButton(
-              onPressed: () => createExcel(
-                    'User History',
-                    [
-                      [
-                        '#',
-                        'Name',
-                        'Year',
-                        'Start Capital',
-                        'Total Entrie',
-                        'Total Sortie',
-                        'Capital 31-12',
-                        'Weighted Capital',
-                        'Money',
-                        'Threshold',
-                        'Founding',
-                        'Effort',
-                        'Extern Profit',
-                        'Total Profit',
-                        'Capital 01-01',
-                        'Zakat',
-                      ],
-                      ...usersHistory.map((user) => [
-                            usersHistory.indexOf(user) + 1,
-                            user.realName,
-                            user.year,
-                            user.startCapital,
-                            user.totalIn,
-                            user.totalOut,
-                            user.endCapital,
-                            user.weightedCapital,
-                            user.moneyProfit,
-                            user.thresholdProfit,
-                            user.foundingProfit,
-                            user.effortProfit,
-                            user.externProfit,
-                            user.totalProfit,
-                            user.newCapital,
-                            user.zakat,
-                          ])
-                    ],
-                  ),
-              icon: Icon(
-                Icons.file_download,
-                color: primaryColor,
-              )),
-          IconButton(
-            icon: Icon(Icons.print, color: primaryColor),
+          myIconButton(
+            onPressed: () => createExcel(
+              'User History',
+              [
+                [
+                  '#',
+                  'Name',
+                  'Year',
+                  'Start Capital',
+                  'Total Entrie',
+                  'Total Sortie',
+                  'Capital 31-12',
+                  'Weighted Capital',
+                  'Money',
+                  'Threshold',
+                  'Founding',
+                  'Effort',
+                  'Extern Profit',
+                  'Total Profit',
+                  'Capital 01-01',
+                  'Zakat',
+                ],
+                ...usersHistory.map((user) => [
+                      usersHistory.indexOf(user) + 1,
+                      user.realName,
+                      user.year,
+                      user.startCapital,
+                      user.totalIn,
+                      user.totalOut,
+                      user.endCapital,
+                      user.weightedCapital,
+                      user.moneyProfit,
+                      user.thresholdProfit,
+                      user.foundingProfit,
+                      user.effortProfit,
+                      user.externProfit,
+                      user.totalProfit,
+                      user.newCapital,
+                      user.zakat,
+                    ])
+              ],
+            ),
+            icon: Icons.file_download,
+            color: primaryColor,
+          ),
+          myIconButton(
+            icon: Icons.print,
+            color: primaryColor,
             onPressed: () => createDialog(context, SizedBox(child: printPage())),
           ),
           if (_search.isNotEmpty || _year != 'tout')
-            IconButton(
+            myIconButton(
               onPressed: () => setState(() {
                 _search = '';
                 _controller.clear();
                 _year = 'tout';
               }),
-              icon: Icon(
-                Icons.update,
-                color: primaryColor,
-              ),
+              icon: Icons.update,
+              color: primaryColor,
             ),
         ],
       ),

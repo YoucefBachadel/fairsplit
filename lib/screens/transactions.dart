@@ -41,11 +41,12 @@ class _TransactionsState extends State<Transactions> {
   DateTime _toDate = DateTime.now();
 
   int? _sortColumnIndexTransUser = 4;
-  bool _isAscendingTransUser = false;
+  bool _isAscendingTransUser = true;
   int? _sortColumnIndexTransCaisse = 4;
   bool _isAscendingTransCaisse = false;
   int? _sortColumnIndexTransSP = 3;
-  bool _isAscendingTransSP = false;
+  bool _isAscendingTransSP = true;
+  bool isfirst = true;
 
   TextEditingController _searchController = TextEditingController();
   final TextEditingController _referenceController = TextEditingController();
@@ -346,6 +347,11 @@ class _TransactionsState extends State<Transactions> {
     transactionCategory = context.watch<Filter>().transactionCategory;
     _compt = context.watch<Filter>().compt;
     _search = context.watch<Filter>().search;
+    if (isfirst) {
+      _isAscendingTransSP = _compt != 'tout';
+      _isAscendingTransUser = _search != '';
+      isfirst = false;
+    }
 
     totalIn = 0;
     totalOut = 0;
@@ -805,14 +811,15 @@ class _TransactionsState extends State<Transactions> {
                     borderColor: _reference.isEmpty ? Colors.grey : primaryColor,
                     suffixIcon: _referenceController.text.isEmpty
                         ? null
-                        : IconButton(
+                        : myIconButton(
                             onPressed: () {
                               setState(() {
                                 _referenceController.clear();
                                 _reference = '';
                               });
                             },
-                            icon: const Icon(Icons.clear, size: 20.0)),
+                            icon: Icons.clear,
+                            color: Colors.grey),
                   ),
                 ),
               ),
@@ -1028,11 +1035,9 @@ class _TransactionsState extends State<Transactions> {
             ],
           ),
           mySizedBox(context),
-          IconButton(
-            icon: Icon(
-              Icons.calendar_month,
-              color: primaryColor,
-            ),
+          myIconButton(
+            icon: Icons.calendar_month,
+            color: primaryColor,
             onPressed: () async {
               final DateTime? selected = await showDatePicker(
                 context: context,
@@ -1051,11 +1056,9 @@ class _TransactionsState extends State<Transactions> {
               }
             },
           ),
-          IconButton(
-              icon: Icon(
-                Icons.file_download,
-                color: primaryColor,
-              ),
+          myIconButton(
+              icon: Icons.file_download,
+              color: primaryColor,
               onPressed: () => createExcel(
                     'Transaction',
                     [
@@ -1117,11 +1120,9 @@ class _TransactionsState extends State<Transactions> {
                     ],
                   )),
           if (transactionCategory == 'users' || transactionCategory == 'caisse')
-            IconButton(
-              icon: Icon(
-                Icons.print,
-                color: primaryColor,
-              ),
+            myIconButton(
+              icon: Icons.print,
+              color: primaryColor,
               onPressed: () {
                 createDialog(
                   context,
@@ -1143,11 +1144,9 @@ class _TransactionsState extends State<Transactions> {
               (_year == 'tout' &&
                   _toDate != DateTime(int.parse(years.first) + 1).subtract(const Duration(seconds: 1))) ||
               (_year != 'tout' && _toDate != DateTime(int.parse(_year) + 1).subtract(const Duration(seconds: 1))))
-            IconButton(
-              icon: Icon(
-                Icons.update,
-                color: primaryColor,
-              ),
+            myIconButton(
+              icon: Icons.update,
+              color: primaryColor,
               onPressed: () => setState(() {
                 context.read<Filter>().resetFilter();
                 _reference = '';
@@ -1211,14 +1210,16 @@ class _TransactionsState extends State<Transactions> {
                   prefixIcon: const Icon(Icons.search, size: 20.0),
                   suffixIcon: _searchController.text.isEmpty
                       ? null
-                      : IconButton(
+                      : myIconButton(
                           onPressed: () {
                             setState(() {
                               _searchController.clear();
                               context.read<Filter>().resetFilter();
                             });
                           },
-                          icon: const Icon(Icons.clear, size: 20.0)),
+                          icon: Icons.clear,
+                          color: Colors.grey,
+                        ),
                 ),
               ),
             );

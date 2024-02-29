@@ -8,7 +8,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import 'functions.dart';
 import 'constants.dart';
 
 Widget myProgress({Color? color}) {
@@ -55,6 +54,19 @@ Widget myButton(
               ],
             ),
     ),
+  );
+}
+
+Widget myIconButton({
+  required IconData icon,
+  required Function() onPressed,
+  Color color = Colors.white,
+  double size = 0,
+}) {
+  return IconButton(
+    onPressed: onPressed,
+    icon: Icon(icon, color: color, size: size == 0 ? defaultIconSize : size),
+    hoverColor: Colors.transparent,
   );
 }
 
@@ -317,7 +329,7 @@ Widget totalItem(BuildContext context, String title, String value, {bool isExpan
   );
 }
 
-Widget pdfPreview(BuildContext context, pw.Document pdf, String name) {
+Widget pdfPreview(BuildContext context, pw.Document pdf, String name, {bool closeWhenDone = false}) {
   return Stack(
     children: [
       PdfPreview(
@@ -333,7 +345,10 @@ Widget pdfPreview(BuildContext context, pw.Document pdf, String name) {
         right: 16,
         child: FloatingActionButton(
           mini: true,
-          onPressed: () => printPdf(context, pdf.save()),
+          onPressed: () async => await Printing.layoutPdf(
+            usePrinterSettings: true,
+            onLayout: (PdfPageFormat format) async => pdf.save(),
+          ).whenComplete(() => closeWhenDone ? Navigator.pop(context) : null),
           child: const Icon(Icons.print),
         ),
       ),
@@ -353,7 +368,9 @@ Widget pdfPreview(BuildContext context, pw.Document pdf, String name) {
 
             if (fileName != null) {
               final File file = File('$fileName.pdf');
-              await file.writeAsBytes(await pdf.save());
+              await file
+                  .writeAsBytes(await pdf.save())
+                  .whenComplete(() => closeWhenDone ? Navigator.pop(context) : null);
             }
           },
           child: const Icon(Icons.download),

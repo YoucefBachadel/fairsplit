@@ -147,11 +147,11 @@ class _UnitsState extends State<Units> {
                 if (isAdmin)
                   DataCell(
                     unit.currentMonthOrYear == 13
-                        ? const Center(child: Icon(Icons.done))
-                        : IconButton(
+                        ? Center(child: Icon(Icons.done, size: defaultIconSize))
+                        : myIconButton(
                             onPressed: () => createDialog(context, Calculation(unit: unit), dismissable: false),
-                            hoverColor: Colors.transparent,
-                            icon: Icon(Icons.play_arrow, color: secondaryColor)),
+                            icon: Icons.play_arrow,
+                            color: secondaryColor),
                   ),
               ],
             ))

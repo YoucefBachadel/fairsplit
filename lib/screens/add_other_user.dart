@@ -89,19 +89,17 @@ class _AddOtherUserState extends State<AddOtherUser> {
             child: Row(
               children: [
                 widget.user.userId != -1 && widget.user.rest == 0
-                    ? IconButton(
+                    ? myIconButton(
                         onPressed: () => createDialog(
-                              context,
-                              deleteConfirmation(
-                                context,
-                                'Are you sure you want to delete this user!!',
-                                () => deleteUser(widget.user.userId),
-                              ),
-                            ),
-                        icon: const Icon(
-                          Icons.delete_forever,
-                          color: Colors.white,
-                        ))
+                          context,
+                          deleteConfirmation(
+                            context,
+                            'Are you sure you want to delete this user!!',
+                            () => deleteUser(widget.user.userId),
+                          ),
+                        ),
+                        icon: Icons.delete_forever,
+                      )
                     : const SizedBox(),
                 Expanded(
                   child: Text(
@@ -113,14 +111,11 @@ class _AddOtherUserState extends State<AddOtherUser> {
                     ),
                   ),
                 ),
-                IconButton(
+                myIconButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                    ))
+                    icon: Icons.close)
               ],
             ),
             decoration: BoxDecoration(
@@ -208,11 +203,9 @@ class _AddOtherUserState extends State<AddOtherUser> {
                                     ),
                                     child: myText(myDateFormate.format(joinDate))),
                                 mySizedBox(context),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.calendar_month,
-                                    color: primaryColor,
-                                  ),
+                                myIconButton(
+                                  icon: Icons.calendar_month,
+                                  color: primaryColor,
                                   onPressed: () async {
                                     final DateTime? selected = await showDatePicker(
                                       context: context,

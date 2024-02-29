@@ -146,10 +146,11 @@ class _OtherUsersState extends State<OtherUsers> {
                 dataCell(context, getText(otherUserTypes, user.type)),
                 dataCell(context, myCurrency(user.rest), textAlign: TextAlign.end),
                 if (isAdmin)
-                  DataCell(IconButton(
+                  DataCell(myIconButton(
                     onPressed: () => _newUser(context, user),
-                    hoverColor: Colors.transparent,
-                    icon: Icon(Icons.edit, size: 22, color: primaryColor),
+                    icon: Icons.edit,
+                    size: 18,
+                    color: primaryColor,
                   )),
               ],
             ))
@@ -274,14 +275,14 @@ class _OtherUsersState extends State<OtherUsers> {
                         prefixIcon: const Icon(Icons.search, size: 20.0),
                         suffixIcon: _controller.text.isEmpty
                             ? null
-                            : IconButton(
+                            : myIconButton(
                                 onPressed: () {
                                   setState(() {
                                     _controller.clear();
                                     _search = '';
                                   });
                                 },
-                                icon: const Icon(Icons.clear, size: 20.0)),
+                                icon: Icons.clear),
                       ),
                     ),
                   );
@@ -345,28 +346,25 @@ class _OtherUsersState extends State<OtherUsers> {
             ],
           ),
           mySizedBox(context),
-          IconButton(
-              onPressed: () => createExcel(
-                    'Other Users',
-                    [
-                      ['#', 'Name', 'Type', 'Rest'],
-                      ...users.map((user) => [
-                            users.indexOf(user) + 1,
-                            user.realName,
-                            getText(otherUserTypes, user.type),
-                            user.rest,
-                          ]),
-                    ],
-                  ),
-              icon: Icon(
-                Icons.file_download,
-                color: primaryColor,
-              )),
-          IconButton(
-            icon: Icon(
-              Icons.print,
-              color: primaryColor,
+          myIconButton(
+            onPressed: () => createExcel(
+              'Other Users',
+              [
+                ['#', 'Name', 'Type', 'Rest'],
+                ...users.map((user) => [
+                      users.indexOf(user) + 1,
+                      user.realName,
+                      getText(otherUserTypes, user.type),
+                      user.rest,
+                    ]),
+              ],
             ),
+            icon: Icons.file_download,
+            color: primaryColor,
+          ),
+          myIconButton(
+            icon: Icons.print,
+            color: primaryColor,
             onPressed: () {
               createDialog(
                 context,
@@ -378,16 +376,14 @@ class _OtherUsersState extends State<OtherUsers> {
             },
           ),
           if (_search.isNotEmpty || _type != 'tout')
-            IconButton(
+            myIconButton(
               onPressed: () => setState(() {
                 _search = '';
                 _controller.clear();
                 context.read<Filter>().resetFilter();
               }),
-              icon: Icon(
-                Icons.update,
-                color: primaryColor,
-              ),
+              icon: Icons.update,
+              color: primaryColor,
             ),
         ],
       ),

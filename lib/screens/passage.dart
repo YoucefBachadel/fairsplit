@@ -142,16 +142,26 @@ class _PassageState extends State<Passage> {
     //calculate zakat for each user
     materialsValuePerc = materialsValue / (totalCapital + reserve);
 
-    // double _reserveForZakat = reserve + reserveYear + reserveProfit;
-    double _reserveForZakat = reserve + reserveYear + reserveProfit + 108444.062;
-    if (_reserveForZakat - (_reserveForZakat * materialsValuePerc) >= zakatQuorum) {
-      reserveZakat = (_reserveForZakat - (_reserveForZakat * materialsValuePerc)) * 0.026;
+    double _reserveForZakat = (reserve - (reserve * materialsValuePerc)) + reserveYear + reserveProfit + 108444.062;
+    // double _reserveForZakat = (reserve - (reserve * materialsValuePerc)) + reserveYear + reserveProfit;
+
+    if (_reserveForZakat >= zakatQuorum) {
+      reserveZakat = _reserveForZakat * 0.026;
     }
 
     for (var user in users) {
-      double _userZakatCapital = user.newCapital + user.moneyExtern + user.effortExtern;
-      double _userCapitalForZakat = _userZakatCapital - (_userZakatCapital * materialsValuePerc);
-      // double _userCapitalForZakat = user.newCapital - (user.newCapital * materialsValuePerc);
+      double _userCapitalForZakat = (user.capital - (user.capital * materialsValuePerc)) +
+          user.money +
+          user.threshold +
+          user.founding +
+          user.effort +
+          user.moneyExtern +
+          user.effortExtern;
+      // double _userCapitalForZakat = (user.capital - (user.capital * materialsValuePerc)) +
+      //     user.money +
+      //     user.threshold +
+      //     user.founding +
+      //     user.effort;
 
       user.isUnderZakatQuorum = _userCapitalForZakat < zakatQuorum;
       user.zakat = _userCapitalForZakat * 0.026;
@@ -662,6 +672,7 @@ class _PassageState extends State<Passage> {
                     ],
                     rows: users
                         .map((e) => DataRow(
+                                onSelectChanged: (value) {},
                                 color: e.isUnderZakatQuorum ? MaterialStatePropertyAll(Colors.red[100]) : null,
                                 cells: [
                                   DataCell(Container(

@@ -213,6 +213,7 @@ class _UnitsHistoryState extends State<UnitsHistory> {
     List<DataRow> rows = unitsHistory
         .map(
           (unitHistory) => DataRow(
+            onSelectChanged: (value) {},
             cells: [
               dataCell(context, (unitsHistory.indexOf(unitHistory) + 1).toString()),
               dataCell(context, unitHistory.name, textAlign: TextAlign.start),

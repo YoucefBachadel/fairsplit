@@ -19,7 +19,7 @@ class Passage extends StatefulWidget {
 }
 
 class _PassageState extends State<Passage> {
-  List<User> users = [], zakatUsers = [];
+  List<User> users = [];
   List<Unit> units = [];
   List<Transaction> transactionsTemp = [];
   pw.Document pdf = pw.Document();
@@ -34,6 +34,8 @@ class _PassageState extends State<Passage> {
   bool isLoading = true, isCalculated = false, isPrinted = false;
   String printIntro = '', printConclusion = '';
   PdfPageFormat pageFormat = PdfPageFormat.a5;
+  DateTime selectedDate = DateTime.now();
+  late DateTime lastTransactionDate;
 
   void loadData() async {
     var data = await sqlQuery(selectUrl, {
@@ -45,11 +47,18 @@ class _PassageState extends State<Passage> {
       'sql3': 'SELECT * FROM transactiontemp;',
       'sql4':
           'SELECT caisse, reserve, donation, reserveYear, reserveProfit, reserveProfitIntern, donationProfit, donationProfitIntern, zakat, reference FROM settings;',
+      'sql5': '''SELECT MAX(max_date) AS lastDate FROM (
+                          SELECT MAX(date) AS max_date FROM transaction
+                          UNION ALL SELECT MAX(date) AS max_date FROM transactionothers
+                          UNION ALL SELECT MAX(date) AS max_date FROM transactionsp
+	                        UNION ALL SELECT MAX(date) AS max_date FROM transactiontemp
+                        ) AS all_max_dates''',
     });
     var dataUsers = data[0];
     var dataUnits = data[1];
     var dataTransactionTemp = data[2];
     var dataSettings = data[3][0];
+    lastTransactionDate = DateTime.parse(data[4][0]['lastDate']);
 
     caisse = double.parse(dataSettings['caisse']);
     reserve = double.parse(dataSettings['reserve']);
@@ -129,11 +138,12 @@ class _PassageState extends State<Passage> {
   void calculate() async {
     zakatController.clear();
     materialsController.clear();
-    double _reserveForZakat = reserve + reserveYear + reserveProfit;
 
     //calculate zakat for each user
     materialsValuePerc = materialsValue / (totalCapital + reserve);
 
+    // double _reserveForZakat = reserve + reserveYear + reserveProfit;
+    double _reserveForZakat = reserve + reserveYear + reserveProfit + 108444.062;
     if (_reserveForZakat - (_reserveForZakat * materialsValuePerc) >= zakatQuorum) {
       reserveZakat = (_reserveForZakat - (_reserveForZakat * materialsValuePerc)) * 0.026;
     }
@@ -142,15 +152,14 @@ class _PassageState extends State<Passage> {
       double _userZakatCapital = user.newCapital + user.moneyExtern + user.effortExtern;
       double _userCapitalForZakat = _userZakatCapital - (_userZakatCapital * materialsValuePerc);
       // double _userCapitalForZakat = user.newCapital - (user.newCapital * materialsValuePerc);
-      if (_userCapitalForZakat >= zakatQuorum) {
-        user.zakat = _userCapitalForZakat * 0.026;
-        totalZakat += user.zakat;
-        zakatUsers.add(user);
 
-        user.elhawl = user.initialCapital >= zakatQuorum;
-        user.zakatOut = user.elhawl;
-        user.showZakat = user.elhawl;
-      }
+      user.isUnderZakatQuorum = _userCapitalForZakat < zakatQuorum;
+      user.zakat = _userCapitalForZakat * 0.026;
+      totalZakat += user.zakat;
+
+      user.elhawl = user.initialCapital >= zakatQuorum;
+      user.zakatOut = user.elhawl;
+      user.showZakat = user.elhawl;
     }
 
     setState(() => isCalculated = true);
@@ -191,11 +200,10 @@ class _PassageState extends State<Passage> {
 
     //move reserveyear to reserve and dontionprofit to donation with transaction
     reserve += reserveYear;
-    donation += donationProfit;
     sqls.add(
         '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '$date' , '${reserveYear >= 0 ? 'in' : 'out'}' ,${reserveYear.abs()} ,$reserve , 0, $caisse , 'Passage_$currentYear','${numberToArabicWords(reserveYear.abs())}','','','');''');
-    date = date.add(const Duration(seconds: 1));
     reference++;
+    donation += donationProfit;
     sqls.add(
         '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'donation' , '$date' , '${donationProfit >= 0 ? 'in' : 'out'}' ,${donationProfit.abs()} ,$donation , 0, $caisse , 'Passage_$currentYear','${numberToArabicWords(donationProfit.abs())}','','','');''');
 
@@ -236,11 +244,11 @@ class _PassageState extends State<Passage> {
 
     double totalToZakat = 0;
     int _changeCaisse = 0;
+    date = selectedDate;
     var zakatTransactions =
         'INSERT INTO transaction (reference, userId, userName, date, type, amount, soldeUser,changeCaisse, soldeCaisse, note, amountOnLetter, intermediates, printingNotes, reciver) VALUES ';
 
-    date = DateTime.now();
-    for (var user in zakatUsers) {
+    for (var user in users) {
       if (user.zakatOut || user.zakatOutToZakatCaisse) {
         _changeCaisse = 0;
         user.capital -= user.zakat;
@@ -248,11 +256,11 @@ class _PassageState extends State<Passage> {
         if (user.zakatOut) {
           caisse -= user.zakat;
           _changeCaisse = 1;
+          date = date.add(const Duration(seconds: 1));
         }
 
         zakatTransactions +=
             '''('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , ${user.userId} , '${user.name}' , '$date' , 'out' ,${user.zakat} , ${user.capital} , $_changeCaisse , $caisse , 'زكاة ${currentYear - 1}' , '${numberToArabicWords(user.zakat)}' , '' , '' , '' ),''';
-        date = date.add(const Duration(seconds: 1));
         reference++;
       }
     }
@@ -267,7 +275,6 @@ class _PassageState extends State<Passage> {
       totalToZakat += reserveZakat;
       sqls.add(
           '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '$date' , 'out' ,$reserveZakat ,$reserve , 0, $caisse , 'زكاة ${currentYear - 1}','${numberToArabicWords(reserveZakat)}','','','');''');
-      date = date.add(const Duration(seconds: 1));
       reference++;
     }
 
@@ -328,7 +335,7 @@ class _PassageState extends State<Passage> {
       pw.Center(child: pdfTitle('التقرير العام لسنة $currentYear')),
       pdfSizedBox(context),
       pw.Row(children: [
-        pdfData(myDateFormate.format(DateTime.now())),
+        pdfData(myDateFormate.format(selectedDate)),
         pdfTitle('التاريخ   '),
         pw.Spacer(),
         pdfData(user.realName),
@@ -372,7 +379,7 @@ class _PassageState extends State<Passage> {
       pw.Center(child: pdfTitle('التقرير العام لسنة $currentYear')),
       pdfSizedBox(context),
       pw.Row(children: [
-        pdfData(myDateFormate.format(DateTime.now())),
+        pdfData(myDateFormate.format(selectedDate)),
         pdfTitle('التاريخ   '),
         pw.Spacer(),
         pdfTitle('اﻹسم   '),
@@ -405,7 +412,7 @@ class _PassageState extends State<Passage> {
       pw.Center(child: pdfTitle('التقرير العام لسنة $currentYear')),
       pdfSizedBox(context),
       pw.Row(children: [
-        pdfData(myDateFormate.format(DateTime.now())),
+        pdfData(myDateFormate.format(selectedDate)),
         pdfTitle('التاريخ   '),
         pw.Spacer(),
         pdfTitle('اﻹسم   '),
@@ -478,7 +485,43 @@ class _PassageState extends State<Passage> {
                   child: Column(
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
+                          if (isCalculated)
+                            InkWell(
+                              child: myText(myDateFormate.format(selectedDate), size: 20),
+                              hoverColor: Colors.transparent,
+                              onTap: () async {
+                                final DateTime? selected = await showDatePicker(
+                                  context: context,
+                                  initialDate: selectedDate,
+                                  firstDate: lastTransactionDate,
+                                  lastDate: DateTime.now(),
+                                  locale: const Locale("fr", "FR"),
+                                );
+                                if (selected != null && selected != selectedDate) {
+                                  DateTime _selectedDate = DateTime(
+                                    selected.year,
+                                    selected.month,
+                                    selected.day,
+                                    DateTime.now().hour,
+                                    DateTime.now().minute,
+                                    DateTime.now().second,
+                                  );
+                                  if (_selectedDate.isBefore(lastTransactionDate)) {
+                                    _selectedDate = DateTime(
+                                      selected.year,
+                                      selected.month,
+                                      selected.day,
+                                      lastTransactionDate.hour,
+                                      lastTransactionDate.minute,
+                                      lastTransactionDate.second + 1,
+                                    );
+                                  }
+                                  setState(() => selectedDate = _selectedDate);
+                                }
+                              },
+                            ),
                           Expanded(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -597,100 +640,115 @@ class _PassageState extends State<Passage> {
   }
 
   Widget zakatUsersSelector() {
-    return zakatUsers.isEmpty
+    return !isCalculated
         ? SizedBox(width: getWidth(context, .35), child: emptyList())
         : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              mySizedBox(context),
+              myText('Reserve Zakat : ${myCurrency(reserveZakat)}', size: 20),
+              mySizedBox(context),
               Expanded(
                 child: SingleChildScrollView(
                   child: dataTable(
                     context,
                     columns: [
                       dataColumn(context, 'Name'),
-                      dataColumn(context, 'One Year'),
+                      dataColumn(context, 'Amount'),
+                      dataColumn(context, 'Enable'),
                       dataColumn(context, 'Out'),
                       dataColumn(context, 'Out To Zakat'),
                       dataColumn(context, 'Show'),
                     ],
-                    rows: zakatUsers
-                        .map((e) => DataRow(cells: [
-                              DataCell(Container(
-                                alignment: Alignment.center,
-                                width: getWidth(context, .18),
-                                child: Text(
-                                  e.realName,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontFamily: 'IBM'),
-                                ),
-                              )),
-                              DataCell(Center(
-                                child: Checkbox(
-                                  value: e.elhawl,
-                                  onChanged: (bool? value) => setState(() {
-                                    if (value == true) {
-                                      e.elhawl = true;
-                                    } else if (value == false) {
-                                      e.elhawl = false;
-                                      e.zakatOut = false;
-                                      e.zakatOutToZakatCaisse = false;
-                                      e.showZakat = false;
-                                    }
-                                  }),
-                                ),
-                              )),
-                              DataCell(Container(
-                                alignment: Alignment.center,
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: !e.elhawl
-                                    ? const SizedBox()
-                                    : Checkbox(
-                                        value: e.zakatOut,
-                                        onChanged: (bool? value) => setState(() {
-                                          if (value == true) {
-                                            e.zakatOut = true;
-                                            e.zakatOutToZakatCaisse = false;
-                                            e.showZakat = true;
-                                          } else if (value == false) {
-                                            e.zakatOut = false;
-                                          }
-                                        }),
-                                      ),
-                              )),
-                              DataCell(!e.elhawl
-                                  ? const SizedBox()
-                                  : Center(
-                                      child: Checkbox(
-                                        value: e.zakatOutToZakatCaisse,
-                                        onChanged: (bool? value) => setState(() {
-                                          if (value == true) {
-                                            e.zakatOutToZakatCaisse = true;
-                                            e.zakatOut = false;
-                                            e.showZakat = true;
-                                          } else if (value == false) {
-                                            e.zakatOutToZakatCaisse = false;
-                                          }
-                                        }),
-                                      ),
-                                    )),
-                              DataCell(!e.elhawl
-                                  ? const SizedBox()
-                                  : Container(
-                                      alignment: Alignment.center,
-                                      padding: const EdgeInsets.only(left: 8),
-                                      child: Checkbox(
-                                        value: e.showZakat,
-                                        onChanged: (bool? value) => e.zakatOut || e.zakatOutToZakatCaisse
-                                            ? null
-                                            : setState(() {
-                                                if (value == true) {
-                                                  e.showZakat = true;
-                                                } else if (value == false) {
-                                                  e.showZakat = false;
-                                                }
-                                              }),
-                                      ),
-                                    )),
-                            ]))
+                    rows: users
+                        .map((e) => DataRow(
+                                color: e.isUnderZakatQuorum ? MaterialStatePropertyAll(Colors.red[100]) : null,
+                                cells: [
+                                  DataCell(Container(
+                                    alignment: Alignment.center,
+                                    width: getWidth(context, .18),
+                                    child: Text(
+                                      e.realName,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontFamily: 'IBM'),
+                                    ),
+                                  )),
+                                  DataCell(Container(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      myCurrency(e.zakat),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontFamily: 'IBM'),
+                                    ),
+                                  )),
+                                  DataCell(Center(
+                                    child: Checkbox(
+                                      value: e.elhawl,
+                                      onChanged: (bool? value) => setState(() {
+                                        if (value == true) {
+                                          e.elhawl = true;
+                                        } else if (value == false) {
+                                          e.elhawl = false;
+                                          e.zakatOut = false;
+                                          e.zakatOutToZakatCaisse = false;
+                                          e.showZakat = false;
+                                        }
+                                      }),
+                                    ),
+                                  )),
+                                  DataCell(Container(
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    child: !e.elhawl
+                                        ? const SizedBox()
+                                        : Checkbox(
+                                            value: e.zakatOut,
+                                            onChanged: (bool? value) => setState(() {
+                                              if (value == true) {
+                                                e.zakatOut = true;
+                                                e.zakatOutToZakatCaisse = false;
+                                                e.showZakat = true;
+                                              } else if (value == false) {
+                                                e.zakatOut = false;
+                                              }
+                                            }),
+                                          ),
+                                  )),
+                                  DataCell(!e.elhawl
+                                      ? const SizedBox()
+                                      : Center(
+                                          child: Checkbox(
+                                            value: e.zakatOutToZakatCaisse,
+                                            onChanged: (bool? value) => setState(() {
+                                              if (value == true) {
+                                                e.zakatOutToZakatCaisse = true;
+                                                e.zakatOut = false;
+                                                e.showZakat = true;
+                                              } else if (value == false) {
+                                                e.zakatOutToZakatCaisse = false;
+                                              }
+                                            }),
+                                          ),
+                                        )),
+                                  DataCell(!e.elhawl
+                                      ? const SizedBox()
+                                      : Container(
+                                          alignment: Alignment.center,
+                                          padding: const EdgeInsets.only(left: 8),
+                                          child: Checkbox(
+                                            value: e.showZakat,
+                                            onChanged: (bool? value) => e.zakatOut || e.zakatOutToZakatCaisse
+                                                ? null
+                                                : setState(() {
+                                                    if (value == true) {
+                                                      e.showZakat = true;
+                                                    } else if (value == false) {
+                                                      e.showZakat = false;
+                                                    }
+                                                  }),
+                                          ),
+                                        )),
+                                ]))
                         .toList(),
                   ),
                 ),

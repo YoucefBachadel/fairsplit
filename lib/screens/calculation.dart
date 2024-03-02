@@ -30,6 +30,8 @@ class _CalculationState extends State<Calculation> {
   int bottemNavigationSelectedInex = 0;
   int daysInMonth = 0;
   int reference = 0;
+  DateTime date = DateTime.now();
+  late DateTime lastTransactionDate;
   late bool isIntern;
 
   double caMoneyProfitPerDay = 0; //caMoney / days in month
@@ -67,12 +69,20 @@ class _CalculationState extends State<Calculation> {
           : '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Year(date) >= ${widget.unit.currentMonthOrYear};''',
       'sql9':
           '''SELECT transactionId,userId,userName,date,type,amount FROM transactiontemp  WHERE userName != 'reserveProfit';''',
+      if (!isIntern)
+        'sql10': '''SELECT MAX(max_date) AS lastDate FROM (
+                          SELECT MAX(date) AS max_date FROM transaction
+                          UNION ALL SELECT MAX(date) AS max_date FROM transactionothers
+                          UNION ALL SELECT MAX(date) AS max_date FROM transactionsp
+	                        UNION ALL SELECT MAX(date) AS max_date FROM transactiontemp
+                        ) AS all_max_dates''',
     });
 
     caisse = double.parse(res[0][0]['caisse']);
     reserve = double.parse(res[0][0]['reserve']);
     reserveProfit = double.parse(res[0][0]['reserveProfit']);
     reference = int.parse(res[0][0]['reference']);
+    if (!isIntern) lastTransactionDate = DateTime.parse(res[9][0]['lastDate']);
 
     for (var ele in res[1]) {
       moneyUsers.add(User(userId: int.parse(ele['userId']), name: ele['name'], capital: double.parse(ele['capital'])));
@@ -396,7 +406,7 @@ class _CalculationState extends State<Calculation> {
         user.capital += user.money + user.effort;
         if ((user.money + user.effort).abs() > 0.001) {
           transactionSQL +=
-              '''('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,${user.userId}, '${user.name}', '${DateTime.now()}' , '$_type' , ${(user.money + user.effort).abs()} ,  ${isNewYear ? '' : '${user.capital},'} 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords((user.money + user.effort).abs())}','','',''),''';
+              '''('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,${user.userId}, '${user.name}', '$date' , '$_type' , ${(user.money + user.effort).abs()} ,  ${isNewYear ? '' : '${user.capital},'} 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords((user.money + user.effort).abs())}','','',''),''';
           reference++;
         }
       }
@@ -407,13 +417,13 @@ class _CalculationState extends State<Calculation> {
 
       if (caReserve != 0) {
         sqls.add(isNewYear
-            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');'''
-            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '${DateTime.now()}' , '$_type' ,${caReserve.abs()} , ${reserve + caReserve} , 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');''');
+            ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'reserve' , '$date' , '$_type' ,${caReserve.abs()} , 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');'''
+            : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '$date' , '$_type' ,${caReserve.abs()} , ${reserve + caReserve} , 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserve.abs())}','','','');''');
         reference++;
       }
       if (caReserveProfit != 0) {
         sqls.add(
-            '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '${DateTime.now()}' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit}, 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs())}','','','');''');
+            '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '$date' , '$_type' ,${caReserveProfit.abs()} , ${reserveProfit + caReserveProfit}, 0, $caisse , '${widget.unit.name} ${widget.unit.currentMonthOrYear}','${numberToArabicWords(caReserveProfit.abs())}','','','');''');
         reference++;
       }
     }
@@ -482,7 +492,44 @@ class _CalculationState extends State<Calculation> {
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0, right: 8.0),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
+                            mySizedBox(context),
+                            if (!isIntern && iscalculated)
+                              InkWell(
+                                child: myText(myDateFormate.format(date), size: 20),
+                                hoverColor: Colors.transparent,
+                                onTap: () async {
+                                  final DateTime? selected = await showDatePicker(
+                                    context: context,
+                                    initialDate: date,
+                                    firstDate: lastTransactionDate,
+                                    lastDate: DateTime.now(),
+                                    locale: const Locale("fr", "FR"),
+                                  );
+                                  if (selected != null && selected != date) {
+                                    DateTime _selectedDate = DateTime(
+                                      selected.year,
+                                      selected.month,
+                                      selected.day,
+                                      DateTime.now().hour,
+                                      DateTime.now().minute,
+                                      DateTime.now().second,
+                                    );
+                                    if (_selectedDate.isBefore(lastTransactionDate)) {
+                                      _selectedDate = DateTime(
+                                        selected.year,
+                                        selected.month,
+                                        selected.day,
+                                        lastTransactionDate.hour,
+                                        lastTransactionDate.minute,
+                                        lastTransactionDate.second + 1,
+                                      );
+                                    }
+                                    setState(() => date = _selectedDate);
+                                  }
+                                },
+                              ),
                             Expanded(
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,

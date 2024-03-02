@@ -39,8 +39,13 @@ class _UsersState extends State<Users> {
   TextEditingController _controller = TextEditingController();
   final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
-  void _newUser(BuildContext context, User user) async =>
-      await createDialog(context, AddUser(user: user), dismissable: false);
+  void _newUser(BuildContext context, User user) async {
+    bool result = await createDialog(context, AddUser(user: user), dismissable: false);
+    if (result) {
+      setState(() => isloading = true);
+      loadData();
+    }
+  }
 
   void loadData() async {
     var data = await sqlQuery(selectUrl, {
@@ -61,6 +66,7 @@ class _UsersState extends State<Users> {
 
     allUsers = toUsers(dataUsers, toThresholds(dataThresholds), toFoundings(dataFoundings), toEfforts(dataEfforts));
 
+    units.clear();
     for (var element in dataUnits) {
       units.add(Unit(unitId: int.parse(element['unitId']), name: element['name'], type: element['type']));
     }
@@ -314,17 +320,23 @@ class _UsersState extends State<Users> {
                 context.read<Filter>().change(transactionCategory: 'users', search: user.realName);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
               },
-              onSelectChanged: (value) async => await createDialog(
-                context,
-                AddTransaction(
-                  sourceTab: 'us',
-                  userId: user.userId,
-                  selectedName: user.name,
-                  userCapital: user.capital,
-                  selectedTransactionType: 1,
-                ),
-                dismissable: false,
-              ),
+              onSelectChanged: (value) async {
+                bool result = await createDialog(
+                  context,
+                  AddTransaction(
+                    sourceTab: 'us',
+                    userId: user.userId,
+                    selectedName: user.name,
+                    userCapital: user.capital,
+                    selectedTransactionType: 1,
+                  ),
+                  dismissable: false,
+                );
+                if (result) {
+                  setState(() => isloading = true);
+                  loadData();
+                }
+              },
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, user.realName, textAlign: TextAlign.start),

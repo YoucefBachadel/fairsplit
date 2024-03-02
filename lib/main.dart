@@ -10,16 +10,16 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '/providers/filter.dart';
-import '/screens/passage.dart';
-import '/screens/unit_history.dart';
-import '/shared/functions.dart';
+import 'providers/filter.dart';
+import 'screens/passage.dart';
+import 'screens/unit_history.dart';
 import 'screens/other_users.dart';
 import 'screens/units.dart';
 import 'screens/transactions.dart';
 import 'screens/users_history.dart';
 import 'screens/users.dart';
 import 'screens/dashboard.dart';
+import 'shared/functions.dart';
 import 'shared/constants.dart';
 import 'shared/widgets.dart';
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/other_user.dart';
-import '../main.dart';
 import '../shared/functions.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
@@ -24,7 +23,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
     Navigator.pop(context);
     await sqlQuery(insertUrl, {'sql1': 'DELETE FROM OtherUsers WHERE userId = $userId'});
 
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+    Navigator.pop(context, true);
     snackBar(context, 'User deleted successfully');
 
     setState(() => isLoading = false);
@@ -59,7 +58,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
 
         userNames.add(name);
 
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'ou')));
+        Navigator.pop(context, true);
         snackBar(context, widget.user.userId == -1 ? 'User added successfully' : 'User updated successfully');
       }
 
@@ -111,11 +110,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
                     ),
                   ),
                 ),
-                myIconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: Icons.close)
+                myIconButton(onPressed: () => Navigator.pop(context, false), icon: Icons.close)
               ],
             ),
             decoration: BoxDecoration(

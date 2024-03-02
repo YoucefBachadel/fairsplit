@@ -35,9 +35,10 @@ class User {
   double thresholdPerc; // used in users filter for sort
   double foundingPerc; // used in users filter for sort
   double effortPerc; // used in users filter for sort
+  bool isUnderZakatQuorum;
+  bool elhawl;
   bool zakatOut;
   bool zakatOutToZakatCaisse;
-  bool elhawl;
   bool showZakat;
 
   User(
@@ -66,6 +67,7 @@ class User {
       this.monthsForExtern = 12,
       this.initialCapital = 0,
       this.zakat = 0,
+      this.isUnderZakatQuorum = false,
       this.zakatOut = false,
       this.zakatOutToZakatCaisse = false,
       this.elhawl = false,

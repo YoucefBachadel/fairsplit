@@ -119,7 +119,7 @@ class _AddTransactionState extends State<AddTransaction> {
   int selectedTransactionType = 0;
   String _password = ''; // used for all users Transaction;
   int reference = 0;
-  DateTime lastTransactionDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+  late DateTime lastTransactionDate;
   bool isLoading = true;
   bool isNewYear = false; //true after 1 jan befor passage so user and reserve transaction will be stored in tempTransac
 
@@ -468,7 +468,11 @@ class _AddTransactionState extends State<AddTransaction> {
         ),
       );
     }
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp(index: widget.sourceTab)));
+    if (widget.sourceTab == 'us' || widget.sourceTab == 'ou') {
+      Navigator.pop(context, true);
+    } else {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp(index: widget.sourceTab)));
+    }
     snackBar(context, 'Transaction added successfully');
   }
 
@@ -510,7 +514,7 @@ class _AddTransactionState extends State<AddTransaction> {
                     ),
                   ),
                 ),
-                myIconButton(onPressed: () => Navigator.pop(context), icon: Icons.close)
+                myIconButton(onPressed: () => Navigator.pop(context, false), icon: Icons.close)
               ],
             ),
             decoration: BoxDecoration(

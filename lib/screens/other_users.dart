@@ -31,9 +31,17 @@ class _OtherUsersState extends State<OtherUsers> {
   TextEditingController _controller = TextEditingController();
   final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
-  void _newUser(BuildContext context, OtherUser user) async => await createDialog(context, AddOtherUser(user: user));
+  void _newUser(BuildContext context, OtherUser user) async {
+    bool result = await createDialog(context, AddOtherUser(user: user));
+    if (result) {
+      setState(() => isloading = true);
+      loadData();
+    }
+  }
 
   void loadData() async {
+    allUsers.clear();
+    usersWithCapital.clear();
     var res = await sqlQuery(selectUrl, {
       'sql1': 'SELECT name FROM users WHERE capital != 0;',
       'sql2': 'SELECT * FROM OtherUsers;',
@@ -56,9 +64,7 @@ class _OtherUsersState extends State<OtherUsers> {
       allUsers.add(user);
     }
 
-    setState(() {
-      isloading = false;
-    });
+    setState(() => isloading = false);
   }
 
   void filterUsers() {
@@ -128,18 +134,24 @@ class _OtherUsersState extends State<OtherUsers> {
                 context.read<Filter>().change(transactionCategory: 'users', search: user.realName);
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
               },
-              onSelectChanged: (value) async => await createDialog(
-                context,
-                AddTransaction(
-                  sourceTab: 'ou',
-                  userId: user.userId,
-                  selectedName: user.name,
-                  type: user.type,
-                  rest: user.rest,
-                  selectedTransactionType: user.type == 'loan' ? 2 : 3,
-                ),
-                dismissable: false,
-              ),
+              onSelectChanged: (value) async {
+                bool result = await createDialog(
+                  context,
+                  AddTransaction(
+                    sourceTab: 'ou',
+                    userId: user.userId,
+                    selectedName: user.name,
+                    type: user.type,
+                    rest: user.rest,
+                    selectedTransactionType: user.type == 'loan' ? 2 : 3,
+                  ),
+                  dismissable: false,
+                );
+                if (result) {
+                  setState(() => isloading = true);
+                  loadData();
+                }
+              },
               cells: [
                 dataCell(context, (users.indexOf(user) + 1).toString()),
                 dataCell(context, user.realName, textAlign: TextAlign.start),
@@ -282,7 +294,8 @@ class _OtherUsersState extends State<OtherUsers> {
                                     _search = '';
                                   });
                                 },
-                                icon: Icons.clear),
+                                icon: Icons.clear,
+                                color: Colors.grey),
                       ),
                     ),
                   );

@@ -4,7 +4,6 @@ import '../models/effort.dart';
 import '../models/founding.dart';
 import '../models/threshold.dart' as my_threshold;
 import '../models/unit.dart';
-import '../main.dart';
 import '../shared/functions.dart';
 import '../shared/constants.dart';
 import '../shared/widgets.dart';
@@ -47,10 +46,8 @@ class _AddUserState extends State<AddUser> {
       'sql4': 'DELETE FROM Users WHERE userId = $userId',
     });
 
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
+    Navigator.pop(context, true);
     snackBar(context, 'User deleted successfully');
-
-    setState(() => isLoading = false);
   }
 
   void loadUnits() async {
@@ -143,7 +140,7 @@ class _AddUserState extends State<AddUser> {
         }
 
         if (sqls.isNotEmpty) await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'us')));
+        Navigator.pop(context, true);
         snackBar(context, isNew ? 'User added successfully' : 'User updated successfully');
       }
       setState(() => isLoading = false);
@@ -205,7 +202,7 @@ class _AddUserState extends State<AddUser> {
                     ),
                   ),
                 ),
-                myIconButton(onPressed: () => Navigator.pop(context), icon: Icons.close)
+                myIconButton(onPressed: () => Navigator.pop(context, false), icon: Icons.close)
               ],
             ),
             decoration: BoxDecoration(

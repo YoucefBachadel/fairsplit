@@ -238,6 +238,7 @@ class _UsersHistoryState extends State<UsersHistory> {
     List<DataRow> rows = usersHistory
         .map(
           (userHistory) => DataRow(
+            onSelectChanged: (value) {},
             cells: [
               dataCell(context, (usersHistory.indexOf(userHistory) + 1).toString()),
               dataCell(context, userHistory.realName, textAlign: TextAlign.start),

@@ -142,8 +142,7 @@ class _PassageState extends State<Passage> {
     //calculate zakat for each user
     materialsValuePerc = materialsValue / (totalCapital + reserve);
 
-    double _reserveForZakat = (reserve - (reserve * materialsValuePerc)) + reserveYear + reserveProfit + 108444.062;
-    // double _reserveForZakat = (reserve - (reserve * materialsValuePerc)) + reserveYear + reserveProfit;
+    double _reserveForZakat = (reserve - (reserve * materialsValuePerc)) + reserveYear + reserveProfit;
 
     if (_reserveForZakat >= zakatQuorum) {
       reserveZakat = _reserveForZakat * 0.026;
@@ -154,14 +153,7 @@ class _PassageState extends State<Passage> {
           user.money +
           user.threshold +
           user.founding +
-          user.effort +
-          user.moneyExtern +
-          user.effortExtern;
-      // double _userCapitalForZakat = (user.capital - (user.capital * materialsValuePerc)) +
-      //     user.money +
-      //     user.threshold +
-      //     user.founding +
-      //     user.effort;
+          user.effort;
 
       user.isUnderZakatQuorum = _userCapitalForZakat < zakatQuorum;
       user.zakat = _userCapitalForZakat * 0.026;

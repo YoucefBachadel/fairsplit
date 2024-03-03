@@ -30,7 +30,6 @@ class _UnitsHistoryState extends State<UnitsHistory> {
 
   double tprofit = 0,
       tprofitability = 0,
-      tunitProfitability = 0,
       treserve = 0,
       tdonation = 0,
       tmoney = 0,
@@ -72,7 +71,6 @@ class _UnitsHistoryState extends State<UnitsHistory> {
     unitsHistory.clear();
     tprofit = 0;
     tprofitability = 0;
-    tunitProfitability = 0;
     treserve = 0;
     tdonation = 0;
     tmoney = 0;
@@ -88,7 +86,6 @@ class _UnitsHistoryState extends State<UnitsHistory> {
 
         tprofit += profit.profit;
         tprofitability += profit.profitability;
-        tunitProfitability += profit.unitProfitability;
         treserve += profit.reserve;
         tdonation += profit.donation;
         tmoney += profit.money;
@@ -285,7 +282,6 @@ class _UnitsHistoryState extends State<UnitsHistory> {
                   children: [
                     totalItem(context, 'Profit', myCurrency(tprofit)),
                     totalItem(context, 'Profitability', myPercentage(tprofitability * 100)),
-                    totalItem(context, 'Unit Profitability', myPercentage(tunitProfitability * 100)),
                   ],
                 ),
                 SizedBox(height: getHeight(context, .08), child: const VerticalDivider(width: 50)),

@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '../models/unit_history.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
+import '/models/unit_history.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
 
 class UnitsHistory extends StatefulWidget {
   const UnitsHistory({super.key});
@@ -28,14 +28,7 @@ class _UnitsHistoryState extends State<UnitsHistory> {
   bool _isAscending = false;
   final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
 
-  double tprofit = 0,
-      tprofitability = 0,
-      treserve = 0,
-      tdonation = 0,
-      tmoney = 0,
-      teffort = 0,
-      tthreshold = 0,
-      tfounding = 0;
+  double tprofit = 0, tprofitability = 0, treserve = 0, tdonation = 0, tmoney = 0, teffort = 0, tthreshold = 0, tfounding = 0;
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM unithistory;'});
@@ -110,46 +103,36 @@ class _UnitsHistoryState extends State<UnitsHistory> {
         });
         break;
       case 5:
-        unitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.capital.compareTo(tr1.capital) : tr1.capital.compareTo(tr2.capital));
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.capital.compareTo(tr1.capital) : tr1.capital.compareTo(tr2.capital));
         break;
       case 6:
-        unitsHistory
-            .sort((tr1, tr2) => !_isAscending ? tr2.profit.compareTo(tr1.profit) : tr1.profit.compareTo(tr2.profit));
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.profit.compareTo(tr1.profit) : tr1.profit.compareTo(tr2.profit));
         break;
       case 7:
-        unitsHistory.sort((tr1, tr2) => !_isAscending
-            ? tr2.profitability.compareTo(tr1.profitability)
-            : tr1.profitability.compareTo(tr2.profitability));
+        unitsHistory
+            .sort((tr1, tr2) => !_isAscending ? tr2.profitability.compareTo(tr1.profitability) : tr1.profitability.compareTo(tr2.profitability));
         break;
       case 8:
-        unitsHistory.sort((tr1, tr2) => !_isAscending
-            ? tr2.unitProfitability.compareTo(tr1.unitProfitability)
-            : tr1.unitProfitability.compareTo(tr2.unitProfitability));
+        unitsHistory.sort((tr1, tr2) =>
+            !_isAscending ? tr2.unitProfitability.compareTo(tr1.unitProfitability) : tr1.unitProfitability.compareTo(tr2.unitProfitability));
         break;
       case 9:
-        unitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.reserve.compareTo(tr1.reserve) : tr1.reserve.compareTo(tr2.reserve));
         break;
       case 10:
-        unitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.donation.compareTo(tr1.donation) : tr1.donation.compareTo(tr2.donation));
         break;
       case 11:
-        unitsHistory
-            .sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
         break;
       case 12:
-        unitsHistory
-            .sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
         break;
       case 13:
-        unitsHistory.sort((tr1, tr2) =>
-            !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold));
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold));
         break;
       case 14:
-        unitsHistory.sort(
-            (tr1, tr2) => !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding));
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding));
         break;
     }
   }

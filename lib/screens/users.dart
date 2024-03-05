@@ -3,17 +3,17 @@ import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '../main.dart';
-import '../models/effort.dart';
-import '../models/founding.dart';
-import '../models/threshold.dart';
-import '../providers/filter.dart';
-import '../shared/functions.dart';
-import '../models/unit.dart';
-import '../models/user.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
-import '../screens/add_user.dart';
+import '/main.dart';
+import '/models/effort.dart';
+import '/models/founding.dart';
+import '/models/threshold.dart';
+import '/models/unit.dart';
+import '/models/user.dart';
+import '/providers/filter.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
+import 'add_user.dart';
 import 'add_transaction.dart';
 
 class Users extends StatefulWidget {
@@ -162,16 +162,12 @@ class _UsersState extends State<Users> {
         break;
       case 4:
         users.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.weightedCapital.compareTo(tr1.weightedCapital)
-              : tr1.weightedCapital.compareTo(tr2.weightedCapital);
+          return !_isAscending ? tr2.weightedCapital.compareTo(tr1.weightedCapital) : tr1.weightedCapital.compareTo(tr2.weightedCapital);
         });
         break;
       case 5:
         users.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.initialCapital.compareTo(tr1.initialCapital)
-              : tr1.initialCapital.compareTo(tr2.initialCapital);
+          return !_isAscending ? tr2.initialCapital.compareTo(tr1.initialCapital) : tr1.initialCapital.compareTo(tr2.initialCapital);
         });
         break;
       case 6:
@@ -211,13 +207,9 @@ class _UsersState extends State<Users> {
       case 12:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2) {
-            return !_isAscending
-                ? tr2.thresholdPerc.compareTo(tr1.thresholdPerc)
-                : tr1.thresholdPerc.compareTo(tr2.thresholdPerc);
+            return !_isAscending ? tr2.thresholdPerc.compareTo(tr1.thresholdPerc) : tr1.thresholdPerc.compareTo(tr2.thresholdPerc);
           } else if (_foundingUnitFilter != -2) {
-            return !_isAscending
-                ? tr2.foundingPerc.compareTo(tr1.foundingPerc)
-                : tr1.foundingPerc.compareTo(tr2.foundingPerc);
+            return !_isAscending ? tr2.foundingPerc.compareTo(tr1.foundingPerc) : tr1.foundingPerc.compareTo(tr2.foundingPerc);
           } else {
             return !_isAscending ? tr2.effortPerc.compareTo(tr1.effortPerc) : tr1.effortPerc.compareTo(tr2.effortPerc);
           }
@@ -226,11 +218,8 @@ class _UsersState extends State<Users> {
       case 13:
         users.sort((tr1, tr2) {
           if (_thresholdUnitFilter != -2 && _foundingUnitFilter != -2) {
-            return !_isAscending
-                ? tr2.foundingPerc.compareTo(tr1.foundingPerc)
-                : tr1.foundingPerc.compareTo(tr2.foundingPerc);
-          } else if ((_thresholdUnitFilter == -2 && _foundingUnitFilter != -2) ||
-              (_thresholdUnitFilter != -2 && _foundingUnitFilter == -2)) {
+            return !_isAscending ? tr2.foundingPerc.compareTo(tr1.foundingPerc) : tr1.foundingPerc.compareTo(tr2.foundingPerc);
+          } else if ((_thresholdUnitFilter == -2 && _foundingUnitFilter != -2) || (_thresholdUnitFilter != -2 && _foundingUnitFilter == -2)) {
             return !_isAscending ? tr2.effortPerc.compareTo(tr1.effortPerc) : tr1.effortPerc.compareTo(tr2.effortPerc);
           } else {
             return !_isAscending ? tr2.evaluation.compareTo(tr1.evaluation) : tr1.evaluation.compareTo(tr2.evaluation);
@@ -312,8 +301,7 @@ class _UsersState extends State<Users> {
         .map((user) => DataRow(
               color: user.capital < 0
                   ? MaterialStatePropertyAll(Colors.red[100])
-                  : ((user.capital != 0 && user.type == 'effort') ||
-                          (user.effort + user.effortExtern != 0 && user.type == 'money'))
+                  : ((user.capital != 0 && user.type == 'effort') || (user.effort + user.effortExtern != 0 && user.type == 'money'))
                       ? MaterialStatePropertyAll(Colors.green[100])
                       : null,
               onLongPress: () {
@@ -355,16 +343,9 @@ class _UsersState extends State<Users> {
                   textAlign: TextAlign.end,
                 ),
                 if (_thresholdUnitFilter != -2)
-                  dataCell(
-                      context,
-                      myPercentage(user.thresholds
-                          .firstWhere((element) => element.unitId == _thresholdUnitFilter)
-                          .thresholdPerc)),
+                  dataCell(context, myPercentage(user.thresholds.firstWhere((element) => element.unitId == _thresholdUnitFilter).thresholdPerc)),
                 if (_foundingUnitFilter != -2)
-                  dataCell(
-                      context,
-                      myPercentage(
-                          user.foundings.firstWhere((element) => element.unitId == _foundingUnitFilter).foundingPerc)),
+                  dataCell(context, myPercentage(user.foundings.firstWhere((element) => element.unitId == _foundingUnitFilter).foundingPerc)),
                 if (_effortUnitFilter != -2) ...[
                   dataCell(
                     context,
@@ -512,8 +493,7 @@ class _UsersState extends State<Users> {
                       textAlign: TextAlign.center,
                       onSubmitted: ((value) {
                         if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
-                          String text =
-                              userNames.firstWhere((item) => item.toLowerCase().contains(value.toLowerCase()));
+                          String text = userNames.firstWhere((item) => item.toLowerCase().contains(value.toLowerCase()));
                           setState(() {
                             _controller.text = text;
                             _search = text;
@@ -549,8 +529,7 @@ class _UsersState extends State<Users> {
                     child: Material(
                       elevation: 8.0,
                       child: ConstrainedBox(
-                        constraints:
-                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .18)),
+                        constraints: BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .18)),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,
@@ -614,8 +593,7 @@ class _UsersState extends State<Users> {
                 value: _thresholdUnitFilter,
                 width: getWidth(context, .14),
                 color: _thresholdUnitFilter == -2 ? Colors.grey : primaryColor,
-                items: ([Unit(unitId: -2, name: 'Tout')] + units.where((element) => element.type == 'intern').toList())
-                    .map((item) {
+                items: ([Unit(unitId: -2, name: 'Tout')] + units.where((element) => element.type == 'intern').toList()).map((item) {
                   return DropdownMenuItem(
                     value: item.unitId,
                     alignment: AlignmentDirectional.center,
@@ -643,8 +621,7 @@ class _UsersState extends State<Users> {
                 value: _foundingUnitFilter,
                 width: getWidth(context, .14),
                 color: _foundingUnitFilter == -2 ? Colors.grey : primaryColor,
-                items: ([Unit(unitId: -2, name: 'Tout')] + units.where((element) => element.type == 'intern').toList())
-                    .map((item) {
+                items: ([Unit(unitId: -2, name: 'Tout')] + units.where((element) => element.type == 'intern').toList()).map((item) {
                   return DropdownMenuItem(
                     value: item.unitId,
                     alignment: AlignmentDirectional.center,
@@ -740,11 +717,7 @@ class _UsersState extends State<Users> {
             color: primaryColor,
             onPressed: () => createDialog(context, SizedBox(child: printPage())),
           ),
-          if (_controller.text.isNotEmpty ||
-              _type != 'tout' ||
-              _thresholdUnitFilter != -2 ||
-              _foundingUnitFilter != -2 ||
-              _effortUnitFilter != -2)
+          if (_controller.text.isNotEmpty || _type != 'tout' || _thresholdUnitFilter != -2 || _foundingUnitFilter != -2 || _effortUnitFilter != -2)
             myIconButton(
               onPressed: () => setState(() {
                 _search = '';

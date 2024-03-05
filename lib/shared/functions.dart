@@ -84,11 +84,6 @@ Future<void> createExcel(String name, List<List<dynamic>> data) async {
       await file.writeAsBytes(bytes, flush: true);
     }
   }
-
-  // final String? path = (await getDownloadsDirectory())?.path;
-  // final String fileName = Platform.isWindows ? '$path\\$name.xlsx' : '$path/$name.xlsx';
-  // final File file = File(fileName);
-  // await file.writeAsBytes(bytes, flush: true);
 }
 
 String numberToArabicWords(double number) {

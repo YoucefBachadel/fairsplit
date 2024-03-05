@@ -121,5 +121,4 @@ Map<String, String> sources = {
 
 String getText(Map<String, String> list, String key) => list[key] ?? '';
 
-String getKeyFromValue(Map<String, String> list, String value) =>
-    list.keys.firstWhere((key) => list[key] == value, orElse: () => '');
+String getKeyFromValue(Map<String, String> list, String value) => list.keys.firstWhere((key) => list[key] == value, orElse: () => '');

@@ -110,90 +110,11 @@ class _MyAppState extends State<MyApp> {
   bool isLoading = false;
   bool isPassageAllowed = false;
 
-  Map<String, int> tabsIndex = {
-    'da': 0,
-    'un': 1,
-    'us': 2,
-    'ou': 3,
-    'tr': 4,
-    'ush': 6,
-    'unh': 7,
-  };
+  Map<String, int> tabsIndex = {'da': 0, 'un': 1, 'us': 2, 'ou': 3, 'tr': 4, 'ush': 6, 'unh': 7};
 
-  List<String> tabs = [
-    'Dashboard',
-    'Units',
-    'Users',
-    'Other Users',
-    'Transaction',
-    'User History',
-    'Unit History',
-  ];
+  List<String> tabs = ['Dashboard', 'Units', 'Users', 'Other Users', 'Transaction', 'User History', 'Unit History'];
 
-  List<Widget> tabScreens = [
-    const Dashboard(),
-    const Units(),
-    const Users(),
-    const OtherUsers(),
-    const Transactions(),
-    const UsersHistory(),
-    const UnitsHistory(),
-  ];
-
-  Future updateamountOnLetter() async {
-    var params = {
-      'sql1': 'SELECT transactionId,amount FROM transaction;',
-      'sql2': 'SELECT transactionId,amount FROM transactionsp;',
-      'sql3': 'SELECT transactionId,amount FROM transactionothers;',
-      'sql4': 'SELECT transactionId,amount FROM transactiontemp;',
-    };
-
-    var res = await sqlQuery(selectUrl, params);
-    var dataTransaction = res[0];
-    var dataTransactionSP = res[1];
-    var dataTransactionOther = res[2];
-    var dataTransactionTemp = res[3];
-
-    String transactionsSQL = 'INSERT INTO transaction (transactionId,amountOnLetter) VALUES ';
-    String transactionsSPSQL = 'INSERT INTO transactionsp (transactionId,amountOnLetter) VALUES ';
-    String transactionsOthersSQL = 'INSERT INTO transactionothers (transactionId,amountOnLetter) VALUES ';
-    String transactionsTempSQL = 'INSERT INTO transactiontemp (transactionId,amountOnLetter) VALUES ';
-
-    for (var ele in dataTransaction) {
-      transactionsSQL +=
-          '''(${int.parse(ele['transactionId'])},'${numberToArabicWords(double.parse(ele['amount']))}'),''';
-    }
-    transactionsSQL = transactionsSQL.substring(0, transactionsSQL.length - 1);
-    transactionsSQL += ' ON DUPLICATE KEY UPDATE amountOnLetter = VALUES(amountOnLetter);';
-
-    for (var ele in dataTransactionOther) {
-      transactionsOthersSQL +=
-          '''(${int.parse(ele['transactionId'])},'${numberToArabicWords(double.parse(ele['amount']))}'),''';
-    }
-    transactionsOthersSQL = transactionsOthersSQL.substring(0, transactionsOthersSQL.length - 1);
-    transactionsOthersSQL += ' ON DUPLICATE KEY UPDATE amountOnLetter = VALUES(amountOnLetter);';
-
-    for (var ele in dataTransactionSP) {
-      transactionsSPSQL +=
-          '''(${int.parse(ele['transactionId'])},'${numberToArabicWords(double.parse(ele['amount']))}'),''';
-    }
-    transactionsSPSQL = transactionsSPSQL.substring(0, transactionsSPSQL.length - 1);
-    transactionsSPSQL += ' ON DUPLICATE KEY UPDATE amountOnLetter = VALUES(amountOnLetter);';
-
-    for (var ele in dataTransactionTemp) {
-      transactionsTempSQL +=
-          '''(${int.parse(ele['transactionId'])},'${numberToArabicWords(double.parse(ele['amount']))}'),''';
-    }
-    transactionsTempSQL = transactionsTempSQL.substring(0, transactionsTempSQL.length - 1);
-    transactionsTempSQL += ' ON DUPLICATE KEY UPDATE amountOnLetter = VALUES(amountOnLetter);';
-
-    await sqlQuery(insertUrl, {
-      'sql1': transactionsSQL,
-      'sql2': transactionsOthersSQL,
-      'sql3': transactionsSPSQL,
-      'sql4': transactionsTempSQL,
-    });
-  }
+  List<Widget> tabScreens = const [Dashboard(), Units(), Users(), OtherUsers(), Transactions(), UsersHistory(), UnitsHistory()];
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {
@@ -234,14 +155,12 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    super.initState();
-
     if (widget.index != 'first') {
       selectedTab = tabsIndex[widget.index] ?? 0;
       initFont();
       loadData();
     }
-    // updateamountOnLetter().then((value) => print('done'));
+    super.initState();
   }
 
   @override

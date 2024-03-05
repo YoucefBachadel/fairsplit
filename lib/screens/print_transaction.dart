@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
 
 class PrintTransaction extends StatelessWidget {
   final String source; //user/loan/deposit

@@ -1,13 +1,13 @@
-import 'package:fairsplit/models/unit.dart';
-import 'package:fairsplit/providers/filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-import '../main.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
+import '/main.dart';
+import '/models/unit.dart';
+import '/providers/filter.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
 import 'add_transaction.dart';
 
 class Dashboard extends StatefulWidget {
@@ -20,16 +20,9 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   bool isLoadingData = true;
   List<Unit> units = [];
-  double caisse = 0,
-      reserve = 0,
-      reserveProfit = 0,
-      donation = 0,
-      zakat = 0,
-      totalProfit = 0,
-      totalLoan = 0,
-      totalDeposit = 0;
+  double caisse = 0, reserve = 0, reserveProfit = 0, donation = 0, zakat = 0, totalProfit = 0, totalLoan = 0, totalDeposit = 0;
 
-  void locadData() async {
+  void loadData() async {
     var res = await sqlQuery(selectUrl, {
       'sql1': '''SELECT 
                 (SELECT SUM(money) FROM unithistory WHERE year =s.currentYear) as totalProfit,
@@ -65,7 +58,7 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   void initState() {
-    locadData();
+    loadData();
     super.initState();
   }
 
@@ -102,8 +95,7 @@ class _DashboardState extends State<Dashboard> {
                                     transactionCategory: e[2] == 'caisse' ? 'caisse' : 'specials',
                                     compt: e[2] == 'caisse' ? 'tout' : e[2],
                                   );
-                              Navigator.pushReplacement(
-                                  context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
                             },
                           ))
                       .toList(),
@@ -212,8 +204,7 @@ class _DashboardState extends State<Dashboard> {
               showZeroValue: false,
               labelPosition: ChartDataLabelPosition.outside,
               builder: (data, point, series, pointIndex, seriesIndex) {
-                return myText('${(data as Unit).name} : ${myPercentage(data.profitability / profitability)}%',
-                    size: 16);
+                return myText('${(data as Unit).name} : ${myPercentage(data.profitability / profitability)}%', size: 16);
               },
             )),
       ],

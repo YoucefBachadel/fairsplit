@@ -1,11 +1,11 @@
-import 'package:fairsplit/main.dart';
-import 'package:fairsplit/screens/calculation.dart';
 import 'package:flutter/material.dart';
 
-import '../models/unit.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
+import '/main.dart';
+import '/models/unit.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
+import 'calculation.dart';
 import 'add_unit.dart';
 
 class Units extends StatefulWidget {
@@ -16,15 +16,9 @@ class Units extends StatefulWidget {
 }
 
 class _UnitsState extends State<Units> {
-  bool isLoadingUnits = true;
+  bool isLoading = true;
   List<Unit> units = [];
-  double totalCapital = 1,
-      internCapital = 0,
-      externCapital = 0,
-      internProfit = 0,
-      externProfit = 0,
-      internProfitability = 0,
-      externProfitability = 0;
+  double totalCapital = 0, internCapital = 0, externCapital = 0, internProfit = 0, externProfit = 0, internProfitability = 0, externProfitability = 0;
   int internCount = 0, externCount = 0;
 
   int? _sortColumnIndex = 0;
@@ -52,7 +46,6 @@ class _UnitsState extends State<Units> {
         foundingPerc: double.parse(ele['foundingPerc']),
         currentMonthOrYear: int.parse(ele['currentMonthOrYear']),
       ));
-      totalCapital += double.parse(ele['capital']);
       if (ele['type'] == 'intern') {
         internCount += 1;
         internCapital += double.parse(ele['capital']);
@@ -65,11 +58,11 @@ class _UnitsState extends State<Units> {
         externProfitability += double.parse(ele['profitability']);
       }
     }
-    totalCapital -= 1;
+    totalCapital = internCapital + externCapital;
 
     units.sort((a, b) => a.name.compareTo(b.name));
 
-    setState(() => isLoadingUnits = false);
+    setState(() => isLoading = false);
   }
 
   void onSort() {
@@ -90,15 +83,13 @@ class _UnitsState extends State<Units> {
         units.sort((a, b) => _isAscending ? a.profit.compareTo(b.profit) : b.profit.compareTo(a.profit));
         break;
       case 5:
-        units.sort((a, b) =>
-            _isAscending ? a.profitability.compareTo(b.profitability) : b.profitability.compareTo(a.profitability));
+        units.sort((a, b) => _isAscending ? a.profitability.compareTo(b.profitability) : b.profitability.compareTo(a.profitability));
         break;
     }
   }
 
   void resetInterUnits() async {
-    var res = await sqlQuery(selectUrl,
-        {'sql1': '''SELECT SUM(profitability) AS totalInternProfitability FROM units WHERE type = 'intern';'''});
+    var res = await sqlQuery(selectUrl, {'sql1': '''SELECT SUM(profitability) AS totalInternProfitability FROM units WHERE type = 'intern';'''});
 
     var data = res[0][0];
     double totalInternProfitability = double.parse(data['totalInternProfitability']);
@@ -108,8 +99,7 @@ class _UnitsState extends State<Units> {
     sqls.add('''UPDATE units SET profit=0,profitability=0,currentMonthOrYear=1 WHERE type = 'intern';''');
     sqls.add('UPDATE users SET money=0,threshold=0,founding=0,effort=0;');
     sqls.add('''DELETE FROM unithistory WHERE year = $currentYear AND month != 0;''');
-    sqls.add(
-        'UPDATE settings SET profitability= profitability - $totalInternProfitability,reserveProfitIntern=0,donationProfitIntern=0;');
+    sqls.add('UPDATE settings SET profitability= profitability - $totalInternProfitability,reserveProfitIntern=0,donationProfitIntern=0;');
 
     await sqlQuery(insertUrl, {for (var sql in sqls) 'sql${sqls.indexOf(sql) + 1}': sql});
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'un')));
@@ -201,7 +191,7 @@ class _UnitsState extends State<Units> {
                 dataCell(context, unit.name, textAlign: TextAlign.start),
                 dataCell(context, getText(unitsTypes, unit.type), textAlign: TextAlign.start),
                 dataCell(context, myCurrency(unit.capital), textAlign: TextAlign.end),
-                dataCell(context, myPercentage(unit.capital * 100 / totalCapital)),
+                dataCell(context, myPercentage(totalCapital == 0 ? 0 : unit.capital * 100 / totalCapital)),
                 dataCell(context, myCurrency(unit.profit), textAlign: TextAlign.end),
                 dataCell(context, myPercentage(unit.profitability * 100)),
                 ...[
@@ -246,7 +236,7 @@ class _UnitsState extends State<Units> {
         child: Column(
           children: [
             Expanded(
-              child: isLoadingUnits
+              child: isLoading
                   ? myProgress()
                   : units.isEmpty
                       ? SizedBox(width: getWidth(context, .60), child: emptyList())
@@ -275,9 +265,9 @@ class _UnitsState extends State<Units> {
                         const SizedBox(width: 40, child: Divider()),
                         totalItem(context, 'Count', internCount.toString()),
                         totalItem(context, 'Capital', myCurrency(internCapital)),
-                        totalItem(context, 'Capital %', myPercentage(internCapital * 100 / totalCapital)),
+                        totalItem(context, 'Capital %', myPercentage(totalCapital == 0 ? 0 : internCapital * 100 / totalCapital)),
                         totalItem(context, 'Profit', myCurrency(internProfit)),
-                        totalItem(context, 'Profitability', myPercentage(internProfitability)),
+                        totalItem(context, 'Profitability', myPercentage(internProfitability * 100)),
                       ],
                     ),
                     SizedBox(height: getHeight(context, .125), child: const VerticalDivider(width: 50)),
@@ -287,15 +277,16 @@ class _UnitsState extends State<Units> {
                         const SizedBox(width: 40, child: Divider()),
                         totalItem(context, 'Count', externCount.toString()),
                         totalItem(context, 'Capital', myCurrency(externCapital)),
-                        totalItem(context, 'Capital %', myPercentage(externCapital * 100 / totalCapital)),
+                        totalItem(context, 'Capital %', myPercentage(totalCapital == 0 ? 0 : externCapital * 100 / totalCapital)),
                         totalItem(context, 'Profit', myCurrency(externProfit)),
-                        totalItem(context, 'Profitability', myPercentage(externProfitability)),
+                        totalItem(context, 'Profitability', myPercentage(externProfitability * 100)),
                       ],
                     ),
                   ],
                 ),
                 SizedBox(width: getWidth(context, .4), child: const Divider()),
-                totalItem(context, 'Total Capital', myCurrency(totalCapital)),
+                totalItem(context, '           Total Capital  ', myCurrency(totalCapital == 0 ? 0 : totalCapital), isExpanded: false),
+                totalItem(context, '           Total Profit  ', myCurrency(internProfit + externProfit), isExpanded: false),
               ],
             )
           ],

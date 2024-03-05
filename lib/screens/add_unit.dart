@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../models/unit.dart';
-import '../main.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
+import '/main.dart';
+import '/models/unit.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
 
 class AddUnit extends StatefulWidget {
   final Unit unit;
@@ -48,7 +48,6 @@ class _AddUnitState extends State<AddUnit> {
         int _unitId = widget.unit.unitId;
         String _type = isExtern ? 'extern' : 'intern';
 
-        // sending a post request to the url
         await sqlQuery(insertUrl, {
           'sql1': _unitId == -1
               ? '''INSERT INTO Units (name,type,capital,profit,reservePerc,donationPerc,thresholdPerc,foundingPerc,effortPerc,moneyPerc,currentMonthOrYear) VALUES ('$name' ,'$_type',$capital,0, $reserve , $donation  ,$threshold , $founding , $effort , $money , ${_type == 'intern' ? 1 : currentYear});'''

@@ -3,13 +3,13 @@ import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '../main.dart';
-import '../providers/filter.dart';
-import '../shared/functions.dart';
-import '../models/transaction.dart';
-import '../models/transaction_sp.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
+import '/main.dart';
+import '/providers/filter.dart';
+import '/shared/functions.dart';
+import '/models/transaction.dart';
+import '/models/transaction_sp.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
 import 'add_transaction.dart';
 import 'print_transaction.dart';
 
@@ -264,9 +264,7 @@ class _TransactionsState extends State<Transactions> {
     switch (_sortColumnIndexTransUser) {
       case 2:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTransUser
-              ? tr2.realUserName.compareTo(tr1.realUserName)
-              : tr1.realUserName.compareTo(tr2.realUserName);
+          return !_isAscendingTransUser ? tr2.realUserName.compareTo(tr1.realUserName) : tr1.realUserName.compareTo(tr2.realUserName);
         });
         break;
       case 4:
@@ -291,9 +289,7 @@ class _TransactionsState extends State<Transactions> {
     switch (_sortColumnIndexTransCaisse) {
       case 2:
         transactions.sort((tr1, tr2) {
-          return !_isAscendingTransCaisse
-              ? tr2.realUserName.compareTo(tr1.realUserName)
-              : tr1.realUserName.compareTo(tr2.realUserName);
+          return !_isAscendingTransCaisse ? tr2.realUserName.compareTo(tr1.realUserName) : tr1.realUserName.compareTo(tr2.realUserName);
         });
         break;
       case 4:
@@ -490,12 +486,9 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, getText(sources, transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? 'Entrie' : 'Sortie'),
-                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
-                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
-                dataCell(context, transaction.soldeUser == -0.01 ? '/' : myCurrency(transaction.soldeUser),
-                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0), textAlign: TextAlign.end),
+                dataCell(context, transaction.soldeUser == -0.01 ? '/' : myCurrency(transaction.soldeUser), textAlign: TextAlign.end),
                 DataCell(ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
                   child: Align(
@@ -540,10 +533,8 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, getText(sources, transaction.source)),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? 'Entrie' : 'Sortie'),
-                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
-                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0), textAlign: TextAlign.end),
                 dataCell(context, myCurrency(transaction.soldeCaisse), textAlign: TextAlign.end),
                 DataCell(ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
@@ -588,12 +579,9 @@ class _TransactionsState extends State<Transactions> {
                 dataCell(context, getText(compts, transaction.category), textAlign: TextAlign.start),
                 dataCell(context, myDateFormate.format(transaction.date)),
                 dataCell(context, transaction.type == 'in' ? 'Entrie' : 'Sortie'),
-                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
-                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0),
-                    textAlign: TextAlign.end),
-                dataCell(context, transaction.solde == -0.01 ? '/' : myCurrency(transaction.solde),
-                    textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'in' ? transaction.amount : 0), textAlign: TextAlign.end),
+                dataCell(context, myCurrency(transaction.type == 'out' ? transaction.amount : 0), textAlign: TextAlign.end),
+                dataCell(context, transaction.solde == -0.01 ? '/' : myCurrency(transaction.solde), textAlign: TextAlign.end),
                 DataCell(ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: getWidth(context, .18)),
                   child: Align(
@@ -783,8 +771,7 @@ class _TransactionsState extends State<Transactions> {
                 onChanged: (value) {
                   if (transactionFilterYear != value) {
                     transactionFilterYear = value;
-                    Navigator.pushReplacement(
-                        context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp(index: 'tr')));
                   }
                 },
               ),
@@ -853,8 +840,7 @@ class _TransactionsState extends State<Transactions> {
           if (transactionCategory == 'users')
             autoComplete(
               onSeleted: (item) => setState(() => context.read<Filter>().change(search: item)),
-              optionsBuilder: (textEditingValue) =>
-                  userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
+              optionsBuilder: (textEditingValue) => userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
             ),
           if (transactionCategory == 'users') mySizedBox(context),
           if (transactionCategory == 'users')
@@ -935,8 +921,7 @@ class _TransactionsState extends State<Transactions> {
                           _toDate = DateTime(int.parse(_year) + 1).subtract(const Duration(seconds: 1));
                         } else {
                           _fromDate = DateTime(int.parse(_year), monthsOfYear.indexOf(_month) + 1, 1);
-                          _toDate = DateTime(int.parse(_year), monthsOfYear.indexOf(_month) + 2, 1)
-                              .subtract(const Duration(seconds: 1));
+                          _toDate = DateTime(int.parse(_year), monthsOfYear.indexOf(_month) + 2, 1).subtract(const Duration(seconds: 1));
                         }
                       }),
                     )
@@ -1020,11 +1005,8 @@ class _TransactionsState extends State<Transactions> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(
-                        color: ((_year == 'tout' &&
-                                    _toDate ==
-                                        DateTime(int.parse(years.first) + 1).subtract(const Duration(seconds: 1))) ||
-                                (_year != 'tout' &&
-                                    _toDate == DateTime(int.parse(_year) + 1).subtract(const Duration(seconds: 1))))
+                        color: ((_year == 'tout' && _toDate == DateTime(int.parse(years.first) + 1).subtract(const Duration(seconds: 1))) ||
+                                (_year != 'tout' && _toDate == DateTime(int.parse(_year) + 1).subtract(const Duration(seconds: 1))))
                             ? Colors.grey
                             : primaryColor,
                       ),
@@ -1071,12 +1053,7 @@ class _TransactionsState extends State<Transactions> {
                         'Type',
                         'Entrie',
                         'Sortie',
-                        if (transactionCategory == 'caisse')
-                          'Solde Caisse'
-                        else if (transactionCategory == 'specials')
-                          'Solde'
-                        else
-                          'Solde User',
+                        if (transactionCategory == 'caisse') 'Solde Caisse' else if (transactionCategory == 'specials') 'Solde' else 'Solde User',
                         'Note',
                       ],
                       if (transactionCategory == 'users')
@@ -1141,8 +1118,7 @@ class _TransactionsState extends State<Transactions> {
               _month != 'tout' ||
               (_year == 'tout' && _fromDate != DateTime(int.parse(years.last))) ||
               (_year != 'tout' && _fromDate != DateTime(int.parse(_year))) ||
-              (_year == 'tout' &&
-                  _toDate != DateTime(int.parse(years.first) + 1).subtract(const Duration(seconds: 1))) ||
+              (_year == 'tout' && _toDate != DateTime(int.parse(years.first) + 1).subtract(const Duration(seconds: 1))) ||
               (_year != 'tout' && _toDate != DateTime(int.parse(_year) + 1).subtract(const Duration(seconds: 1))))
             myIconButton(
               icon: Icons.update,
@@ -1199,8 +1175,7 @@ class _TransactionsState extends State<Transactions> {
                 textAlign: TextAlign.center,
                 onSubmitted: ((value) {
                   if (optionsBuilder(_searchController.value).first.isNotEmpty) {
-                    setState(
-                        () => context.read<Filter>().change(search: optionsBuilder(_searchController.value).first));
+                    setState(() => context.read<Filter>().change(search: optionsBuilder(_searchController.value).first));
                     onFieldSubmitted;
                   }
                 }),

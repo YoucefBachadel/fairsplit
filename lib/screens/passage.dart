@@ -1,15 +1,15 @@
-import 'package:fairsplit/shared/functions.dart';
-import 'package:fairsplit/shared/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:toggle_switch/toggle_switch.dart';
 
-import '../main.dart';
-import '../models/transaction.dart';
-import '../models/unit.dart';
-import '../models/user.dart';
-import '../shared/constants.dart';
+import '/main.dart';
+import '/models/transaction.dart';
+import '/models/unit.dart';
+import '/models/user.dart';
+import '/shared/functions.dart';
+import '/shared/widgets.dart';
+import '/shared/constants.dart';
 
 class Passage extends StatefulWidget {
   const Passage({super.key});
@@ -144,16 +144,10 @@ class _PassageState extends State<Passage> {
 
     double _reserveForZakat = (reserve - (reserve * materialsValuePerc)) + reserveYear + reserveProfit;
 
-    if (_reserveForZakat >= zakatQuorum) {
-      reserveZakat = _reserveForZakat * 0.026;
-    }
+    if (_reserveForZakat >= zakatQuorum) reserveZakat = _reserveForZakat * 0.026;
 
     for (var user in users) {
-      double _userCapitalForZakat = (user.capital - (user.capital * materialsValuePerc)) +
-          user.money +
-          user.threshold +
-          user.founding +
-          user.effort;
+      double _userCapitalForZakat = (user.capital - (user.capital * materialsValuePerc)) + user.money + user.threshold + user.founding + user.effort;
 
       user.isUnderZakatQuorum = _userCapitalForZakat < zakatQuorum;
       user.zakat = _userCapitalForZakat * 0.026;
@@ -297,8 +291,7 @@ class _PassageState extends State<Passage> {
     sqls.add('''UPDATE units SET currentMonthOrYear=1 WHERE type='intern';''');
 
     //update users information
-    var userInfo =
-        'INSERT INTO users(userId, capital, initialCapital, money, moneyExtern, threshold, founding, effort, effortExtern) VALUES ';
+    var userInfo = 'INSERT INTO users(userId, capital, initialCapital, money, moneyExtern, threshold, founding, effort, effortExtern) VALUES ';
     for (var user in users) {
       userInfo += '''(${user.userId}, ${user.capital}, ${user.newCapital}, 0,0,0,0,0,0),''';
     }
@@ -322,10 +315,7 @@ class _PassageState extends State<Passage> {
             decoration: pw.BoxDecoration(border: pw.Border.all(width: .5))),
       ),
       pw.Expanded(
-        child: pw.Container(
-            alignment: pw.Alignment.center,
-            child: pdfData(titel),
-            decoration: pw.BoxDecoration(border: pw.Border.all(width: .5))),
+        child: pw.Container(alignment: pw.Alignment.center, child: pdfData(titel), decoration: pw.BoxDecoration(border: pw.Border.all(width: .5))),
       ),
     ]);
   }
@@ -352,12 +342,10 @@ class _PassageState extends State<Passage> {
           userInfoItem('رأس المال اﻹفتتاحي', myCurrency(user.initialCapital)),
           userInfoItem('اﻹيداعات', myCurrency(user.totalIn)),
           userInfoItem('السحوبات', myCurrency(user.totalOut)),
-          if (user.money + user.moneyExtern != 0)
-            userInfoItem('أرباح المال', myCurrency(user.money + user.moneyExtern)),
+          if (user.money + user.moneyExtern != 0) userInfoItem('أرباح المال', myCurrency(user.money + user.moneyExtern)),
           if (user.threshold != 0) userInfoItem('أرباح العتبة', myCurrency(user.threshold)),
           if (user.founding != 0) userInfoItem('أرباح التأسيس', myCurrency(user.founding)),
-          if (user.effort + user.effortExtern != 0)
-            userInfoItem('أرباح الجهد', myCurrency(user.effort + user.effortExtern)),
+          if (user.effort + user.effortExtern != 0) userInfoItem('أرباح الجهد', myCurrency(user.effort + user.effortExtern)),
           userInfoItem('''رأس المال الجديد${user.showZakat ? ' (دون حذف الزكاة)' : ''}''', myCurrency(user.newCapital)),
           if (user.showZakat) userInfoItem('الزكاة', myCurrency(user.zakat)),
         ]),
@@ -598,10 +586,7 @@ class _PassageState extends State<Passage> {
                                           Text(
                                             'Passage Confirmation',
                                             textAlign: TextAlign.center,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineMedium
-                                                ?.copyWith(fontWeight: FontWeight.bold),
+                                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                                           ),
                                           SizedBox(width: getWidth(context, .16), child: const Divider()),
                                           mySizedBox(context),

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '../models/user_history.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
+import '/models/user_history.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
 
 class UsersHistory extends StatefulWidget {
   const UsersHistory({Key? key}) : super(key: key);
@@ -25,15 +25,7 @@ class _UsersHistoryState extends State<UsersHistory> {
 
   TextEditingController _controller = TextEditingController();
   final ScrollController _controllerH = ScrollController(), _controllerV = ScrollController();
-  double tStartCapital = 0,
-      tEndCapital = 0,
-      tNewCapital = 0,
-      tMoney = 0,
-      tThreshold = 0,
-      tFounding = 0,
-      tEffort = 0,
-      tTotalProfit = 0,
-      tZakat = 0;
+  double tStartCapital = 0, tEndCapital = 0, tNewCapital = 0, tMoney = 0, tThreshold = 0, tFounding = 0, tEffort = 0, tTotalProfit = 0, tZakat = 0;
 
   void loadData() async {
     var res = await sqlQuery(selectUrl, {'sql1': 'SELECT * FROM UserHistory;'});
@@ -76,8 +68,7 @@ class _UsersHistoryState extends State<UsersHistory> {
     tTotalProfit = 0;
     tZakat = 0;
     for (var userHistory in allUsersHistroy) {
-      if ((_search.isEmpty || userHistory.realName == _search) &&
-          (_year == 'tout' || userHistory.year.toString() == _year)) {
+      if ((_search.isEmpty || userHistory.realName == _search) && (_year == 'tout' || userHistory.year.toString() == _year)) {
         usersHistory.add(userHistory);
         tStartCapital += userHistory.startCapital;
         tEndCapital += userHistory.endCapital;
@@ -108,9 +99,7 @@ class _UsersHistoryState extends State<UsersHistory> {
         break;
       case 3:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.startCapital.compareTo(tr1.startCapital)
-              : tr1.startCapital.compareTo(tr2.startCapital);
+          return !_isAscending ? tr2.startCapital.compareTo(tr1.startCapital) : tr1.startCapital.compareTo(tr2.startCapital);
         });
         break;
       case 4:
@@ -130,51 +119,37 @@ class _UsersHistoryState extends State<UsersHistory> {
         break;
       case 7:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.weightedCapital.compareTo(tr1.weightedCapital)
-              : tr1.weightedCapital.compareTo(tr2.weightedCapital);
+          return !_isAscending ? tr2.weightedCapital.compareTo(tr1.weightedCapital) : tr1.weightedCapital.compareTo(tr2.weightedCapital);
         });
         break;
       case 8:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.moneyProfit.compareTo(tr1.moneyProfit)
-              : tr1.moneyProfit.compareTo(tr2.moneyProfit);
+          return !_isAscending ? tr2.moneyProfit.compareTo(tr1.moneyProfit) : tr1.moneyProfit.compareTo(tr2.moneyProfit);
         });
         break;
       case 9:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.thresholdProfit.compareTo(tr1.thresholdProfit)
-              : tr1.thresholdProfit.compareTo(tr2.thresholdProfit);
+          return !_isAscending ? tr2.thresholdProfit.compareTo(tr1.thresholdProfit) : tr1.thresholdProfit.compareTo(tr2.thresholdProfit);
         });
         break;
       case 10:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.foundingProfit.compareTo(tr1.foundingProfit)
-              : tr1.foundingProfit.compareTo(tr2.foundingProfit);
+          return !_isAscending ? tr2.foundingProfit.compareTo(tr1.foundingProfit) : tr1.foundingProfit.compareTo(tr2.foundingProfit);
         });
         break;
       case 11:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.effortProfit.compareTo(tr1.effortProfit)
-              : tr1.effortProfit.compareTo(tr2.effortProfit);
+          return !_isAscending ? tr2.effortProfit.compareTo(tr1.effortProfit) : tr1.effortProfit.compareTo(tr2.effortProfit);
         });
         break;
       case 12:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.externProfit.compareTo(tr1.externProfit)
-              : tr1.externProfit.compareTo(tr2.externProfit);
+          return !_isAscending ? tr2.externProfit.compareTo(tr1.externProfit) : tr1.externProfit.compareTo(tr2.externProfit);
         });
         break;
       case 13:
         usersHistory.sort((tr1, tr2) {
-          return !_isAscending
-              ? tr2.totalProfit.compareTo(tr1.totalProfit)
-              : tr1.totalProfit.compareTo(tr2.totalProfit);
+          return !_isAscending ? tr2.totalProfit.compareTo(tr1.totalProfit) : tr1.totalProfit.compareTo(tr2.totalProfit);
         });
         break;
       case 14:
@@ -353,8 +328,7 @@ class _UsersHistoryState extends State<UsersHistory> {
               ),
               Autocomplete<String>(
                 onSelected: (item) => setState(() => _search = item),
-                optionsBuilder: (textEditingValue) =>
-                    userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
+                optionsBuilder: (textEditingValue) => userNames.where((item) => item.toLowerCase().contains(textEditingValue.text.toLowerCase())),
                 fieldViewBuilder: (
                   context,
                   textEditingController,
@@ -372,8 +346,7 @@ class _UsersHistoryState extends State<UsersHistory> {
                       textAlign: TextAlign.center,
                       onSubmitted: ((value) {
                         if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
-                          String text =
-                              userNames.firstWhere((item) => item.toLowerCase().contains(value.toLowerCase()));
+                          String text = userNames.firstWhere((item) => item.toLowerCase().contains(value.toLowerCase()));
                           setState(() {
                             _controller.text = text;
                             _search = text;
@@ -409,8 +382,7 @@ class _UsersHistoryState extends State<UsersHistory> {
                     child: Material(
                       elevation: 8.0,
                       child: ConstrainedBox(
-                        constraints:
-                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .18)),
+                        constraints: BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .18)),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../models/effort.dart';
-import '../models/founding.dart';
-import '../models/threshold.dart' as my_threshold;
-import '../models/unit.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
-import '../models/user.dart';
+import '/models/effort.dart';
+import '/models/founding.dart';
+import '/models/threshold.dart' as my_threshold;
+import '/models/unit.dart';
+import '/models/user.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
 
 class AddUser extends StatefulWidget {
   final User user;
@@ -130,8 +130,7 @@ class _AddUserState extends State<AddUser> {
         if (isEffort && efforts.isNotEmpty && (typeHasChanged || effortssHasChanged)) {
           sql = 'INSERT INTO Effort(userId, unitId, effortPerc,globalUnits) VALUES ';
           for (var element in efforts) {
-            sql +=
-                '''($_userId , ${element.unitId} , ${element.effortPerc} , '${efforts.first.globalUnits.join(',')}'),''';
+            sql += '''($_userId , ${element.unitId} , ${element.effortPerc} , '${efforts.first.globalUnits.join(',')}'),''';
           }
           sql = sql.substring(0, sql.length - 1);
           sql += ';';
@@ -228,8 +227,7 @@ class _AddUserState extends State<AddUser> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(child: information()),
-                          if (efforts.isNotEmpty)
-                            SizedBox(height: getHeight(context, .25), child: const VerticalDivider(width: 50)),
+                          if (efforts.isNotEmpty) SizedBox(height: getHeight(context, .25), child: const VerticalDivider(width: 50)),
                           if (efforts.isNotEmpty) monthsDetail(),
                         ],
                       ),
@@ -396,8 +394,7 @@ class _AddUserState extends State<AddUser> {
                 if (thresholds.length != allUnits.where((element) => element.type == 'intern').length)
                   myIconButton(
                     onPressed: () {
-                      final _allIds =
-                          allUnits.where((element) => element.type == 'intern').map((e) => e.unitId).toSet();
+                      final _allIds = allUnits.where((element) => element.type == 'intern').map((e) => e.unitId).toSet();
                       final _thresholdsIds = thresholds.map((e) => e.unitId).toSet();
                       final _filteredIds = _allIds.difference(_thresholdsIds);
                       createDialog(

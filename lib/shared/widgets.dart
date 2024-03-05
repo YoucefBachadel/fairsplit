@@ -185,8 +185,6 @@ Widget deleteConfirmation(
   );
 }
 
-Widget verticalDivider() => const VerticalDivider(color: Colors.black, thickness: 0.2);
-
 Widget emptyList({Color textColor = Colors.grey}) {
   return Container(
     alignment: Alignment.center,
@@ -320,9 +318,7 @@ Widget totalItem(BuildContext context, String title, String value, {bool isExpan
       children: [
         if (!isExpanded) const Spacer(),
         isExpanded ? Expanded(flex: 2, child: myText(title)) : myText(title),
-        isExpanded
-            ? Expanded(flex: 2, child: myText(':    $value', fontFamily: 'IBM'))
-            : myText(':    $value', fontFamily: 'IBM'),
+        isExpanded ? Expanded(flex: 2, child: myText(':    $value', fontFamily: 'IBM')) : myText(':    $value', fontFamily: 'IBM'),
         if (!isExpanded) const Spacer(),
       ],
     ),
@@ -368,9 +364,7 @@ Widget pdfPreview(BuildContext context, pw.Document pdf, String name, {bool clos
 
             if (fileName != null) {
               final File file = File('$fileName.pdf');
-              await file
-                  .writeAsBytes(await pdf.save())
-                  .whenComplete(() => closeWhenDone ? Navigator.pop(context) : null);
+              await file.writeAsBytes(await pdf.save()).whenComplete(() => closeWhenDone ? Navigator.pop(context) : null);
             }
           },
           child: const Icon(Icons.download),
@@ -414,8 +408,7 @@ pw.Text pdfData(String text, {double fontSize = 10}) => pw.Text(text, style: pw.
 
 pw.Text pdfTitle(String text) => pw.Text(text, style: pw.TextStyle(fontWeight: pw.FontWeight.bold));
 
-pw.SizedBox pdfSizedBox(BuildContext context) =>
-    pw.SizedBox(height: getHeight(context, .01), width: getWidth(context, .005));
+pw.SizedBox pdfSizedBox(BuildContext context) => pw.SizedBox(height: getHeight(context, .01), width: getWidth(context, .005));
 
 Future<pw.Widget> pdfTableRow({
   required String text,

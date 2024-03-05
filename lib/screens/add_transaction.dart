@@ -1,13 +1,13 @@
-import 'package:fairsplit/models/other_user.dart';
-import 'package:fairsplit/screens/print_transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
-import '../models/user.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
-import '../main.dart';
+import '/main.dart';
+import '/models/user.dart';
+import '/models/other_user.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
+import 'print_transaction.dart';
 
 class SelectTransactionCategoty extends StatelessWidget {
   const SelectTransactionCategoty({super.key});
@@ -107,13 +107,7 @@ class AddTransaction extends StatefulWidget {
 
 class _AddTransactionState extends State<AddTransaction> {
   late String selectedName = '', category = 'caisse', type = 'out', amount = '0', note = '', appBarTitle = '';
-  late double caisse,
-      reserve,
-      reserveProfit,
-      donation,
-      zakat,
-      rest = 0,
-      selectedUserCapital = 0; //used to show user capital
+  late double caisse, reserve, reserveProfit, donation, zakat, rest = 0, selectedUserCapital = 0; //used to show user capital
   DateTime date = DateTime.now();
   bool isCaisseChanged = true;
   int selectedTransactionType = 0;
@@ -200,8 +194,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
       if ([1, 4].contains(selectedTransactionType)) {
         for (var element in dataUsers) {
-          users.add(User(
-              userId: int.parse(element['userId']), name: element['name'], capital: double.parse(element['capital'])));
+          users.add(User(userId: int.parse(element['userId']), name: element['name'], capital: double.parse(element['capital'])));
         }
         users.sort((a, b) => a.realName.compareTo(b.realName));
       } else {
@@ -274,8 +267,7 @@ class _AddTransactionState extends State<AddTransaction> {
             'sql1': (category == 'reserve' && isNewYear)
                 ? '''INSERT INTO transactiontemp(reference,userId,userName,date,type,amount,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , -1 ,'$category' , '$date' , '$type' ,${_amount.abs()} , $_changeCiasse, $_soldeCaisse , '$note','$amountOnLetter','$intermediates','$printingNotes','$reciver');'''
                 : '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' , '$category' , '$date' , '$type' ,${_amount.abs()} , $_solde , $_changeCiasse,$_soldeCaisse , '$note','$amountOnLetter','$intermediates','$printingNotes','$reciver');''',
-            'sql2':
-                '''UPDATE settings SET $category = $_solde , caisse = $_soldeCaisse , reference = ${reference + 1};''',
+            'sql2': '''UPDATE settings SET $category = $_solde , caisse = $_soldeCaisse , reference = ${reference + 1};''',
           });
         }
       } else if (selectedTransactionType == 4) {
@@ -594,8 +586,7 @@ class _AddTransactionState extends State<AddTransaction> {
                           child: Text(item.value),
                         );
                       }).toList(),
-                      onChanged:
-                          widget.sourceTab == 'da' ? null : (value) => setState(() => category = value.toString()),
+                      onChanged: widget.sourceTab == 'da' ? null : (value) => setState(() => category = value.toString()),
                     )),
               ),
             ],
@@ -713,11 +704,9 @@ class _AddTransactionState extends State<AddTransaction> {
                   }),
                   optionsBuilder: (textEditingValue) {
                     if (selectedTransactionType == 2) {
-                      return loanUsers
-                          .where((user) => user.realName.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                      return loanUsers.where((user) => user.realName.toLowerCase().contains(textEditingValue.text.toLowerCase()));
                     } else {
-                      return depositUsers
-                          .where((user) => user.realName.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                      return depositUsers.where((user) => user.realName.toLowerCase().contains(textEditingValue.text.toLowerCase()));
                     }
                   },
                   fieldViewBuilder: (
@@ -824,9 +813,7 @@ class _AddTransactionState extends State<AddTransaction> {
                     onToggle: (index) => setState(() => type = index == 0 ? 'out' : 'in'),
                   ),
                   mySizedBox(context),
-                  if (!(selectedTransactionType == 4 ||
-                      (selectedTransactionType == 0 && category == 'caisse') ||
-                      !isCaisseChanged))
+                  if (!(selectedTransactionType == 4 || (selectedTransactionType == 0 && category == 'caisse') || !isCaisseChanged))
                     myText('Caisse :   ${myCurrency(caisse)}'),
                 ],
               ),
@@ -968,8 +955,7 @@ class _AddTransactionState extends State<AddTransaction> {
                   )),
             ],
           ),
-        if (isAdmin && selectedTransactionType != 4 && (selectedTransactionType != 0 || category != 'caisse'))
-          mySizedBox(context),
+        if (isAdmin && selectedTransactionType != 4 && (selectedTransactionType != 0 || category != 'caisse')) mySizedBox(context),
         if (isAdmin && selectedTransactionType != 4 && (selectedTransactionType != 0 || category != 'caisse'))
           Row(children: [
             myText('Change Caisse'),
@@ -987,9 +973,7 @@ class _AddTransactionState extends State<AddTransaction> {
             myText('Note'),
             mySizedBox(context),
             myIconButton(
-                icon: Icons.view_list_sharp,
-                onPressed: () => createDialog(context, noteLabelsSelector(), dismissable: true),
-                color: primaryColor),
+                icon: Icons.view_list_sharp, onPressed: () => createDialog(context, noteLabelsSelector(), dismissable: true), color: primaryColor),
           ],
         ),
         mySizedBox(context),

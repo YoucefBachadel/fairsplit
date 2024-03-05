@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../models/other_user.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
+import '/models/other_user.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
 
 class AddOtherUser extends StatefulWidget {
   final OtherUser user;
@@ -41,8 +41,7 @@ class _AddOtherUserState extends State<AddOtherUser> {
       //chack if the nae exist befor
       bool nameExist = false;
       if (isNew || name != widget.user.name) {
-        var res = await sqlQuery(selectUrl,
-            {'sql1': '''SELECT COUNT(*) AS count FROM otherusers WHERE name = '$name' AND type = '$_type';'''});
+        var res = await sqlQuery(selectUrl, {'sql1': '''SELECT COUNT(*) AS count FROM otherusers WHERE name = '$name' AND type = '$_type';'''});
         nameExist = res[0][0]['count'] != '0';
       }
 

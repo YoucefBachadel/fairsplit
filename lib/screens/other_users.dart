@@ -3,14 +3,14 @@ import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '../main.dart';
-import '../models/other_user.dart';
-import '../screens/add_other_user.dart';
-import '../screens/add_transaction.dart';
-import '../providers/filter.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
-import '../shared/widgets.dart';
+import '/main.dart';
+import '/models/other_user.dart';
+import '/providers/filter.dart';
+import '/shared/functions.dart';
+import '/shared/constants.dart';
+import '/shared/widgets.dart';
+import 'add_other_user.dart';
+import 'add_transaction.dart';
 
 class OtherUsers extends StatefulWidget {
   const OtherUsers({Key? key}) : super(key: key);
@@ -113,9 +113,7 @@ class _OtherUsersState extends State<OtherUsers> {
           _isAscending = ascending;
         }),
       ),
-      ...[
-        'Type',
-      ].map((e) => dataColumn(context, e)),
+      dataColumn(context, 'Type'),
       sortableDataColumn(
         context,
         'Rest',
@@ -273,8 +271,7 @@ class _OtherUsersState extends State<OtherUsers> {
                       textAlign: TextAlign.center,
                       onSubmitted: ((value) {
                         if (userNames.where((item) => item.toLowerCase().contains(value.toLowerCase())).isNotEmpty) {
-                          String text =
-                              userNames.firstWhere((item) => item.toLowerCase().contains(value.toLowerCase()));
+                          String text = userNames.firstWhere((item) => item.toLowerCase().contains(value.toLowerCase()));
                           setState(() {
                             _controller.text = text;
                             _search = text;
@@ -310,8 +307,7 @@ class _OtherUsersState extends State<OtherUsers> {
                     child: Material(
                       elevation: 8.0,
                       child: ConstrainedBox(
-                        constraints:
-                            BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .18)),
+                        constraints: BoxConstraints(maxHeight: getHeight(context, .2), maxWidth: getWidth(context, .18)),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,
@@ -415,8 +411,7 @@ class _OtherUsersState extends State<OtherUsers> {
             'Type',
             'Rest',
           ],
-          data:
-              users.map((user) => [user.realName, getText(otherUserTypes, user.type), myCurrency(user.rest)]).toList(),
+          data: users.map((user) => [user.realName, getText(otherUserTypes, user.type), myCurrency(user.rest)]).toList(),
           headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
           headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
           cellStyle: const pw.TextStyle(fontSize: 10),

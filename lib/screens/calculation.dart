@@ -1,12 +1,12 @@
 import 'dart:collection';
 
-import 'package:fairsplit/models/transaction.dart';
-import 'package:fairsplit/shared/widgets.dart';
 import 'package:flutter/material.dart';
 
-import '../main.dart';
-import '../shared/functions.dart';
-import '../shared/constants.dart';
+import '/main.dart';
+import '/shared/functions.dart';
+import '/shared/widgets.dart';
+import '/shared/constants.dart';
+import '/models/transaction.dart';
 import '/models/unit.dart';
 import '/models/user.dart';
 
@@ -57,18 +57,15 @@ class _CalculationState extends State<Calculation> {
           '''SELECT e.userId, u.name, e.effortPerc, e.globalUnits, u.months FROM Effort e, Users u WHERE e.unitId = -1 AND e.userId = u.userId;''',
       'sql4':
           '''SELECT e.userId, u.name, e.effortPerc, u.months FROM Effort e, Users u WHERE e.unitId = ${widget.unit.unitId} AND e.userId = u.userId;''',
-      'sql5':
-          '''SELECT t.userId,u.name, t.thresholdPerc FROM Threshold t, Users u WHERE t.unitId = ${widget.unit.unitId} AND t.userId = u.userId;''',
-      'sql6':
-          '''SELECT f.userId,u.name, f.foundingPerc FROM Founding f, Users u WHERE f.unitId = ${widget.unit.unitId} AND f.userId = u.userId;''',
+      'sql5': '''SELECT t.userId,u.name, t.thresholdPerc FROM Threshold t, Users u WHERE t.unitId = ${widget.unit.unitId} AND t.userId = u.userId;''',
+      'sql6': '''SELECT f.userId,u.name, f.foundingPerc FROM Founding f, Users u WHERE f.unitId = ${widget.unit.unitId} AND f.userId = u.userId;''',
       'sql7': isIntern
           ? '''SELECT transactionId,userId,userName,date,type,amount FROM Transaction WHERE date >= '${DateTime(currentYear, widget.unit.currentMonthOrYear, 1)}';'''
           : '''SELECT transactionId,userId,userName,date,type,amount FROM Transaction WHERE Year(date) >= ${widget.unit.currentMonthOrYear};''',
       'sql8': isIntern
           ? '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND date >= '${DateTime(currentYear, widget.unit.currentMonthOrYear, 1)}';'''
           : '''SELECT transactionId,date,type,amount FROM transactionsp WHERE category = 'reserve' AND Year(date) >= ${widget.unit.currentMonthOrYear};''',
-      'sql9':
-          '''SELECT transactionId,userId,userName,date,type,amount FROM transactiontemp  WHERE userName != 'reserveProfit';''',
+      'sql9': '''SELECT transactionId,userId,userName,date,type,amount FROM transactiontemp  WHERE userName != 'reserveProfit';''',
       if (!isIntern)
         'sql10': '''SELECT MAX(max_date) AS lastDate FROM (
                           SELECT MAX(date) AS max_date FROM transaction
@@ -107,8 +104,7 @@ class _CalculationState extends State<Calculation> {
         }
 
         if (_userGlobalUbits.contains(widget.unit.unitId)) {
-          globalEffortUsers.add(
-              User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
+          globalEffortUsers.add(User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
         }
       }
     }
@@ -117,8 +113,7 @@ class _CalculationState extends State<Calculation> {
 
     for (var ele in res[3]) {
       if (!isIntern || (isIntern && ele['months'][widget.unit.currentMonthOrYear - 1] == '1')) {
-        unitEffortUsers.add(
-            User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
+        unitEffortUsers.add(User(userId: int.parse(ele['userId']), name: ele['name'], effortPerc: double.parse(ele['effortPerc'])));
       }
     }
 
@@ -134,15 +129,13 @@ class _CalculationState extends State<Calculation> {
     }
 
     for (var ele in res[4]) {
-      thresholdUsers.add(
-          User(userId: int.parse(ele['userId']), name: ele['name'], thresholdPerc: double.parse(ele['thresholdPerc'])));
+      thresholdUsers.add(User(userId: int.parse(ele['userId']), name: ele['name'], thresholdPerc: double.parse(ele['thresholdPerc'])));
     }
 
     thresholdUsers.sort((a, b) => a.name.compareTo(b.name));
 
     for (var ele in res[5]) {
-      foundingUsers.add(
-          User(userId: int.parse(ele['userId']), name: ele['name'], foundingPerc: double.parse(ele['foundingPerc'])));
+      foundingUsers.add(User(userId: int.parse(ele['userId']), name: ele['name'], foundingPerc: double.parse(ele['foundingPerc'])));
     }
 
     foundingUsers.sort((a, b) => a.name.compareTo(b.name));
@@ -158,9 +151,7 @@ class _CalculationState extends State<Calculation> {
       );
       allTransactions.add(transaction);
 
-      if ((isIntern &&
-              transaction.date.year == currentYear &&
-              transaction.date.month == widget.unit.currentMonthOrYear) ||
+      if ((isIntern && transaction.date.year == currentYear && transaction.date.month == widget.unit.currentMonthOrYear) ||
           (!isIntern && transaction.date.year == widget.unit.currentMonthOrYear)) {
         //filter the transactions of the calculated month or the calculated year if it is extern
         transactions.add(transaction);
@@ -179,9 +170,7 @@ class _CalculationState extends State<Calculation> {
       );
       allTransactions.add(transaction);
 
-      if ((isIntern &&
-              transaction.date.year == currentYear &&
-              transaction.date.month == widget.unit.currentMonthOrYear) ||
+      if ((isIntern && transaction.date.year == currentYear && transaction.date.month == widget.unit.currentMonthOrYear) ||
           (!isIntern && transaction.date.year == widget.unit.currentMonthOrYear)) {
         //filter the transactions of the calculated month or the calculated year if it is extern
         transactions.add(transaction);
@@ -302,8 +291,7 @@ class _CalculationState extends State<Calculation> {
       }
 
       // count number of days till the next day that has transaction
-      int daysCountToNextTransaction =
-          transactionsDays.elementAt(i + 1).difference(transactionsDays.elementAt(i)).inDays;
+      int daysCountToNextTransaction = transactionsDays.elementAt(i + 1).difference(transactionsDays.elementAt(i)).inDays;
 
       // calculate the profitability
       profitability += caMoneyProfitPerDay / totalUsersCapital * daysCountToNextTransaction;
@@ -551,9 +539,7 @@ class _CalculationState extends State<Calculation> {
                                                   globalEffortUsers.where((user) => user.evaluation == 0).isNotEmpty)) {
                                             snackBar(context, 'add effort users evaluations');
                                             setState(() => bottemNavigationSelectedInex =
-                                                unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty
-                                                    ? 4
-                                                    : 5);
+                                                unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty ? 4 : 5);
                                           } else {
                                             calculate();
                                           }
@@ -577,9 +563,7 @@ class _CalculationState extends State<Calculation> {
                                                   globalEffortUsers.where((user) => user.evaluation == 0).isNotEmpty)) {
                                             snackBar(context, 'add effort users evaluations');
                                             setState(() => bottemNavigationSelectedInex =
-                                                unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty
-                                                    ? 4
-                                                    : 5);
+                                                unitEffortUsers.where((user) => user.evaluation == 0).isNotEmpty ? 4 : 5);
                                           } else {
                                             calculate();
                                           }
@@ -722,9 +706,7 @@ class _CalculationState extends State<Calculation> {
   }
 
   Widget money() {
-    List<DataColumn> column = ['', 'Name', 'Initial Capital', 'Capital', 'Weighted Capital', 'Profit']
-        .map((e) => dataColumn(context, e))
-        .toList();
+    List<DataColumn> column = ['', 'Name', 'Initial Capital', 'Capital', 'Weighted Capital', 'Profit'].map((e) => dataColumn(context, e)).toList();
     List<DataRow> rows = moneyUsers
         .map(
           (user) => DataRow(cells: [
@@ -732,8 +714,7 @@ class _CalculationState extends State<Calculation> {
             dataCell(context, user.realName, textAlign: TextAlign.start),
             dataCell(context, myCurrency(user.initialCapital), textAlign: TextAlign.end),
             dataCell(context, myCurrency(user.capital), textAlign: TextAlign.end),
-            dataCell(context, myCurrency(profitability == 0 ? 0 : user.money / profitability),
-                textAlign: TextAlign.end),
+            dataCell(context, myCurrency(profitability == 0 ? 0 : user.money / profitability), textAlign: TextAlign.end),
             dataCell(context, myCurrency(user.money), textAlign: TextAlign.end),
           ]),
         )

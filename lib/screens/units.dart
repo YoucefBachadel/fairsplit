@@ -285,8 +285,8 @@ class _UnitsState extends State<Units> {
                   ],
                 ),
                 SizedBox(width: getWidth(context, .4), child: const Divider()),
-                totalItem(context, '           Total Capital  ', myCurrency(totalCapital == 0 ? 0 : totalCapital), isExpanded: false),
-                totalItem(context, '           Total Profit  ', myCurrency(internProfit + externProfit), isExpanded: false),
+                totalItem(context, 'Total Capital', myCurrency(totalCapital == 0 ? 0 : totalCapital)),
+                totalItem(context, 'Total Profit', myCurrency(internProfit + externProfit)),
               ],
             )
           ],

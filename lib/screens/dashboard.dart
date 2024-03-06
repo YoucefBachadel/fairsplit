@@ -37,13 +37,13 @@ class _DashboardState extends State<Dashboard> {
     transactionFilterYear = currentYear.toString();
     caisse = double.parse(data['caisse']);
     reserve = double.parse(data['reserve']);
-    reserveProfit = double.parse(data['reserveProfit'] ?? '0');
+    reserveProfit = double.parse(data['reserveProfit']);
     donation = double.parse(data['donation']);
     zakat = double.parse(data['zakat']);
     profitability = double.parse(data['profitability']);
-    totalProfit = double.parse(data['totalProfit'] ?? '0');
-    totalLoan = double.parse(data['totalLoan'] ?? '0');
-    totalDeposit = double.parse(data['totalDeposit'] ?? '0');
+    totalProfit = double.parse(data['totalProfit']);
+    totalLoan = double.parse(data['totalLoan']);
+    totalDeposit = double.parse(data['totalDeposit']);
 
     for (var unit in res[1]) {
       units.add(Unit(

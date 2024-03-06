@@ -26,7 +26,7 @@ class _PassageState extends State<Passage> {
   TextEditingController zakatController = TextEditingController(), materialsController = TextEditingController();
   double zakatQuorum = 0, materialsValue = 0;
   String _zakatQuorum = '', _materialsValue = '';
-  double caisse = 0, reserve = 0, reserveYear = 0, reserveProfit = 0, donation = 0, donationProfit = 0, zakat = 0;
+  double caisse = 0, reserve = 0, reserveYear = 0, reserveProfit = 0, reserveProfitIntern = 0, donation = 0, donationProfit = 0, zakat = 0;
   double totalCapital = 0, totalZakat = 0, totalIn = 0, totalOut = 0, reserveZakat = 0;
   double materialsValuePerc = 0;
   int reference = 0;
@@ -63,7 +63,9 @@ class _PassageState extends State<Passage> {
     caisse = double.parse(dataSettings['caisse']);
     reserve = double.parse(dataSettings['reserve']);
     reserveYear = double.parse(dataSettings['reserveYear']);
-    reserveProfit = double.parse(dataSettings['reserveProfit']) + double.parse(dataSettings['reserveProfitIntern']);
+    reserveProfit = double.parse(dataSettings['reserveProfit']);
+    reserveProfitIntern = double.parse(dataSettings['reserveProfitIntern']);
+    reserveProfit += reserveProfitIntern;
     donation = double.parse(dataSettings['donation']);
     donationProfit = double.parse(dataSettings['donationProfit']) + double.parse(dataSettings['donationProfitIntern']);
     zakat = double.parse(dataSettings['zakat']);
@@ -194,10 +196,13 @@ class _PassageState extends State<Passage> {
     userTransaction = userTransaction.substring(0, userTransaction.length - 1) + ';';
     sqls.add(userTransaction);
 
-    //move reserveyear to reserve and dontionprofit to donation with transaction
+    //move reserveyear to reserve and reserveProfitIntern to reserveProfit and dontionprofit+dontionprofitIntern to donation with transaction
     reserve += reserveYear;
     sqls.add(
         '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserve' , '$date' , '${reserveYear >= 0 ? 'in' : 'out'}' ,${reserveYear.abs()} ,$reserve , 0, $caisse , 'Passage_$currentYear','${numberToArabicWords(reserveYear.abs())}','','','');''');
+    reference++;
+    sqls.add(
+        '''INSERT INTO transactionsp (reference,category,date,type,amount,solde,changeCaisse,soldeCaisse,note,amountOnLetter,intermediates,printingNotes,reciver) VALUES ('${currentYear % 100}/${reference.toString().padLeft(4, '0')}' ,'reserveProfit' , '$date' , '${reserveProfitIntern >= 0 ? 'in' : 'out'}' ,${reserveProfitIntern.abs()} ,$reserveProfit , 0, $caisse , 'Passage_$currentYear','${numberToArabicWords(reserveProfitIntern.abs())}','','','');''');
     reference++;
     donation += donationProfit;
     sqls.add(

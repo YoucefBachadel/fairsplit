@@ -175,9 +175,9 @@ class _UnitsHistoryState extends State<UnitsHistory> {
         'Reserve',
         'Donation',
         'Money',
-        'Effort',
         'Threshold',
         'Founding',
+        'Effort',
       ]
           .map((e) => sortableDataColumn(
                 context,
@@ -211,9 +211,9 @@ class _UnitsHistoryState extends State<UnitsHistory> {
                 myCurrency(unitHistory.reserve),
                 myCurrency(unitHistory.donation),
                 myCurrency(unitHistory.money),
-                myCurrency(unitHistory.effort),
                 myCurrency(unitHistory.threshold),
                 myCurrency(unitHistory.founding),
+                myCurrency(unitHistory.effort),
               ].map((e) => dataCell(context, e, textAlign: TextAlign.end)).toList(),
             ],
           ),

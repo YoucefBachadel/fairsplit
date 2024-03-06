@@ -194,13 +194,13 @@ class _UnitsState extends State<Units> {
                 dataCell(context, myPercentage(totalCapital == 0 ? 0 : unit.capital * 100 / totalCapital)),
                 dataCell(context, myCurrency(unit.profit), textAlign: TextAlign.end),
                 dataCell(context, myPercentage(unit.profitability * 100)),
-                ...[
-                  unit.type == 'extern'
-                      ? unit.currentMonthOrYear
-                      : unit.currentMonthOrYear == 13
-                          ? zero
-                          : monthsOfYear[unit.currentMonthOrYear - 1],
-                ].map((e) => dataCell(context, e.toString())).toList(),
+                dataCell(
+                    context,
+                    unit.type == 'extern'
+                        ? unit.currentMonthOrYear.toString()
+                        : unit.currentMonthOrYear == 13
+                            ? zero
+                            : monthsOfYear[unit.currentMonthOrYear - 1]),
                 if (isAdmin)
                   DataCell(
                     unit.currentMonthOrYear == 13

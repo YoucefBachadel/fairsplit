@@ -126,13 +126,13 @@ class _UnitsHistoryState extends State<UnitsHistory> {
         unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.money.compareTo(tr1.money) : tr1.money.compareTo(tr2.money));
         break;
       case 12:
-        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
-        break;
-      case 13:
         unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.threshold.compareTo(tr1.threshold) : tr1.threshold.compareTo(tr2.threshold));
         break;
-      case 14:
+      case 13:
         unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.founding.compareTo(tr1.founding) : tr1.founding.compareTo(tr2.founding));
+        break;
+      case 14:
+        unitsHistory.sort((tr1, tr2) => !_isAscending ? tr2.effort.compareTo(tr1.effort) : tr1.effort.compareTo(tr2.effort));
         break;
     }
   }

@@ -25,7 +25,7 @@ class _TransactionsState extends State<Transactions> {
   List<TransactionSP> allTransactionsSP = [], transactionsSP = [];
 
   bool isloading = true;
-  String transactionCategory = 'users'; //caisse users specials
+  String transactionCategory = 'caisse'; //caisse users specials
   String _userCategory = 'tout'; //tout users loans deposits
   String _compt = 'tout'; // caisse reserve donation zakat
   String _reference = '';
